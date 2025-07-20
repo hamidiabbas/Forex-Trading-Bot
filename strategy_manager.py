@@ -3,115 +3,113 @@
  *
  * PROJECT NAME:        Algorithmic Forex Trading Bot
  *
- * FILE NAME:           strategy_manager.py
+ * FILE NAME:           strategy_manager.py (Confluence Scoring Version)
  *
  * PURPOSE:
  *
- * This module acts as the "brain" of the trading bot. It contains the
- * explicit logic for each of the trading strategies. It evaluates the
- * market intelligence provided by the MarketIntelligence module and,
- * based on a strict set of rules, generates trading signals. This
- * module is responsible for identifying high-probability trading
- * opportunities that are aligned with the current market regime.
+ * This module acts as the "brain" of the trading bot. This version has
+ * been completely redesigned to use a sophisticated "Confluence Scoring"
+ * system, which evaluates multiple indicators to generate a trade signal,
+ * replacing the previous rigid strategy logic.
  *
  * AUTHOR:              Gemini Al
  *
  * DATE:                July 20, 2025
  *
- * VERSION:             4.0
+ * VERSION:             5.0 (Confluence)
  *
  ******************************************************************************/
 """
-
-import pandas_ta as ta
 
 class StrategyManager:
     def __init__(self, config):
         self.config = config
 
-    def evaluate_signals(self, symbol, analyzed_data_mta, regime):
-        if regime in ["Strong Trend", "Weak Trend"] and "TREND" in self.config.ACTIVE_STRATEGIES:
-            return self._evaluate_trend_strategy(symbol, analyzed_data_mta)
-        elif regime == "Ranging" and "RANGE" in self.config.ACTIVE_STRATEGIES:
-            return self._evaluate_range_strategy(symbol, analyzed_data_mta)
-        elif regime == "Breakout-Pending" and "BREAKOUT" in self.config.ACTIVE_STRATEGIES:
-            return self._evaluate_breakout_strategy(symbol, analyzed_data_mta)
-        return None
-
-    def _evaluate_trend_strategy(self, symbol, analyzed_data_mta):
-        structural_tf = self.config.TIMEFRAMES['STRUCTURAL']
-        positional_tf = self.config.TIMEFRAMES['POSITIONAL']
+    def evaluate_signals(self, symbol, analyzed_data_mta):
+        """
+        Evaluates the confluence score on the execution timeframe and generates
+        a signal if the score meets the minimum threshold.
+        """
         execution_tf = self.config.TIMEFRAMES['EXECUTION']
+        df = analyzed_data_mta.get(execution_tf)
 
-        structural_df = analyzed_data_mta.get(structural_tf)
-        positional_df = analyzed_data_mta.get(positional_tf)
-        execution_df = analyzed_data_mta.get(execution_tf)
-
-        if any(df is None or df.empty for df in [structural_df, positional_df, execution_df]):
-            return None
-        
-        sma_col = f'SMA_{self.config.TREND_STRATEGY_MA_PERIOD}'
-
-        trend = 'NONE'
-        if structural_df['Close'].iloc[-1] > structural_df[sma_col].iloc[-1] and \
-           positional_df['Close'].iloc[-1] > positional_df[sma_col].iloc[-1]:
-            trend = 'UP'
-        elif structural_df['Close'].iloc[-1] < structural_df[sma_col].iloc[-1] and \
-             positional_df['Close'].iloc[-1] < positional_df[sma_col].iloc[-1]:
-            trend = 'DOWN'
-        else:
+        if df is None or df.empty or len(df) < 2:
             return None
 
-        if trend == 'UP' and execution_df['Low'].iloc[-1] <= execution_df[sma_col].iloc[-1]:
-            if (execution_df['Close'].iloc[-1] > execution_df['Open'].iloc[-1] and execution_df['Open'].iloc[-1] < execution_df['Close'].iloc[-2]) or \
-               (execution_df['Close'].iloc[-1] > execution_df['Open'].iloc[-1] and (execution_df['High'].iloc[-1] - execution_df['Close'].iloc[-1]) > 2 * abs(execution_df['Close'].iloc[-1] - execution_df['Open'].iloc[-1])):
-                if positional_df['ADX_14'].iloc[-1] > 20:
-                    return self._generate_signal(symbol, 'BUY', 'TREND', execution_df)
+        bullish_score, bearish_score = self._calculate_confluence_score(df)
 
-        elif trend == 'DOWN' and execution_df['High'].iloc[-1] >= execution_df[sma_col].iloc[-1]:
-            if (execution_df['Close'].iloc[-1] < execution_df['Open'].iloc[-1] and execution_df['Open'].iloc[-1] > execution_df['Close'].iloc[-2]) or \
-               (execution_df['Close'].iloc[-1] < execution_df['Open'].iloc[-1] and (execution_df['High'].iloc[-1] - execution_df['Open'].iloc[-1]) > 2 * abs(execution_df['Close'].iloc[-1] - execution_df['Open'].iloc[-1])):
-                if positional_df['ADX_14'].iloc[-1] > 20:
-                    return self._generate_signal(symbol, 'SELL', 'TREND', execution_df)
-        return None
+        print(f"DEBUG - {symbol} Scores: Bullish={bullish_score}, Bearish={bearish_score}")
 
-    def _evaluate_range_strategy(self, symbol, analyzed_data_mta):
-        execution_tf = self.config.TIMEFRAMES['EXECUTION']
-        execution_df = analyzed_data_mta.get(execution_tf)
-        if execution_df is None or execution_df.empty: return None
-
-        if execution_df['Close'].iloc[-1] > execution_df['BBU_20_2.0'].iloc[-1] and execution_df['RSI_14'].iloc[-1] > self.config.RANGE_STRATEGY_RSI_OVERBOUGHT:
-            if execution_df['Close'].iloc[-1] < execution_df['Open'].iloc[-1]:
-                return self._generate_signal(symbol, 'SELL', 'RANGE', execution_df)
-        elif execution_df['Close'].iloc[-1] < execution_df['BBL_20_2.0'].iloc[-1] and execution_df['RSI_14'].iloc[-1] < self.config.RANGE_STRATEGY_RSI_OVERSOLD:
-            if execution_df['Close'].iloc[-1] > execution_df['Open'].iloc[-1]:
-                return self._generate_signal(symbol, 'BUY', 'RANGE', execution_df)
-        return None
-
-    def _evaluate_breakout_strategy(self, symbol, analyzed_data_mta):
-        positional_tf = self.config.TIMEFRAMES['POSITIONAL']
-        execution_tf = self.config.TIMEFRAMES['EXECUTION']
-        positional_df = analyzed_data_mta.get(positional_tf)
-        execution_df = analyzed_data_mta.get(execution_tf)
-        if any(df is None or df.empty for df in [positional_df, execution_df]): return None
+        if bullish_score >= self.config.MINIMUM_CONFLUENCE_SCORE:
+            return self._generate_signal(symbol, 'BUY', 'Confluence', df)
+        elif bearish_score >= self.config.MINIMUM_CONFLUENCE_SCORE:
+            return self._generate_signal(symbol, 'SELL', 'Confluence', df)
         
-        # Note: The breakout strategy logic was incomplete in the blueprint.
-        # This is a simplified version.
-        if execution_df['Close'].iloc[-1] > execution_df['BBU_20_2.0'].iloc[-1]:
-            if execution_df['ATRr_14'].iloc[-1] > execution_df['ATRr_14'].rolling(20).mean().iloc[-1] * self.config.BREAKOUT_STRATEGY_ATR_SPIKE_FACTOR:
-                return self._generate_signal(symbol, 'BUY', 'BREAKOUT', execution_df)
-        elif execution_df['Close'].iloc[-1] < execution_df['BBL_20_2.0'].iloc[-1]:
-            if execution_df['ATRr_14'].iloc[-1] > execution_df['ATRr_14'].rolling(20).mean().iloc[-1] * self.config.BREAKOUT_STRATEGY_ATR_SPIKE_FACTOR:
-                return self._generate_signal(symbol, 'SELL', 'BREAKOUT', execution_df)
         return None
-    
+
+    def _calculate_confluence_score(self, df):
+        """
+        Calculates a bullish and bearish score based on a confluence of indicators.
+        Returns: (bullish_score, bearish_score)
+        """
+        bullish_score = 0
+        bearish_score = 0
+        
+        # --- Rule 1: Moving Average Trend (Weight: 2) ---
+        # Is the price above the long-term moving averages?
+        if df['Close'].iloc[-1] > df['SMA_200'].iloc[-1] and df['Close'].iloc[-1] > df['SMA_100'].iloc[-1]:
+            bullish_score += 2
+        # Is the price below the long-term moving averages?
+        if df['Close'].iloc[-1] < df['SMA_200'].iloc[-1] and df['Close'].iloc[-1] < df['SMA_100'].iloc[-1]:
+            bearish_score += 2
+
+        # --- Rule 2: Moving Average Crossover (Weight: 1) ---
+        # Has the short-term MA crossed above the medium-term MA?
+        if df['EMA_20'].iloc[-1] > df['EMA_50'].iloc[-1] and df['EMA_20'].iloc[-2] < df['EMA_50'].iloc[-2]:
+            bullish_score += 1
+        # Has the short-term MA crossed below the medium-term MA?
+        if df['EMA_20'].iloc[-1] < df['EMA_50'].iloc[-1] and df['EMA_20'].iloc[-2] > df['EMA_50'].iloc[-2]:
+            bearish_score += 1
+
+        # --- Rule 3: MACD (Weight: 1) ---
+        # Is the MACD line above the signal line?
+        if df['MACD_12_26_9'].iloc[-1] > df['MACDs_12_26_9'].iloc[-1]:
+            bullish_score += 1
+        # Is the MACD line below the signal line?
+        if df['MACD_12_26_9'].iloc[-1] < df['MACDs_12_26_9'].iloc[-1]:
+            bearish_score += 1
+            
+        # --- Rule 4: RSI (Weight: 1) ---
+        # Is RSI showing upward momentum?
+        if df['RSI_14'].iloc[-1] > 55:
+            bullish_score += 1
+        # Is RSI showing downward momentum?
+        if df['RSI_14'].iloc[-1] < 45:
+            bearish_score += 1
+            
+        # --- Rule 5: Stochastic Oscillator (Weight: 1) ---
+        # Is the Stochastic in an uptrend (not overbought)?
+        stoch_k = df[f'STOCHk_{self.config.STOCH_K}_{self.config.STOCH_D}_{self.config.STOCH_D}'].iloc[-1]
+        if stoch_k > 20 and stoch_k < 80 and stoch_k > df[f'STOCHd_{self.config.STOCH_K}_{self.config.STOCH_D}_{self.config.STOCH_D}'].iloc[-1]:
+            bullish_score += 1
+        # Is the Stochastic in a downtrend (not oversold)?
+        if stoch_k < 80 and stoch_k > 20 and stoch_k < df[f'STOCHd_{self.config.STOCH_K}_{self.config.STOCH_D}_{self.config.STOCH_D}'].iloc[-1]:
+            bearish_score += 1
+
+        # --- Rule 6: ADX Trend Strength (Weight: 1) ---
+        # Is the market trending? (This point is added to whichever side has more points)
+        if df[f'ADX_{self.config.ADX_PERIOD}'].iloc[-1] > 25:
+            if bullish_score > bearish_score:
+                bullish_score += 1
+            elif bearish_score > bullish_score:
+                bearish_score += 1
+
+        return bullish_score, bearish_score
+
     def _generate_signal(self, symbol, direction, strategy, df):
         """
         Generates a detailed signal dictionary.
         """
-        # We can now remove the debug print line
-        # print("\nDEBUG: Columns available in _generate_signal:", df.columns.tolist())
-        
         return {
             'symbol': symbol,
             'direction': direction,
@@ -119,6 +117,5 @@ class StrategyManager:
             'entry_price': df['Close'].iloc[-1],
             'signal_candle_high': df['High'].iloc[-1],
             'signal_candle_low': df['Low'].iloc[-1],
-            # --- THIS IS THE CORRECTED LINE ---
             'atr_at_signal': df['ATRr_14'].iloc[-1]
         }
