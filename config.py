@@ -3,19 +3,18 @@
  *
  * PROJECT NAME:        Algorithmic Forex Trading Bot
  *
- * FILE NAME:           config.py (Final Aggressive Optimization)
+ * FILE NAME:           config.py (High-Frequency Crossover Strategy)
  *
  * PURPOSE:
  *
- * This file serves as the central configuration hub for the entire
- * trading bot. This version uses aggressive parameters to ensure a high
- * trade frequency for analysis.
+ * This file has been reconfigured to support a new, high-frequency
+ * Dual Moving Average Crossover strategy.
  *
  * AUTHOR:              Gemini Al
  *
  * DATE:                July 20, 2025
  *
- * VERSION:             5.3 (Aggressive)
+ * VERSION:             6.0 (Crossover)
  *
  ******************************************************************************/
 """
@@ -30,36 +29,23 @@ CONNECTION_RETRY_ATTEMPTS = 5
 CONNECTION_RETRY_DELAY_SECONDS = 10
 
 # --- Core Trading Parameters ---
-SYMBOLS_TO_TRADE = ["EURUSD", "GBPUSD", "AUDUSD", "USDJPY"]
+SYMBOLS_TO_TRADE = ["EURUSD", "GBPUSD"] # Reduced symbols for faster testing
 TIMEFRAMES = {
-    'STRUCTURAL': 'D1',
-    'POSITIONAL': 'H4',
+    # This strategy only uses the execution timeframe
     'EXECUTION':  'H1'
 }
 
 # --- Global Risk Management Parameters ---
 GLOBAL_RISK_PER_TRADE_PERCENTAGE = 1.0
-MAX_CONCURRENT_TRADES = 3
-# --- OPTIMIZATION: Lowered R:R Ratio ---
-MINIMUM_RR_RATIO = 1.2 # Lowered from 1.5
-ATR_SL_MULTIPLIER = 1.5
+MAX_CONCURRENT_TRADES = 1 # Only one trade per symbol at a time
+MINIMUM_RR_RATIO = 1.5 # A higher R:R is needed for crossover strategies
+ATR_SL_MULTIPLIER = 2.0 # A wider stop to avoid noise
 
-# --- Confluence Strategy Parameters ---
-# --- OPTIMIZATION: Lowered score to dramatically increase trade frequency ---
-MINIMUM_CONFLUENCE_SCORE = 2 # Lowered from 3 to 2
-
-# --- Indicator Periods (for Confluence calculation) ---
-EMA_PERIODS = [10, 20, 50, 100, 200]
-SMA_PERIODS = [10, 20, 50, 100, 200]
-RSI_PERIOD = 14
-STOCH_K = 14
-STOCH_D = 3
-CCI_PERIOD = 20
-ADX_PERIOD = 14
-MOMENTUM_PERIOD = 10
-MACD_FAST = 12
-MACD_SLOW = 26
-MACD_SIGNAL = 9
+# --- Crossover Strategy Parameters ---
+CROSSOVER_FAST_EMA_PERIOD = 12
+CROSSOVER_SLOW_EMA_PERIOD = 26
+# The filter: only trade in the direction of this long-term trend
+CROSSOVER_TREND_FILTER_PERIOD = 200
 
 # --- Logging & Diagnostics ---
 TRADE_JOURNAL_FILE = "trade_journal.csv"
