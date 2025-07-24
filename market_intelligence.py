@@ -41,7 +41,7 @@ class MarketIntelligence:
             df.ta.macd(append=True)
             df.ta.ema(length=self.config.TREND_EMA_FAST_PERIOD, append=True)
             df.ta.ema(length=self.config.TREND_EMA_SLOW_PERIOD, append=True)
-
+            df.ta.obv(append=True)
             # --- Hurst Exponent Calculation ---
             window = 100 
             df['hurst'] = df['Close'].rolling(window=window).apply(lambda x: compute_Hc(x)[0], raw=False)
