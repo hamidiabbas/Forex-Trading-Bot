@@ -1,0 +1,10 @@
+# requirements.txt
+pandas
+pandas-ta
+numpy
+scikit-learn
+tensorflow
+streamlit
+python-dotenv
+MetaTrader5
+hurst
