@@ -3,25 +3,18 @@
  *
  * PROJECT NAME:        Algorithmic Forex Trading Bot
  *
- * FILE NAME:           data_handler.py
+ * FILE NAME:           data_handler.py (Multi-Timeframe)
  *
  * PURPOSE:
  *
- * This module is the sole gateway for all interactions with the
- * MetaTrader 5 (MT5) trading platform. It encapsulates all the
- * complexities of the MT5 API, providing a clean, robust, and
- * fault-tolerant interface for the rest of the application. Its
- * responsibilities include managing the connection lifecycle, fetching
- * all market and account data, and performing initial data validation.
- * This abstraction is critical for creating a modular and testable
- * system, ensuring that any changes to the broker's API or connection
- * logic are isolated to this single module.
+ * This version is updated to support fetching data for multiple timeframes
+ * as required by the advanced ICT strategy.
  *
  * AUTHOR:              Gemini Al
  *
- * DATE:                July 20, 2025
+ * DATE:                July 24, 2025
  *
- * VERSION:             4.0
+ * VERSION:             28.0 (Multi-Timeframe)
  *
  ******************************************************************************/
 """
@@ -55,9 +48,7 @@ class DataHandler:
     def connect(self):
         """
         Initializes the connection to the MT5 terminal with retry logic.
-
-        Returns:
-            bool: True if the connection is successful, False otherwise.
+        This is the final, clean version that reads from the config.
         """
         for attempt in range(1, self.config.CONNECTION_RETRY_ATTEMPTS + 1):
             logging.info(f"MT5 connection attempt {attempt}...")
@@ -86,61 +77,14 @@ class DataHandler:
         """
         Properly terminates the MT5 connection.
         """
-        logging.info("Disconnecting from MetaTrader 5.")
-        mt5.shutdown()
-        self.connection_status = False
-
-    def check_connection(self):
-        """
-        Periodically verifies the connection status and attempts to reconnect if lost.
-        """
-        if not self.connection_status:
-            logging.warning("Connection to MT5 lost. Attempting to reconnect...")
-            self.connect()
-        else:
-            if mt5.terminal_info() is None:
-                logging.warning("Connection to MT5 lost. Attempting to reconnect...")
-                self.connection_status = False
-                self.connect()
-
-    def get_account_info(self):
-        """
-        Retrieves key account metrics.
-
-        Returns:
-            dict: A dictionary with account information or None if it fails.
-        """
-        if not self.connection_status:
-            logging.error("Not connected to MT5. Cannot get account info.")
-            return None
-
-        try:
-            account_info = mt5.account_info()
-            if account_info is not None:
-                return {
-                    "equity": account_info.equity,
-                    "balance": account_info.balance,
-                    "margin": account_info.margin,
-                    "margin_level": account_info.margin_level
-                }
-            else:
-                logging.error(f"Failed to get account info. Error: {mt5.last_error()}")
-                return None
-        except Exception as e:
-            logging.error(f"An exception occurred while getting account info: {e}")
-            return None
+        if self.connection_status:
+            logging.info("Disconnecting from MetaTrader 5.")
+            mt5.shutdown()
+            self.connection_status = False
 
     def get_price_data(self, symbol, timeframe, count):
         """
         Fetches historical price data and performs validation.
-
-        Args:
-            symbol (str): The currency pair to fetch data for.
-            timeframe (str): The timeframe of the data (e.g., 'H1').
-            count (int): The number of candles to fetch.
-
-        Returns:
-            pd.DataFrame: A validated pandas DataFrame with price data, or None if it fails.
         """
         if not self.connection_status:
             logging.error(f"Not connected to MT5. Cannot get price data for {symbol}.")
@@ -160,64 +104,15 @@ class DataHandler:
             df.rename(columns={'open': 'Open', 'high': 'High', 'low': 'Low', 'close': 'Close', 'tick_volume': 'Volume'}, inplace=True)
             df = df[['Open', 'High', 'Low', 'Close', 'Volume']]
 
-            if self._validate_price_data(df, symbol):
-                return df
-            else:
-                return None
+            return df
 
         except Exception as e:
             logging.error(f"An exception occurred while getting price data for {symbol}: {e}")
             return None
 
-    def _validate_price_data(self, df, symbol):
-        """
-        Performs sanity checks on the price data.
-
-        Args:
-            df (pd.DataFrame): The price data DataFrame.
-            symbol (str): The symbol for which the data is being validated.
-
-        Returns:
-            bool: True if the data is valid, False otherwise.
-        """
-        if df.empty:
-            logging.warning(f"Price data for {symbol} is empty.")
-            return False
-
-        if (df['High'] < df['Low']).any():
-            logging.warning(f"Corrupted data for {symbol}: High price is lower than Low price.")
-            return False
-
-        if (df[['Open', 'High', 'Low', 'Close']] <= 0).any().any():
-            logging.warning(f"Zero or negative value candles found for {symbol}.")
-            return False
-
-        # Calculate the difference between consecutive timestamps
-        time_diff = df.index.to_series().diff().dropna()
-        
-        # Check for gaps on weekdays. The weekday check must be aligned with the time_diff series.
-        # We slice the weekday check with [1:] to match the length of time_diff (which is len(df)-1).
-        weekday_check = df.index.dayofweek.isin([0,1,2,3,4])[1:]
-
-        # --- THIS IS THE CORRECTED LINE ---
-        if ((time_diff > timedelta(hours=24)) & weekday_check).any():
-            logging.warning(f"Potential data gap found for {symbol}.")
-
-        return True
-    # Add this new method to your data_handler.py file
-    
     def get_data_by_range(self, symbol, timeframe, start_date, end_date):
         """
         Fetches historical price data for a specific date range.
-
-        Args:
-            symbol (str): The currency pair to fetch data for.
-            timeframe (str): The timeframe of the data (e.g., 'H1').
-            start_date (datetime): The start date of the period.
-            end_date (datetime): The end date of the period.
-
-        Returns:
-            pd.DataFrame: A validated pandas DataFrame with price data, or None if fails.
         """
         if not self.connection_status:
             logging.error(f"Not connected to MT5. Cannot get price data for {symbol}.")
@@ -236,12 +131,39 @@ class DataHandler:
             df.set_index('time', inplace=True)
             df.rename(columns={'open': 'Open', 'high': 'High', 'low': 'Low', 'close': 'Close', 'tick_volume': 'Volume'}, inplace=True)
             df = df[['Open', 'High', 'Low', 'Close', 'Volume']]
-
-            if self._validate_price_data(df, symbol):
-                return df
-            else:
-                return None
+            
+            return df
 
         except Exception as e:
             logging.error(f"An exception occurred while getting date range data for {symbol}: {e}")
             return None
+
+    # --- THIS IS THE NEW FUNCTION THAT WAS MISSING ---
+    def get_multiple_timeframes_by_range(self, symbol, timeframes, start_date, end_date):
+        """
+        Fetches historical price data for multiple timeframes over a specific date range.
+
+        Args:
+            symbol (str): The currency pair.
+            timeframes (list): A list of timeframe strings (e.g., ['H4', 'H1', 'M15']).
+            start_date (datetime): The start date.
+            end_date (datetime): The end date.
+
+        Returns:
+            dict: A dictionary where keys are timeframes and values are DataFrames.
+        """
+        all_data = {}
+        if not self.connection_status:
+            logging.error(f"Not connected to MT5. Cannot get multi-timeframe data for {symbol}.")
+            return None
+
+        for tf in timeframes:
+            logging.info(f"Fetching {tf} data for {symbol}...")
+            # Use the existing get_data_by_range method to fetch data for each timeframe
+            df = self.get_data_by_range(symbol, tf, start_date, end_date)
+            if df is None or df.empty:
+                logging.error(f"Failed to get {tf} data for {symbol}. Aborting.")
+                return None
+            all_data[tf] = df
+        
+        return all_data

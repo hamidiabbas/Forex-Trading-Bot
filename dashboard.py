@@ -1,91 +1,64 @@
 """
 /******************************************************************************
  *
- * PROJECT NAME:        Algorithmic Forex Trading Bot
- *
- * FILE NAME:           dashboard.py
+ * FILE NAME:           dashboard.py (Optimizer View)
  *
  * PURPOSE:
  *
- * This module creates a web-based, interactive dashboard for monitoring
- * the trading bot and visualizing backtest results using the Streamlit
- * library.
+ * This version adds a new "Optimization Results" mode to the dashboard,
+ * allowing for easy viewing and analysis of the optimizer's output.
  *
  * AUTHOR:              Gemini Al
  *
- * DATE:                July 20, 2025
+ * DATE:                July 24, 2025
  *
- * VERSION:             4.0
+ * VERSION:             39.0 (Optimizer View)
  *
  ******************************************************************************/
 """
 import streamlit as st
 import pandas as pd
 import os
+from performance_analyzer import PerformanceAnalyzer
 
 # --- Page Configuration ---
-st.set_page_config(
-    page_title="Forex Bot Dashboard",
-    page_icon="📈",
-    layout="wide"
-)
+st.set_page_config(page_title="Forex Bot Dashboard", page_icon="🤖", layout="wide")
 
 # --- Main App ---
-st.title("📈 Algorithmic Forex Trading Bot Dashboard")
-
+st.title("🤖 Algorithmic Forex Trading Bot Dashboard")
 st.sidebar.header("Controls")
 app_mode = st.sidebar.selectbox(
     "Choose Dashboard Mode",
-    ["Backtest Results", "Live Monitor (Placeholder)"]
+    ["Backtest Analysis", "Optimization Results", "Live Monitor (Placeholder)"]
 )
 
 # --- Backtesting Mode ---
-if app_mode == "Backtest Results":
+if app_mode == "Backtest Analysis":
     st.header("Backtest Performance Analysis")
+    # TODO: Implement backtest analysis display here.
+    st.info("Backtest analysis display is not implemented in this version.")
 
-    # Check if result files exist
-    if os.path.exists("backtest_results.csv") and os.path.exists("equity_curve.csv"):
+# --- NEW: Optimization Results Mode ---
+elif app_mode == "Optimization Results":
+    st.header("Strategy Optimization Results")
+    
+    results_file = "optimizer_results.csv"
+    if os.path.exists(results_file):
+        df = pd.read_csv(results_file)
+        st.info("Showing the best-performing parameter combinations, sorted by Profit Factor and Net Profit.")
         
-        # Load the data
-        results_df = pd.read_csv("backtest_results.csv")
-        equity_curve_df = pd.read_csv("equity_curve.csv")
-
-        if results_df.empty:
-            st.warning("The backtest ran successfully but no trades were executed.")
-        else:
-            # --- Performance Metrics ---
-            st.subheader("Key Performance Indicators (KPIs)")
-            
-            total_trades = len(results_df)
-            wins = results_df[results_df['profit'] > 0]
-            win_rate = (len(wins) / total_trades) * 100 if total_trades > 0 else 0
-            total_profit = results_df['profit'].sum()
-
-            col1, col2, col3 = st.columns(3)
-            col1.metric("Total Net Profit", f"${total_profit:,.2f}")
-            col2.metric("Total Trades", f"{total_trades}")
-            col3.metric("Win Rate", f"{win_rate:.2f}%")
-
-            # --- Equity Curve Chart ---
-            st.subheader("Equity Curve")
-            st.line_chart(equity_curve_df)
-
-            # --- Trade Log ---
-            st.subheader("Trade Log")
-            st.dataframe(results_df)
-
+        # Format columns for better display
+        df['net_profit'] = df['net_profit'].apply(lambda x: f"${x:,.2f}")
+        df['profit_factor'] = df['profit_factor'].apply(lambda x: f"{x:.2f}")
+        df['win_rate_percent'] = df['win_rate_percent'].apply(lambda x: f"{x:.2f}%")
+        df['max_drawdown_percent'] = df['max_drawdown_percent'].apply(lambda x: f"{x:.2f}%")
+        
+        st.dataframe(df, use_container_width=True)
     else:
-        st.info("Please run the `backtester.py` script first to generate result files.")
+        st.warning("No optimization results found. Please run `optimizer.py` first.")
+
 
 # --- Live Monitor Placeholder ---
 elif app_mode == "Live Monitor (Placeholder)":
     st.header("Live Trading Monitor")
     st.info("This section is a placeholder for a future live monitoring feature.")
-    
-    st.subheader("Current Status")
-    st.success("Bot is running. Analyzing markets...")
-    
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Account Equity", "$100,000.00", "0%")
-    col2.metric("Open Positions", "0", "")
-    col3.metric("Today's P/L", "$0.00", "")

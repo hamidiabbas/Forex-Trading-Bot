@@ -1,96 +1,96 @@
-"""/******************************************************************************
+"""
+/******************************************************************************
  *
- * PROJECT NAME:        Algorithmic Forex Trading Bot
- *
- * FILE NAME:           performance_analyzer.py
+ * FILE NAME:           performance_analyzer.py (Final Diagnostic Version)
  *
  * PURPOSE:
  *
- * This module provides a suite of tools for in-depth performance
- * analysis of the trading bot. It is responsible for reading the trade
- * journal, calculating a wide range of industry-standard performance
- * metrics (e.g., Sharpe Ratio, Sortino Ratio, Calmar Ratio), and
- * generating comprehensive reports. This allows for a quantitative
- * and objective evaluation of the bot's effectiveness and profitability.
+ * This version includes a diagnostic print statement to confirm it is being
+ * run correctly and ensures all metrics are returned as raw numbers.
  *
  * AUTHOR:              Gemini Al
  *
- * DATE:                July 20, 2025
+ * DATE:                July 24, 2025
  *
- * VERSION:             4.0
+ * VERSION:             38.2 (Final Diagnostic)
  *
- ******************************************************************************/"""
+ ******************************************************************************/
+"""
 
 import pandas as pd
 import numpy as np
+import os
 
 class PerformanceAnalyzer:
-    """
-    Analyzes the performance of the trading bot.
-    """
-
-    def __init__(self, config):
-        """
-        Initializes the PerformanceAnalyzer.
-
-        Args:
-            config: The configuration object.
-        """
-        self.config = config
+    def __init__(self, trade_log_df=None, equity_curve_df=None, trade_log_path="backtest_results.csv", equity_curve_path="equity_curve.csv"):
+        self.trade_log_df = trade_log_df
+        self.equity_curve_df = equity_curve_df
+        self.trade_log_path = trade_log_path
+        self.equity_curve_path = equity_curve_path
 
     def analyze(self):
-        """
-        Reads the trade journal and calculates performance metrics.
+        # --- NEW DIAGNOSTIC PRINT ---
+        print("\n>>> RUNNING LATEST PERFORMANCE ANALYZER (VERSION 38.2) <<<\n")
 
-        Returns:
-            dict: A dictionary of performance metrics.
-        """
-        try:
-            df = pd.read_csv(self.config.TRADE_JOURNAL_FILE, header=None,
-                             names=['timestamp', 'order_id', 'symbol', 'direction',
-                                    'lot_size', 'entry_price', 'sl', 'tp', 'strategy'])
-        except FileNotFoundError:
-            return {}
+        trades_df = self.trade_log_df
+        equity_df = self.equity_curve_df
 
-        # This is a simplification. A real implementation would need to get the exit price
-        # and calculate the profit/loss for each trade.
-        # For this example, we'll just calculate some basic metrics.
-        returns = np.random.randn(len(df)) * 0.01 # Mock returns
-        returns_series = pd.Series(returns)
+        if trades_df is None and os.path.exists(self.trade_log_path):
+            trades_df = pd.read_csv(self.trade_log_path)
+        if equity_df is None and os.path.exists(self.equity_curve_path):
+            equity_df = pd.read_csv(self.equity_curve_path, index_col='timestamp', parse_dates=True)
+
+        if trades_df is None or trades_df.empty:
+            return {'total_trades': 0}
+
+        # --- ALL METRICS ARE CALCULATED AS RAW NUMBERS ---
+        total_trades = len(trades_df)
+        wins = trades_df[trades_df['profit'] > 0]
+        losses = trades_df[trades_df['profit'] <= 0]
+        
+        total_net_profit = trades_df['profit'].sum()
+        gross_profit = wins['profit'].sum()
+        gross_loss = losses['profit'].sum()
+        win_rate = (len(wins) / total_trades) * 100 if total_trades > 0 else 0
+        profit_factor = abs(gross_profit / gross_loss) if gross_loss != 0 else np.inf
+        expected_payoff = trades_df['profit'].mean()
+
+        long_trades = trades_df[trades_df['direction'] == 'BUY']
+        short_trades = trades_df[trades_df['direction'] == 'SELL']
+        long_wins = long_trades[long_trades['profit'] > 0]
+        short_wins = short_trades[short_trades['profit'] > 0]
+        long_win_rate = (len(long_wins) / len(long_trades)) * 100 if not long_trades.empty else 0
+        short_win_rate = (len(short_wins) / len(short_trades)) * 100 if not short_trades.empty else 0
+
+        largest_profit = trades_df['profit'].max() if not trades_df.empty else 0
+        largest_loss = trades_df['profit'].min() if not trades_df.empty else 0
+
+        is_win = (trades_df['profit'] > 0).astype(int)
+        win_streaks = is_win.groupby((is_win != is_win.shift()).cumsum()).cumsum()
+        loss_streaks = (1 - is_win).groupby(((1 - is_win) != (1 - is_win).shift()).cumsum()).cumsum()
+        max_consecutive_wins = win_streaks.max() if not win_streaks.empty else 0
+        max_consecutive_losses = loss_streaks.max() if not loss_streaks.empty else 0
 
         metrics = {
-            'total_trades': len(df),
-            'sharpe_ratio': self._calculate_sharpe_ratio(returns_series),
-            'sortino_ratio': self._calculate_sortino_ratio(returns_series),
-            'calmar_ratio': self._calculate_calmar_ratio(returns_series)
+            'total_trades': total_trades, 'net_profit': total_net_profit, 'profit_factor': profit_factor,
+            'win_rate_percent': win_rate, 'expected_payoff': expected_payoff, 'total_long_trades': len(long_trades),
+            'long_win_rate_percent': long_win_rate, 'total_short_trades': len(short_trades),
+            'short_win_rate_percent': short_win_rate, 'largest_profit': largest_profit, 'largest_loss': largest_loss,
+            'max_consecutive_wins': int(max_consecutive_wins), 'max_consecutive_losses': int(max_consecutive_losses),
+            'max_drawdown_percent': self._calculate_max_drawdown(equity_df['equity']) * 100,
+            'sharpe_ratio': self._calculate_sharpe_ratio(equity_df['equity']),
+            'average_win': wins['profit'].mean() if not wins.empty else 0,
+            'average_loss': losses['profit'].mean() if not losses.empty else 0,
         }
-
         return metrics
 
-    def _calculate_sharpe_ratio(self, returns, risk_free_rate=0.0):
-        """
-        Calculates the Sharpe ratio.
-        """
-        return (returns.mean() - risk_free_rate) / returns.std()
+    def _calculate_max_drawdown(self, equity_series):
+        peak = equity_series.expanding(min_periods=1).max()
+        drawdown = (equity_series - peak) / peak
+        return abs(drawdown.min())
 
-    def _calculate_sortino_ratio(self, returns, risk_free_rate=0.0):
-        """
-        Calculates the Sortino ratio.
-        """
-        downside_returns = returns[returns < 0]
-        downside_std = downside_returns.std()
-        if downside_std == 0:
-            return np.inf
-        return (returns.mean() - risk_free_rate) / downside_std
-
-    def _calculate_calmar_ratio(self, returns):
-        """
-        Calculates the Calmar ratio.
-        """
-        cumulative_returns = (1 + returns).cumprod()
-        peak = cumulative_returns.expanding(min_periods=1).max()
-        drawdown = (cumulative_returns - peak) / peak
-        max_drawdown = drawdown.min()
-        if max_drawdown == 0:
-            return np.inf
-        return returns.mean() * 252 / abs(max_drawdown) # Annualized
+    def _calculate_sharpe_ratio(self, equity_series, risk_free_rate=0.0):
+        daily_returns = equity_series.resample('D').last().pct_change().dropna()
+        if daily_returns.std() == 0 or daily_returns.empty: return 0.0
+        sharpe = (daily_returns.mean() - risk_free_rate) / daily_returns.std()
+        return sharpe * np.sqrt(252)
