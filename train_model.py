@@ -1,31 +1,37 @@
 """
 /******************************************************************************
  *
- * FILE NAME:           train_model.py (with Evaluation - Corrected)
+ * FILE NAME:           train_model.py (Ultimate V2 - All Features)
  *
  * PURPOSE:
  *
- * This version corrects an IndentationError and includes the full,
- * functional code for generating data and training the model.
+ * This definitive version combines all advanced features: the CNN-LSTM
+ * architecture, a three-class prediction target, and a robust
+ * Walk-Forward Validation framework.
  *
  * AUTHOR:              Gemini Al
  *
- * DATE:                July 24, 2025
+ * DATE:                July 26, 2025
  *
- * VERSION:             47.1 (with Evaluation - Corrected)
+ * VERSION:             60.0 (Ultimate V2)
  *
  ******************************************************************************/
 """
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, OneHotEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.utils import class_weight
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, Dense, Dropout
+from tensorflow.keras.layers import LSTM, Dense, Dropout, Conv1D, MaxPooling1D, BatchNormalization
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 import seaborn as sns
 import matplotlib.pyplot as plt
+from datetime import datetime
+import pytz
 
 import config
 from data_handler import DataHandler
@@ -33,127 +39,133 @@ from market_intelligence import MarketIntelligence
 
 # --- 1. CONFIGURATION ---
 SYMBOL = 'EURUSD'
-START_DATE = '2020-01-01'
+START_DATE = '2019-01-01'
 END_DATE = '2024-01-01'
 TIMEFRAME = 'H1'
-SEQUENCE_LENGTH = 20
+SEQUENCE_LENGTH = 60
+EPOCHS = 100
+PREDICTION_HORIZON = 120
+FLAT_THRESHOLD_ATR_FACTOR = 0.5
 
 def create_training_data():
-    """ Fetches data and engineers features for model training. """
+    """ Fetches data and engineers features with a three-class target. """
     print("--- Stage 1: Creating Training Data ---")
-    
     data_handler = DataHandler(config)
     market_intel = MarketIntelligence(data_handler, config)
-    
     data_handler.connect()
-    from datetime import datetime
-    import pytz
     timezone = pytz.timezone("Etc/UTC")
     start_date_dt = datetime.strptime(START_DATE, '%Y-%m-%d').replace(tzinfo=timezone)
     end_date_dt = datetime.strptime(END_DATE, '%Y-%m-%d').replace(tzinfo=timezone)
-    
     df = data_handler.get_data_by_range(SYMBOL, TIMEFRAME, start_date_dt, end_date_dt)
     data_handler.disconnect()
-    
     if df is None or df.empty:
         print("Could not fetch data. Aborting.")
         return None
-
-    print("Calculating features...")
-    df_features = market_intel._analyze_data(df.copy())
+    print("Calculating and engineering features...")
+    df_features = market_intel._analyze_data(df).copy()
     
-    df_features['target'] = (df_features['Close'].shift(-1) > df_features['Close']).astype(int)
+    # Advanced Target Engineering
+    print("Engineering three-class target labels...")
+    future_price = df_features['Close'].shift(-PREDICTION_HORIZON)
+    price_change = future_price - df_features['Close']
+    threshold = df_features['ATRr_14'] * FLAT_THRESHOLD_ATR_FACTOR
+    
+    df_features['target'] = 0 # Default to Flat
+    df_features.loc[price_change > threshold, 'target'] = 1 # Up
+    df_features.loc[price_change < -threshold, 'target'] = 2 # Down
     
     df_features.dropna(inplace=True)
-    
     print(f"Feature engineering complete. Dataset has {len(df_features)} bars.")
-    df_features.to_csv(f"training_data_{SYMBOL}.csv")
-    print(f"Saved training data to 'training_data_{SYMBOL}.csv'")
     return df_features
 
-def evaluate_model(model, X_test, y_test):
-    """ Evaluates the trained model and prints a performance report. """
-    print("\n--- Stage 3: Evaluating Model Performance ---")
+def build_model(input_shape, num_classes):
+    """ Builds the advanced CNN-LSTM model architecture for multi-class classification. """
+    model = Sequential([
+        Conv1D(filters=64, kernel_size=3, activation='relu', input_shape=input_shape),
+        MaxPooling1D(pool_size=2),
+        BatchNormalization(),
+        LSTM(128, return_sequences=False),
+        Dropout(0.3),
+        Dense(64, activation='relu'),
+        Dropout(0.4),
+        Dense(num_classes, activation='softmax')
+    ])
+    optimizer = Adam(learning_rate=0.0005)
+    model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
+    return model
+
+def walk_forward_validation(df):
+    """ Performs walk-forward validation on the three-class time-series data. """
+    print("\n--- Stage 2: Performing Walk-Forward Validation with Three-Class CNN-LSTM Model ---")
     
-    y_pred_proba = model.predict(X_test)
-    y_pred = (y_pred_proba > 0.5).astype(int)
-
-    print("\nClassification Report:")
-    print(classification_report(y_test, y_pred, target_names=['Down', 'Up']))
-
-    print("\nConfusion Matrix:")
-    cm = confusion_matrix(y_test, y_pred)
-    print(cm)
-    
-    # Check if a graphical environment is available before showing plot
-    try:
-        plt.figure(figsize=(8, 6))
-        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=['Down', 'Up'], yticklabels=['Down', 'Up'])
-        plt.xlabel('Predicted Label')
-        plt.ylabel('True Label')
-        plt.title('Confusion Matrix')
-        plt.show()
-    except Exception as e:
-        print(f"\nCould not display plot. Your environment may not support graphics. Error: {e}")
-
-
-def train_model(df):
-    """ Builds, trains, evaluates, and saves the LSTM model. """
-    print("\n--- Stage 2: Building and Training Model ---")
-    
-    # --- THIS IS THE FIX ---
-    # The columns 'returns' and 'autocorr' were removed as they are no longer calculated.
     features = df.drop(columns=['Open', 'High', 'Low', 'Close', 'Volume', 'target', 'hurst'])
     target = df['target'].values
     
-    print("Normalizing data...")
     scaler = MinMaxScaler(feature_range=(0, 1))
     scaled_features = scaler.fit_transform(features)
     
-    print(f"Creating sequences of length {SEQUENCE_LENGTH}...")
     X, y = [], []
     for i in range(SEQUENCE_LENGTH, len(scaled_features)):
         X.append(scaled_features[i-SEQUENCE_LENGTH:i])
         y.append(target[i])
     X, y = np.array(X), np.array(y)
     
-    # Split data without shuffling to preserve time-series order
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, shuffle=False)
-    
-    print(f"Data split: {len(X_train)} training sequences, {len(X_test)} testing sequences.")
+    # One-Hot Encode the target labels for the multi-class model
+    encoder = OneHotEncoder(sparse_output=False)
+    y_encoded = encoder.fit_transform(y.reshape(-1, 1))
+    num_classes = y_encoded.shape[1]
 
-    print("Building LSTM model...")
-    model = Sequential([
-        LSTM(256, return_sequences=True, input_shape=(X_train.shape[1], X_train.shape[2])),
-        Dropout(0.2),
-        LSTM(256, return_sequences=False),
-        Dropout(0.2),
-        Dense(1, activation='sigmoid')
-    ])
+    n_train = int(len(X) * 0.6)
+    n_test = int(len(X) * 0.1)
     
-    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-    model.summary()
+    predictions, actuals = [], []
     
-    print("\nTraining model...")
-    model.fit(X_train, y_train, epochs=10, batch_size=32, validation_split=0.1)
-    
-    model.save(f"model_{SYMBOL}.h5")
-    print(f"\nTraining complete. Model saved to 'model_{SYMBOL}.h5'")
+    early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
+    reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=5, min_lr=0.00001)
 
-    evaluate_model(model, X_test, y_test)
-    
-    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-    model.summary()
-    
-    print("\nTraining model...")
-    model.fit(X_train, y_train, epochs=10, batch_size=32, validation_split=0.1)
-    
-    model.save(f"model_{SYMBOL}.h5")
-    print(f"\nTraining complete. Model saved to 'model_{SYMBOL}.h5'")
+    for i in range(n_train, len(X), n_test):
+        train_end, test_end = i, min(i + n_test, len(X))
+        X_train, y_train_encoded = X[0:train_end], y_encoded[0:train_end]
+        X_test, y_test_encoded = X[train_end:test_end], y_encoded[train_end:test_end]
+        
+        if len(X_test) == 0: continue
 
-    evaluate_model(model, X_test, y_test)
+        print(f"\nTraining fold: Training on {len(X_train)} samples, testing on {len(X_test)} samples...")
+        
+        model = build_model(input_shape=(X_train.shape[1], X_train.shape[2]), num_classes=num_classes)
+        
+        # Calculate class weights on the original (non-encoded) labels for the current fold
+        y_train_labels = np.argmax(y_train_encoded, axis=1)
+        weights = class_weight.compute_class_weight('balanced', classes=np.unique(y_train_labels), y=y_train_labels)
+        class_weights = dict(enumerate(weights))
+        
+        model.fit(X_train, y_train_encoded, epochs=EPOCHS, batch_size=32, class_weight=class_weights, verbose=1,
+                  validation_split=0.1, callbacks=[early_stopping, reduce_lr])
+        
+        y_pred_proba = model.predict(X_test)
+        y_pred = np.argmax(y_pred_proba, axis=1)
+        y_test_labels = np.argmax(y_test_encoded, axis=1)
+        predictions.extend(y_pred)
+        actuals.extend(y_test_labels)
+
+    print("\n\n--- Overall Walk-Forward Validation Results ---")
+    print("\nClassification Report:")
+    print(classification_report(actuals, predictions, target_names=['Flat', 'Up', 'Down']))
+    print("\nConfusion Matrix:")
+    cm = confusion_matrix(actuals, predictions)
+    print(cm)
+    
+    print("\nTraining final model on all available data...")
+    final_model = build_model(input_shape=(X.shape[1], X.shape[2]), num_classes=num_classes)
+    y_labels = np.argmax(y_encoded, axis=1)
+    final_weights = class_weight.compute_class_weight('balanced', classes=np.unique(y_labels), y=y_labels)
+    final_class_weights = dict(enumerate(final_weights))
+    final_model.fit(X, y_encoded, epochs=EPOCHS, batch_size=32, class_weight=final_class_weights, verbose=1,
+                    callbacks=[early_stopping, reduce_lr], validation_split=0.1)
+    final_model.save(f"model_{SYMBOL}_ultimate.h5")
+    print(f"\nFinal ultimate model saved to 'model_{SYMBOL}_ultimate.h5'")
 
 if __name__ == '__main__':
     training_df = create_training_data()
     if training_df is not None:
-        train_model(training_df)
+        walk_forward_validation(training_df)
