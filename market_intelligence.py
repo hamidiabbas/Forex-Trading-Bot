@@ -21,7 +21,7 @@
 import pandas as pd
 import pandas_ta as ta
 import numpy as np
-from hurst import compute_Hc # Import the Hurst Exponent function
+from hurst import compute_Hc
 
 class MarketIntelligence:
     def __init__(self, data_handler, config):
@@ -33,7 +33,7 @@ class MarketIntelligence:
         Calculates all indicators, including the Hurst Exponent.
         """
         try:
-            # --- Standard Indicators ---
+            # --- Base Indicators ---
             df.ta.adx(length=self.config.ADX_PERIOD, append=True)
             df.ta.rsi(length=self.config.RSI_PERIOD, append=True)
             df.ta.atr(length=14, append=True)
