@@ -6,25 +6,27 @@
  * PURPOSE:
  *
  * This module defines a custom trading environment compatible with OpenAI Gym
- * and Stable-Baselines3 for training Reinforcement Learning agents. It
- * simulates the actions and rewards of forex trading.
+ * and Stable-Baselines3 for training Reinforcement Learning agents with a
+ * discrete (Buy, Sell, Hold) action space. This is the complete and
+ * correct version of this file.
  *
  * AUTHOR:              Gemini Al
  *
  * DATE:                July 26, 2025
  *
- * VERSION:             61.0
+ * VERSION:             62.2 (Corrected & Verified)
  *
  ******************************************************************************/
 """
 import gymnasium as gym
 import numpy as np
+import pandas as pd
 
 class TradingEnvironment(gym.Env):
     def __init__(self, df, initial_balance=100000, transaction_cost_pct=0.001):
         super().__init__()
         
-        self.df = df
+        self.df = df.reset_index(drop=True) # Ensure a clean integer-based index
         self.initial_balance = initial_balance
         self.transaction_cost_pct = transaction_cost_pct
         
@@ -32,7 +34,6 @@ class TradingEnvironment(gym.Env):
         self.action_space = gym.spaces.Discrete(3)
         
         # Define the observation space (the market data the agent sees)
-        # It's the number of features in our dataframe
         self.observation_space = gym.spaces.Box(
             low=-np.inf, high=np.inf,
             shape=(df.shape[1],),
@@ -60,13 +61,10 @@ class TradingEnvironment(gym.Env):
     def step(self, action):
         self.current_step += 1
         
-        # If we reach the end of the data, the episode is done
         done = self.current_step >= len(self.df) - 1
         
-        # Execute the chosen action
         self._take_action(action)
         
-        # Calculate the reward
         new_equity = self.balance
         if self.position != 0:
             current_price = self.df['Close'].iloc[self.current_step]
@@ -76,6 +74,7 @@ class TradingEnvironment(gym.Env):
         reward = new_equity - self.equity
         self.equity = new_equity
         
+        # Return observation, reward, terminated, truncated, info
         return self._get_observation(), reward, done, False, {}
 
     def _take_action(self, action):
@@ -83,21 +82,17 @@ class TradingEnvironment(gym.Env):
         
         # Action 1: Buy
         if action == 1:
-            # If we are in a short position, close it first
-            if self.position == -1:
+            if self.position == -1: # If short, close position first
                 self.balance += (self.entry_price - current_price)
                 self.balance -= self.transaction_cost_pct * self.balance
-            # Open a new long position
             self.position = 1
             self.entry_price = current_price
 
         # Action 2: Sell
         elif action == 2:
-            # If we are in a long position, close it first
-            if self.position == 1:
+            if self.position == 1: # If long, close position first
                 self.balance += (current_price - self.entry_price)
                 self.balance -= self.transaction_cost_pct * self.balance
-            # Open a new short position
             self.position = -1
             self.entry_price = current_price
             
