@@ -21,7 +21,8 @@ import MetaTrader5 as mt5
 import time
 import logging
 import threading
-
+from stable_baselines3 import A2C
+import numpy as np
 # Import all the other modules
 import config
 from data_handler import DataHandler
@@ -115,3 +116,147 @@ class TradingBot:
 if __name__ == "__main__":
     bot = TradingBot()
     bot.run()
+class TradingBot:
+    def __init__(self):
+        # ... existing initialization ...
+        
+        # FIXED: Add RL model initialization
+        self.rl_model = None
+        self.rl_model_path = "model_rl_EURUSD_final_fixed.zip"
+        self._load_rl_model()
+    
+    def _load_rl_model(self):
+        """Load the trained RL model"""
+        try:
+            self.rl_model = A2C.load(self.rl_model_path)
+            logging.info("RL model loaded successfully")
+        except Exception as e:
+            logging.warning(f"Could not load RL model: {e}")
+            self.rl_model = None
+    
+    def _prepare_rl_observation(self, df):
+        """Prepare observation for RL model (same as training)"""
+        try:
+            # Get the latest data point
+            latest_data = df.iloc[-1]
+            
+            # Create base observation (same features as training)
+            features_to_drop = ['Open', 'High', 'Low', 'Volume', 'hurst', 
+                               'fib_0.236', 'fib_0.382', 'fib_0.500', 'fib_0.618']
+            
+            obs_data = latest_data.drop(labels=features_to_drop, errors='ignore')
+            
+            # Add same additional features as training
+            if len(df) >= 20:
+                price_change = df['Close'].pct_change().iloc[-1]
+                volatility = df['Close'].pct_change().rolling(20).std().iloc[-1]
+            else:
+                price_change = 0
+                volatility = 0
+                
+            if len(df) >= 10:
+                momentum_series = df['Close'].rolling(10).apply(lambda x: (x.iloc[-1] - x.iloc[0]) / x.iloc[0])
+                momentum = momentum_series.iloc[-1]
+            else:
+                momentum = 0
+            
+            # Add calculated features
+            obs_data = obs_data.append(pd.Series({
+                'price_change': price_change,
+                'volatility': volatility,
+                'momentum': momentum
+            }))
+            
+            # Add position info (assuming no current position for simplicity)
+            position_info = np.array([0.0, 0.0, 0.0])  # position, entry_price_norm, unrealized_pnl_norm
+            
+            # Combine and handle NaN
+            obs = np.concatenate([obs_data.fillna(0).values, position_info]).astype(np.float32)
+            
+            return obs
+            
+        except Exception as e:
+            logging.error(f"Error preparing RL observation: {e}")
+            return None
+    
+    def get_rl_signal(self, symbol, data_dict):
+        """FIXED: Get trading signal from RL model"""
+        if self.rl_model is None:
+            return None
+            
+        try:
+            df = data_dict.get('EXECUTION')
+            if df is None or len(df) < 20:
+                return None
+            
+            obs = self._prepare_rl_observation(df)
+            if obs is None:
+                return None
+            
+            # Get prediction
+            action, _ = self.rl_model.predict(obs, deterministic=True)
+            
+            # Convert action to signal
+            if action == 1:  # Buy signal
+                return {
+                    'symbol': symbol,
+                    'direction': 'BUY',
+                    'strategy': 'RL-Agent',
+                    'entry_price': df['Close'].iloc[-1],
+                    'atr_at_signal': df.get('ATRr_14', pd.Series([0.001])).iloc[-1]
+                }
+            elif action == 2:  # Sell signal
+                return {
+                    'symbol': symbol,
+                    'direction': 'SELL',
+                    'strategy': 'RL-Agent',
+                    'entry_price': df['Close'].iloc[-1],
+                    'atr_at_signal': df.get('ATRr_14', pd.Series([0.001])).iloc[-1]
+                }
+            
+            return None  # Hold signal
+            
+        except Exception as e:
+            logging.error(f"Error getting RL signal: {e}")
+            return None
+
+    def run(self):
+        """Modified main loop to include RL signals"""
+        # ... existing code until the main trading loop ...
+        
+        while not self.stop_event.is_set():
+            try:
+                self.status = "Analyzing markets with RL..."
+                
+                for symbol in config.SYMBOLS_TO_TRADE:
+                    # Get multi-timeframe data
+                    data_dict = self.data_handler.get_multi_timeframe_data(symbol)
+                    if not data_dict:
+                        continue
+                    
+                    # FIXED: Include RL signal in decision making
+                    rl_signal = self.get_rl_signal(symbol, data_dict)
+                    
+                    # Get traditional signals
+                    regime = self.market_intelligence.identify_regime(data_dict['BIAS'])
+                    traditional_signal = self.strategy_manager.evaluate_signals(
+                        symbol, data_dict, len(data_dict['EXECUTION']) - 1, regime
+                    )
+                    
+                    # Combine signals (RL takes priority if available)
+                    final_signal = rl_signal if rl_signal else traditional_signal
+                    
+                    if final_signal:
+                        logging.info(f"Trading signal from {final_signal.get('strategy', 'Unknown')}: "
+                                   f"{final_signal['direction']} {symbol}")
+                        
+                        # Process signal through risk management and execution
+                        risk_params = self.risk_manager.calculate_position_size(final_signal)
+                        if risk_params:
+                            self.execution_manager.execute_trade(final_signal, risk_params)
+                
+                # ... rest of existing main loop ...
+                
+            except Exception as e:
+                logging.exception(f"Error in main loop: {e}")
+                time.sleep(60)
