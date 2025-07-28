@@ -1,20 +1,19 @@
 """
 /******************************************************************************
  *
- * PROJECT NAME:        Algorithmic Forex Trading Bot
- *
- * FILE NAME:           market_intelligence.py (Hurst Exponent - Corrected)
+ * FILE NAME:           market_intelligence.py (with Divergence)
  *
  * PURPOSE:
  *
- * This version uses the Hurst Exponent for advanced market regime
- * classification and includes a corrected _analyze_data function.
+ * This version adds a sophisticated function to detect bullish and bearish
+ * divergence between price and the RSI, a key tool for identifying
+ * potential trend reversals.
  *
  * AUTHOR:              Gemini Al
  *
- * DATE:                July 24, 2025
+ * DATE:                July 28, 2025
  *
- * VERSION:             35.1 (Hurst Exponent - Corrected)
+ * VERSION:             66.0 (with Divergence)
  *
  ******************************************************************************/
 """
@@ -22,16 +21,73 @@ import pandas as pd
 import pandas_ta as ta
 import numpy as np
 from hurst import compute_Hc
+from scipy.signal import find_peaks
 
 class MarketIntelligence:
     def __init__(self, data_handler, config):
         self.data_handler = data_handler
         self.config = config
 
+    def detect_rsi_divergence(self, df, lookback=30):
+        """
+        Detects bullish and bearish RSI divergence over a given lookback period.
+        Returns 'BULLISH', 'BEARISH', or None.
+        """
+        if len(df) < lookback:
+            return None
+
+        data = df.tail(lookback)
+        rsi_col = f'RSI_{self.config.RSI_PERIOD}'
+
+        # Find peaks (highs) and troughs (lows) in price and RSI
+        price_peaks, _ = find_peaks(data['High'])
+        price_troughs, _ = find_peaks(-data['Low'])
+        rsi_peaks, _ = find_peaks(data[rsi_col])
+        rsi_troughs, _ = find_peaks(-data[rsi_col])
+
+        # Bearish Divergence: Higher high in price, lower high in RSI
+        if len(price_peaks) >= 2 and len(rsi_peaks) >= 2:
+            last_price_peak_idx = data.index[price_peaks[-1]]
+            prev_price_peak_idx = data.index[price_peaks[-2]]
+            last_rsi_peak_idx = data.index[rsi_peaks[-1]]
+            prev_rsi_peak_idx = data.index[rsi_peaks[-2]]
+            
+            # Check if the last two peaks are roughly aligned in time
+            if abs((last_price_peak_idx - last_rsi_peak_idx).total_seconds()) < 3600 * 5: # Within 5 bars
+                if data['High'].loc[last_price_peak_idx] > data['High'].loc[prev_price_peak_idx] and \
+                   data[rsi_col].loc[last_rsi_peak_idx] < data[rsi_col].loc[prev_rsi_peak_idx]:
+                    return 'BEARISH'
+
+        # Bullish Divergence: Lower low in price, higher low in RSI
+        if len(price_troughs) >= 2 and len(rsi_troughs) >= 2:
+            last_price_trough_idx = data.index[price_troughs[-1]]
+            prev_price_trough_idx = data.index[price_troughs[-2]]
+            last_rsi_trough_idx = data.index[rsi_troughs[-1]]
+            prev_rsi_trough_idx = data.index[rsi_troughs[-2]]
+
+            if abs((last_price_trough_idx - last_rsi_trough_idx).total_seconds()) < 3600 * 5:
+                if data['Low'].loc[last_price_trough_idx] < data['Low'].loc[prev_price_trough_idx] and \
+                   data[rsi_col].loc[last_rsi_trough_idx] > data[rsi_col].loc[prev_rsi_trough_idx]:
+                    return 'BULLISH'
+        
+        return None
+
+    def _calculate_fibonacci_levels(self, df, window=240): # Using a long window for major swings
+        """ Calculates Fibonacci retracement levels over a rolling window. """
+        rolling_window = df['Close'].rolling(window=window)
+        high = rolling_window.max()
+        low = rolling_window.min()
+        diff = high - low
+        
+        # Calculate levels and add them to the dataframe
+        df[f'fib_0.236'] = high - (diff * 0.236)
+        df[f'fib_0.382'] = high - (diff * 0.382)
+        df[f'fib_0.500'] = high - (diff * 0.500)
+        df[f'fib_0.618'] = high - (diff * 0.618)
+        return df
+
     def _analyze_data(self, df):
-        """
-        Calculates all indicators, including the Hurst Exponent.
-        """
+        """ Calculates all indicators and features for the strategies and AI models. """
         try:
             # --- Base Indicators ---
             df.ta.adx(length=self.config.ADX_PERIOD, append=True)
@@ -42,9 +98,24 @@ class MarketIntelligence:
             df.ta.ema(length=self.config.TREND_EMA_FAST_PERIOD, append=True)
             df.ta.ema(length=self.config.TREND_EMA_SLOW_PERIOD, append=True)
             df.ta.obv(append=True)
-            # --- Hurst Exponent Calculation ---
+            df.ta.stoch(append=True)
+            df.ta.ichimoku(append=True)
+
+            # --- Add Fibonacci Levels ---
+            df = self._calculate_fibonacci_levels(df)
+
+            # --- Other Derived Calculations ---
+            bb_upper_col = f'BBU_{self.config.BBANDS_PERIOD}_{self.config.BBANDS_STD}'
+            bb_lower_col = f'BBL_{self.config.BBANDS_PERIOD}_{self.config.BBANDS_STD}'
+            bb_middle_col = f'BBM_{self.config.BBANDS_PERIOD}_{self.config.BBANDS_STD}'
+            if all(col in df.columns for col in [bb_upper_col, bb_lower_col, bb_middle_col]):
+                df['BBW'] = (df[bb_upper_col] - df[bb_lower_col]) / df[bb_middle_col]
+
+            df['ATRr_14_median'] = df['ATRr_14'].rolling(window=100).median()
+            
+            # --- Hurst Exponent for Regime Detection ---
             window = 100 
-            df['hurst'] = df['Close'].rolling(window=window).apply(lambda x: compute_Hc(x)[0], raw=False)
+            df['hurst'] = df['Close'].rolling(window=window).apply(lambda x: compute_Hc(x)[0] if len(x) == window else np.nan, raw=False)
 
             return df.dropna()
             
@@ -53,15 +124,10 @@ class MarketIntelligence:
             return pd.DataFrame()
 
     def determine_market_regime(self, df):
-        """
-        Determines the market regime using the Hurst Exponent (H).
-        """
+        """ Determines the market regime using the Hurst Exponent (H). """
         if df is None or df.empty or 'hurst' not in df.columns:
             return "Unknown"
-
         last_hurst = df['hurst'].iloc[-1]
-
-        # Classify regime based on the Hurst Exponent value
         if last_hurst > 0.5:
             return "Trending"
         elif last_hurst < 0.5:
