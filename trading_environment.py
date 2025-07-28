@@ -1,20 +1,18 @@
 """
 /******************************************************************************
  *
- * FILE NAME:           trading_environment.py
+ * FILE NAME:           trading_environment.py (with Inaction Penalty)
  *
  * PURPOSE:
  *
- * This module defines a custom trading environment compatible with OpenAI Gym
- * and Stable-Baselines3 for training Reinforcement Learning agents with a
- * discrete (Buy, Sell, Hold) action space. This is the complete and
- * correct version of this file.
+ * This version adds a small penalty for the "Hold" action to encourage
+ * the RL agent to be more proactive in finding and executing trades.
  *
  * AUTHOR:              Gemini Al
  *
- * DATE:                July 26, 2025
+ * DATE:                July 28, 2025
  *
- * VERSION:             62.2 (Corrected & Verified)
+ * VERSION:             62.7 (with Inaction Penalty)
  *
  ******************************************************************************/
 """
@@ -26,14 +24,11 @@ class TradingEnvironment(gym.Env):
     def __init__(self, df, initial_balance=100000, transaction_cost_pct=0.001):
         super().__init__()
         
-        self.df = df.reset_index(drop=True) # Ensure a clean integer-based index
+        self.df = df.reset_index(drop=True)
         self.initial_balance = initial_balance
         self.transaction_cost_pct = transaction_cost_pct
         
-        # Define the action space: 0=Hold, 1=Buy, 2=Sell
         self.action_space = gym.spaces.Discrete(3)
-        
-        # Define the observation space (the market data the agent sees)
         self.observation_space = gym.spaces.Box(
             low=-np.inf, high=np.inf,
             shape=(df.shape[1],),
@@ -43,8 +38,9 @@ class TradingEnvironment(gym.Env):
         self.current_step = 0
         self.balance = self.initial_balance
         self.equity = self.initial_balance
-        self.position = 0 # 0=None, 1=Long, -1=Short
+        self.position = 0
         self.entry_price = 0
+        self.entry_atr = 0
 
     def reset(self, seed=None):
         super().reset(seed=seed)
@@ -53,6 +49,7 @@ class TradingEnvironment(gym.Env):
         self.equity = self.initial_balance
         self.position = 0
         self.entry_price = 0
+        self.entry_atr = 0
         return self._get_observation(), {}
 
     def _get_observation(self):
@@ -60,42 +57,55 @@ class TradingEnvironment(gym.Env):
 
     def step(self, action):
         self.current_step += 1
-        
         done = self.current_step >= len(self.df) - 1
         
-        self._take_action(action)
+        prev_position = self.position
+        reward = self._take_action_and_get_reward(action)
         
         new_equity = self.balance
         if self.position != 0:
             current_price = self.df['Close'].iloc[self.current_step]
             unrealized_pnl = (current_price - self.entry_price) if self.position == 1 else (self.entry_price - current_price)
             new_equity += unrealized_pnl
-
-        reward = new_equity - self.equity
         self.equity = new_equity
         
-        # Return observation, reward, terminated, truncated, info
-        return self._get_observation(), reward, done, False, {}
+        info = {'position_changed': self.position != prev_position, 'current_position': self.position}
+        return self._get_observation(), reward, done, False, info
 
-    def _take_action(self, action):
+    def _take_action_and_get_reward(self, action):
+        reward = 0
         current_price = self.df['Close'].iloc[self.current_step]
-        
-        # Action 1: Buy
-        if action == 1:
-            if self.position == -1: # If short, close position first
-                self.balance += (self.entry_price - current_price)
-                self.balance -= self.transaction_cost_pct * self.balance
-            self.position = 1
-            self.entry_price = current_price
+        current_atr = self.df['ATRr_14'].iloc[self.current_step]
 
-        # Action 2: Sell
-        elif action == 2:
-            if self.position == 1: # If long, close position first
-                self.balance += (current_price - self.entry_price)
-                self.balance -= self.transaction_cost_pct * self.balance
-            self.position = -1
-            self.entry_price = current_price
-            
-        # Action 0: Hold (do nothing)
-        else:
-            pass
+        # Close a BUY position if action is SELL
+        if self.position == 1 and action == 2:
+            profit = (current_price - self.entry_price) - (self.transaction_cost_pct * self.entry_price)
+            risk_taken = self.entry_atr
+            reward = profit / risk_taken if risk_taken > 0 else 0
+            self.balance += profit
+            self.position = 0
+        
+        # Close a SELL position if action is BUY
+        elif self.position == -1 and action == 1:
+            profit = (self.entry_price - current_price) - (self.transaction_cost_pct * self.entry_price)
+            risk_taken = self.entry_atr
+            reward = profit / risk_taken if risk_taken > 0 else 0
+            self.balance += profit
+            self.position = 0
+
+        # Open a new position if we don't have one
+        if self.position == 0:
+            if action == 1: # Buy
+                self.position = 1
+                self.entry_price = current_price
+                self.entry_atr = current_atr
+            elif action == 2: # Sell
+                self.position = -1
+                self.entry_price = current_price
+                self.entry_atr = current_atr
+        
+        # --- NEW: Add a small penalty for not taking a trade (action 0) ---
+        if action == 0:
+            reward = -0.1 # Small penalty for inaction
+        
+        return reward

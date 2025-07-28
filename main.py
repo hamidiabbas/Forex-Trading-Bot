@@ -41,7 +41,8 @@ class TradingBot:
         self.risk_manager = RiskManager(self.data_handler, config)
         self.strategy_manager = StrategyManager(config, self.market_intelligence)
         self.execution_manager = ExecutionManager(self.data_handler, config)
-        
+        self.strategy_manager = StrategyManager(config, self.market_intelligence)
+        self.execution_manager = ExecutionManager(self.data_handler, config, self.market_intelligence)
         # --- NEW: Event for graceful shutdown ---
         self.stop_event = threading.Event()
         self.status = "Initializing"
