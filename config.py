@@ -21,7 +21,6 @@
 import os
 from dotenv import load_dotenv
 from pathlib import Path
-
 # --- THIS IS THE ULTIMATE ROBUST SOLUTION ---
 # 1. Get the directory where this config.py file is located.
 #    __file__ is a special variable that holds the path to the current script.
@@ -122,3 +121,8 @@ OPTIMIZATION_PARAMS = {
     # MACD Signal period for the Trending strategy filter
     'TREND_MACD_SIGNAL_PERIOD': [9, 12],
 }
+SYMBOLS_TO_TRADE = ['EURUSD', 'GBPUSD', 'USDJPY']
+MIN_ANALYSIS_INTERVAL = 30  # seconds
+MAIN_LOOP_INTERVAL = 10     # seconds
+RISK_PER_TRADE = 1.0        # percentage
+CLOSE_POSITIONS_ON_SHUTDOWN = False

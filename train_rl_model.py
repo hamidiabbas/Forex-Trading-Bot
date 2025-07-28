@@ -1,13 +1,11 @@
-"""
-Fixed RL Training Script - Addresses algorithm choice and training configuration
-"""
 import pandas as pd
+import numpy as np
+import torch
 from datetime import datetime
 import pytz
 from stable_baselines3 import A2C  # FIXED: Better algorithm for trading
-from stable_baselines3.common.env_checker import check_env
 from stable_baselines3.common.callbacks import EvalCallback, StopTrainingOnRewardThreshold
-import numpy as np
+from stable_baselines3.common.env_checker import check_env
 
 import config
 from data_handler import DataHandler
@@ -16,11 +14,11 @@ from trading_environment import TradingEnvironment
 
 # FIXED: Proper configuration
 SYMBOL = 'EURUSD'
-START_DATE = '2020-01-01'  # More data for better training
+START_DATE = '2020-01-01'
 END_DATE = '2023-01-01'
 TIMEFRAME = 'H1'
-TRAINING_STEPS = 2000000  # FIXED: Increased training steps
-EVAL_FREQ = 50000
+TRAINING_STEPS = 2_000_000  # FIXED: Increased from 250K
+EVAL_FREQ = 50_000
 EVAL_EPISODES = 10
 
 def prepare_data():
@@ -44,7 +42,7 @@ def prepare_data():
     print("Calculating enhanced feature set...")
     df_features = market_intel._analyze_data(df).copy()
     
-    # FIXED: Keep only relevant features and handle NaN properly
+    # FIXED: Keep only numeric columns and handle NaN properly
     features_to_drop = ['Open', 'High', 'Low', 'Volume', 'hurst', 
                        'fib_0.236', 'fib_0.382', 'fib_0.500', 'fib_0.618']
     df_features.drop(columns=features_to_drop, inplace=True, errors='ignore')
@@ -52,10 +50,10 @@ def prepare_data():
     # Add momentum and volatility features
     df_features['price_change'] = df_features['Close'].pct_change()
     df_features['volatility'] = df_features['price_change'].rolling(20).std()
-    df_features['momentum'] = df_features['Close'].rolling(10).apply(lambda x: (x[-1] - x[0]) / x[0])
+    df_features['momentum'] = df_features['Close'].pct_change(periods=10)
     
-    # Fill NaN values and remove any remaining NaN rows
-    df_features = df_features.fillna(method='ffill').fillna(method='bfill')
+    # FIXED: Use modern pandas methods
+    df_features = df_features.ffill().bfill()
     df_features.dropna(inplace=True)
     
     # Split data for training and validation
@@ -100,7 +98,8 @@ def train_agent(train_data, val_data):
         )
     )
     
-    # Set up evaluation callback
+    # FIXED: Correct callback configuration
+    stop_train_callback = StopTrainingOnRewardThreshold(reward_threshold=0.5, verbose=1)
     eval_callback = EvalCallback(
         val_env,
         best_model_save_path=f'./best_model_{SYMBOL}/',
@@ -108,12 +107,7 @@ def train_agent(train_data, val_data):
         eval_freq=EVAL_FREQ,
         n_eval_episodes=EVAL_EPISODES,
         deterministic=True,
-        render=False
-    )
-    
-    # Reward threshold callback (stop if we achieve good performance)
-    reward_threshold_callback = StopTrainingOnRewardThreshold(
-        reward_threshold=0.5,  # Stop if average reward > 0.5
+        callback_on_new_best=stop_train_callback,  # FIXED: Proper integration
         verbose=1
     )
     
@@ -123,7 +117,7 @@ def train_agent(train_data, val_data):
     try:
         model.learn(
             total_timesteps=TRAINING_STEPS,
-            callback=[eval_callback, reward_threshold_callback],
+            callback=eval_callback,  # FIXED: Single callback
             progress_bar=True
         )
         
@@ -140,10 +134,26 @@ def train_agent(train_data, val_data):
         # Save whatever we have
         model.save(f"model_rl_{SYMBOL}_interrupted.zip")
         return None
+# Add this after model.learn() in train_rl_model.py
+print("\n=== QUICK TRADING DIAGNOSTIC ===")
+obs, _ = val_env.reset()
+action_samples = []
+for i in range(100):
+    action, _ = model.predict(obs, deterministic=True)
+    action_samples.append(int(action))
+    obs, _, done, _, _ = val_env.step(action)
+    if done:
+        obs, _ = val_env.reset()
+
+from collections import Counter
+action_dist = Counter(action_samples)
+print(f"Action Distribution (100 samples):")
+print(f"  Hold/Close (0): {action_dist[0]} ({action_dist[0]}%)")
+print(f"  Buy (1): {action_dist[1]} ({action_dist[1]}%)")
+print(f"  Sell (2): {action_dist[2]} ({action_dist[2]}%)")
+print("================================")
 
 if __name__ == '__main__':
-    import torch  # Import here to avoid issues if not needed
-    
     # Set random seeds for reproducibility
     np.random.seed(42)
     torch.manual_seed(42)
