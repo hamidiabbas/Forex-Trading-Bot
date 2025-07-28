@@ -1,19 +1,18 @@
 """
 /******************************************************************************
  *
- * FILE NAME:           backtester.py (Signal Generation & Full Logic)
+ * FILE NAME:           backtester.py (Corrected & Final)
  *
  * PURPOSE:
  *
- * This version adds a new `generate_signals` function for the meta-labeling
- * process while keeping the original `run` function fully intact for
- * standard backtesting.
+ * This version restores the main execution block and contains the complete,
+ * fully-functional backtesting and signal generation logic.
  *
  * AUTHOR:              Gemini Al
  *
- * DATE:                July 26, 2025
+ * DATE:                July 28, 2025
  *
- * VERSION:             58.1 (Meta-Labeling - Complete)
+ * VERSION:             58.2 (Corrected & Final)
  *
  ******************************************************************************/
 """
@@ -39,7 +38,6 @@ class Backtester:
         self.strategy_manager = StrategyManager(self.config, self.market_intelligence)
 
     def _get_commission_cost(self, symbol):
-        # This function is correct and unchanged
         if not hasattr(self.config, 'USE_MT5_COMMISSION') or not self.config.USE_MT5_COMMISSION: 
             return getattr(self.config, 'FALLBACK_COMMISSION_PER_LOT', 0.0)
         if not self.data_handler.connect(): 
@@ -191,12 +189,15 @@ class Backtester:
             print("\nNo potential signals found for the given period.")
 
 if __name__ == '__main__':
-    # You can comment out one of these to choose which function to run
+    # --- THIS IS THE FIX ---
+    # To run a backtest that executes trades, run this section.
+    # To generate signals for the AI, comment this out and uncomment the section below.
     
-    # --- To run a standard backtest ---
-    # backtester = Backtester(config)
-    # backtester.run(symbol='EURUSD', start_date_str='2023-01-01', end_date_str='2024-01-01')
+    print("--- Running in Standard Backtest Mode ---")
+    backtester = Backtester(config)
+    backtester.run(symbol='EURUSD', start_date_str='2023-01-01', end_date_str='2024-01-01')
 
     # --- To generate signals for the AI model ---
-    backtester = Backtester(config)
-    backtester.generate_signals(symbol='EURUSD', start_date_str='2019-01-01', end_date_str='2024-01-01')
+    # print("--- Running in Signal Generation Mode ---")
+    # backtester = Backtester(config)
+    # backtester.generate_signals(symbol='EURUSD', start_date_str='2019-01-01', end_date_str='2024-01-01')

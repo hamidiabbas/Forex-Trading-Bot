@@ -1,19 +1,19 @@
 """
 /******************************************************************************
  *
- * FILE NAME:           execution_manager.py (Divergence Exits - Complete)
+ * FILE NAME:           execution_manager.py (Advanced Trade Management)
  *
  * PURPOSE:
  *
- * This version enhances the trade management logic to include dynamic exits
- * based on the detection of RSI divergence. This is the complete and
- * correct version of the file.
+ * This version includes advanced trade management features, including an
+ * automatic breakeven stop and a dynamic ATR-based trailing stop. This is
+ * the complete and correct version of this file.
  *
  * AUTHOR:              Gemini Al
  *
- * DATE:                July 28, 2025
+ * DATE:                July 29, 2025
  *
- * VERSION:             67.1 (Divergence Exits - Complete)
+ * VERSION:             76.0 (Advanced Trade Management)
  *
  ******************************************************************************/
 """
@@ -23,10 +23,10 @@ import logging
 import pandas_ta as ta
 
 class ExecutionManager:
-    def __init__(self, data_handler, config, market_intelligence): # Now requires market_intelligence
+    def __init__(self, data_handler, config, market_intelligence):
         self.data_handler = data_handler
         self.config = config
-        self.market_intelligence = market_intelligence # Store the instance
+        self.market_intelligence = market_intelligence
 
     def execute_trade(self, signal, lot_size, sl_price, tp_prices):
         """
@@ -57,7 +57,7 @@ class ExecutionManager:
             "sl": sl_price,
             "tp": tp_prices[0],
             "deviation": 20,
-            "magic": 12345, # Example magic number
+            "magic": self.config.MAGIC_NUMBER,
             "comment": f"{signal['strategy']} Signal",
             "type_time": mt5.ORDER_TIME_GTC,
             "type_filling": mt5.ORDER_FILLING_IOC,
@@ -74,29 +74,26 @@ class ExecutionManager:
     def manage_open_positions(self):
         """
         Manages all open positions, applying breakeven, trailing stops,
-        and now, divergence-based exits.
+        and divergence-based exits.
         """
         if not self.data_handler.connection_status:
             return
 
-        positions = mt5.positions_get()
+        positions = mt5.positions_get(magic=self.config.MAGIC_NUMBER)
         if positions is None or len(positions) == 0:
             return
 
         for position in positions:
-            # --- NEW: Check for Divergence Exit First ---
             df = self.data_handler.get_price_data(position.symbol, self.config.TIMEFRAMES['EXECUTION'], 100)
             if df is not None:
                 df.ta.rsi(length=self.config.RSI_PERIOD, append=True)
                 divergence_signal = self.market_intelligence.detect_rsi_divergence(df)
-                
                 if (position.type == mt5.ORDER_TYPE_BUY and divergence_signal == 'BEARISH') or \
                    (position.type == mt5.ORDER_TYPE_SELL and divergence_signal == 'BULLISH'):
-                    logging.info(f"Divergence detected on {position.symbol}. Closing ticket {position.ticket} to protect profit.")
+                    logging.info(f"Divergence detected. Closing ticket {position.ticket}.")
                     self.close_position(position)
-                    continue # Skip other management for this closed position
+                    continue
 
-            # Existing breakeven and trailing stop logic
             self._apply_breakeven(position)
             self._apply_trailing_stop(position)
     
@@ -118,7 +115,7 @@ class ExecutionManager:
             "price": price,
             "deviation": 20,
             "magic": position.magic,
-            "comment": "Closed by Divergence",
+            "comment": "Closed by Manager",
             "type_time": mt5.ORDER_TIME_GTC,
             "type_filling": mt5.ORDER_FILLING_IOC,
         }
@@ -143,10 +140,10 @@ class ExecutionManager:
 
         if position.type == mt5.ORDER_TYPE_BUY and current_tick.bid >= trigger_price_buy:
             self._modify_sl(position, position.price_open)
-            logging.info(f"Breakeven triggered for ticket {position.ticket}. SL moved to {position.price_open}")
+            logging.info(f"Breakeven triggered for ticket {position.ticket}.")
         elif position.type == mt5.ORDER_TYPE_SELL and current_tick.ask <= trigger_price_sell:
             self._modify_sl(position, position.price_open)
-            logging.info(f"Breakeven triggered for ticket {position.ticket}. SL moved to {position.price_open}")
+            logging.info(f"Breakeven triggered for ticket {position.ticket}.")
 
     def _apply_trailing_stop(self, position):
         """ Adjusts the stop loss dynamically based on ATR. """
