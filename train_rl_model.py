@@ -1,19 +1,13 @@
 """
 /******************************************************************************
  *
- * FILE NAME:           train_rl_model.py
- *
- * PURPOSE:
- *
- * This script trains a Reinforcement Learning agent to trade in a custom
- * simulated forex environment using the Stable-Baselines3 library. This is
- * the complete and correct version of this file.
+ * FILE NAME:           train_rl_model.py (Final Version)
  *
  * AUTHOR:              Gemini Al
  *
- * DATE:                July 26, 2025
+ * DATE:                July 29, 2025
  *
- * VERSION:             62.2 (Complete & Verified)
+ * VERSION:             77.0 (Final)
  *
  ******************************************************************************/
 """
@@ -32,7 +26,7 @@ SYMBOL = 'EURUSD'
 START_DATE = '2022-01-01'
 END_DATE = '2024-01-01'
 TIMEFRAME = 'H1'
-TRAINING_STEPS = 200000
+TRAINING_STEPS = 250000
 
 def prepare_data():
     """ Fetches and prepares the market data for the environment. """
@@ -53,12 +47,11 @@ def prepare_data():
         return None
 
     print("Calculating features...")
-    # Analyze data to get all indicators
-    df_features = market_intel._analyze_data(df.copy())
+    df_features = market_intel._analyze_data(df).copy()
     
-    # Drop columns that are not useful as direct observations for the RL agent
-    # The 'Close' price is kept because the environment needs it to calculate equity
-    features_to_drop = ['Open', 'High', 'Low', 'Volume', 'hurst']
+    # --- THIS IS THE FIX ---
+    # The list of columns to drop now perfectly matches what the environment expects
+    features_to_drop = ['Open', 'High', 'Low', 'Volume', 'hurst', 'fib_0.236', 'fib_0.382', 'fib_0.500', 'fib_0.618']
     df_features.drop(columns=features_to_drop, inplace=True, errors='ignore')
     
     df_features.dropna(inplace=True)
@@ -70,19 +63,15 @@ def train_agent(df):
     """ Creates the environment and trains the PPO agent. """
     print("\n--- Training Reinforcement Learning Agent ---")
     
-    # Create the custom trading environment
     env = TradingEnvironment(df)
     
-    # Create the PPO agent, a type of Actor-Critic model
     model = PPO("MlpPolicy", env, verbose=1)
     
-    # Train the agent
     print(f"Starting training for {TRAINING_STEPS} steps...")
     model.learn(total_timesteps=TRAINING_STEPS)
     
-    # Save the trained model
-    model.save(f"model_rl_{SYMBOL}.zip")
-    print(f"\nTraining complete. RL model saved to 'model_rl_{SYMBOL}.zip'")
+    model.save(f"model_rl_{SYMBOL}_final.zip")
+    print(f"\nTraining complete. Final RL model saved to 'model_rl_{SYMBOL}_final.zip'")
 
 if __name__ == '__main__':
     market_data = prepare_data()

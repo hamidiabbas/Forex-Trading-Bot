@@ -79,7 +79,10 @@ GLOBAL_RISK_PER_TRADE_PERCENTAGE = 1.0
 MAX_CONCURRENT_TRADES = 1
 MINIMUM_RR_RATIO = 3.0
 ATR_SL_MULTIPLIER = 2.0
-
+ENABLE_BREAKEVEN_STOP = True
+BREAKEVEN_TRIGGER_RR = 1.0 # Move SL to breakeven when trade reaches 1:1 Risk/Reward
+ENABLE_TRAILING_STOP = True
+TRAILING_STOP_ATR_MULTIPLIER = 1.5 # Trailing stop distance in ATR multiples
 # --- Strategy & Regime Filter Parameters ---
 ICT_POI_LOOKBACK = 50
 RSI_PERIOD = 14

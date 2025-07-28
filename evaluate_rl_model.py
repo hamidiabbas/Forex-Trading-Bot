@@ -1,20 +1,19 @@
 """
 /******************************************************************************
  *
- * FILE NAME:           evaluate_rl_model.py (Complete & Verified)
+ * FILE NAME:           evaluate_rl_model.py (Synchronized)
  *
  * PURPOSE:
  *
- * This script evaluates the performance of a pre-trained Reinforcement
- * Learning agent by running it through a simulated trading environment
- * and generating a detailed performance report. This is the complete and
- * correct version of the script.
+ * This version corrects a ValueError by synchronizing the data preparation
+ * steps with the training script, ensuring the model receives the
+ * observation shape it was trained on.
  *
  * AUTHOR:              Gemini Al
  *
- * DATE:                July 28, 2025
+ * DATE:                July 29, 2025
  *
- * VERSION:             62.2 (Complete & Verified)
+ * VERSION:             77.0 (Synchronized)
  *
  ******************************************************************************/
 """
@@ -31,13 +30,17 @@ from performance_analyzer import PerformanceAnalyzer
 
 # --- 1. CONFIGURATION ---
 SYMBOL = 'EURUSD'
-EVALUATION_START_DATE = '2023-01-01' # Use a different period than training
+EVALUATION_START_DATE = '2023-01-01'
 EVALUATION_END_DATE = '2024-01-01'
 TIMEFRAME = 'H1'
-MODEL_PATH = f"model_rl_{SYMBOL}.zip"
+# Make sure this is the name of the model saved by the FINAL training script
+MODEL_PATH = f"model_rl_{SYMBOL}_final.zip" 
 
 def prepare_data():
-    """ Fetches and prepares the market data for the evaluation environment. """
+    """ 
+    Fetches and prepares the market data for the evaluation environment.
+    This function MUST be identical to the one in train_rl_model.py.
+    """
     print("--- Preparing Data for RL Evaluation ---")
     data_handler = DataHandler(config)
     market_intel = MarketIntelligence(data_handler, config)
@@ -55,10 +58,12 @@ def prepare_data():
         return None
 
     print("Calculating features...")
-    df_features = market_intel._analyze_data(df.copy())
+    # Work on a copy to avoid SettingWithCopyWarning
+    df_features = market_intel._analyze_data(df).copy()
     
-    # Drop columns that are not useful as direct observations for the RL agent
-    features_to_drop = ['Open', 'High', 'Low', 'Volume', 'hurst']
+    # --- THIS IS THE FIX ---
+    # Drop the same columns that were dropped during training to ensure the shape matches
+    features_to_drop = ['Open', 'High', 'Low', 'Volume', 'hurst', 'fib_0.236', 'fib_0.382', 'fib_0.500', 'fib_0.618']
     df_features.drop(columns=features_to_drop, inplace=True, errors='ignore')
     
     df_features.dropna(inplace=True)
@@ -70,14 +75,12 @@ def evaluate_agent(df):
     """ Loads the RL agent and evaluates its performance. """
     print(f"\n--- Evaluating Reinforcement Learning Agent from {MODEL_PATH} ---")
     
-    # 1. Load the trained model
     try:
         model = PPO.load(MODEL_PATH)
     except Exception as e:
         print(f"Error loading model: {e}")
         return
 
-    # 2. Create the environment with the evaluation data
     env = TradingEnvironment(df)
     obs, _ = env.reset()
     
@@ -85,29 +88,25 @@ def evaluate_agent(df):
     trade_log = []
     open_trade = None
 
-    # 3. Loop through the evaluation data
     for i in range(len(df) - 1):
         action, _states = model.predict(obs, deterministic=True)
         obs, reward, done, truncated, info = env.step(action)
         
         equity_curve.append({'timestamp': df.index[i+1], 'equity': env.equity})
 
-        # --- Improved Trade Logging ---
         position_just_closed = open_trade and info.get('current_position', 0) == 0
         position_just_opened = not open_trade and info.get('current_position', 0) != 0
 
-        # Log the closing of a trade
         if position_just_closed:
             open_trade['exit_price'] = df['Close'].iloc[i]
             open_trade['exit_time'] = df.index[i]
             if open_trade['direction'] == 'BUY':
                 open_trade['profit'] = (open_trade['exit_price'] - open_trade['entry_price'])
-            else: # SELL
+            else:
                 open_trade['profit'] = (open_trade['entry_price'] - open_trade['exit_price'])
             trade_log.append(open_trade)
             open_trade = None
         
-        # Log the opening of a new trade
         if position_just_opened:
             open_trade = {
                 'symbol': SYMBOL,
@@ -120,7 +119,6 @@ def evaluate_agent(df):
         if done:
             break
 
-    # 4. Analyze the performance
     if trade_log:
         trade_log_df = pd.DataFrame(trade_log)
         equity_curve_df = pd.DataFrame(equity_curve).set_index('timestamp')
