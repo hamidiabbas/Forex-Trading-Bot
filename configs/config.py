@@ -188,7 +188,7 @@ class TradingConfig:
                     'start_hour': 0,
                     'end_hour': 9,
                     'timezone': 'Asia/Tokyo',
-                    'enabled_symbols': ['XAUUSD', 'USDJPY']  # Gold and JPY pairs active
+                    'enabled_symbols': ['XAUUSD'], #'USDJPY']  # Gold and JPY pairs active
                 },
                 'london': {
                     'start_hour': 8,

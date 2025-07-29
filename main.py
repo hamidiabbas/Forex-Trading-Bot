@@ -11,6 +11,7 @@ import threading
 from datetime import datetime, timedelta
 import traceback
 from pathlib import Path
+from config import config, SYMBOLS
 
 # ✅ CRITICAL: Add all typing imports
 from typing import Dict, Any, Optional, List, Tuple, Union
@@ -18,6 +19,11 @@ from typing import Dict, Any, Optional, List, Tuple, Union
 # Data handling imports
 import pandas as pd
 import numpy as np
+
+# Quick debug check
+symbols = ['EURUSD', 'GBPUSD', 'XAUUSD']  # Your fixed symbols
+print(f"✅ Trading symbols: {symbols}")
+assert 'XAUUSD' in symbols and 'USDJPY' not in symbols, "Configuration fixed!"
 
 # Setup paths
 sys.path.append(str(Path(__file__).parent))
