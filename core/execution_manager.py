@@ -1181,3 +1181,252 @@ class EnhancedExecutionManager:
             
         except Exception as e:
             self.logger.error(f"Error during enhanced shutdown: {e}")
+
+def get_symbol_execution_params(symbol: str, attempt: int = 1) -> Dict[str, int]:
+    """Get symbol-specific execution parameters"""
+    
+    if symbol == 'XAUUSD':
+        # Gold-specific parameters
+        base_slippage = 50  # 50 points base slippage
+        slippage_increase = 25  # Increase by 25 points per attempt
+        max_slippage = 200  # Maximum 200 points
+        
+        slippage = min(base_slippage + (attempt - 1) * slippage_increase, max_slippage)
+        
+        return {
+            'slippage': slippage,
+            'max_attempts': 5,
+            'retry_delay': 2,
+            'min_stop_distance': 500,  # 500 points = $5
+            'min_tp_distance': 1000    # 1000 points = $10
+        }
+    else:
+        # Forex parameters
+        return {
+            'slippage': 20,
+            'max_attempts': 3,
+            'retry_delay': 1,
+            'min_stop_distance': 150,
+            'min_tp_distance': 200
+        }
+
+# Update your existing execution logic to use these parameters
+def execute_trade_optimized(self, signal):
+    symbol = signal['symbol']
+    volume = signal.get('volume', 0.01)  # Get volume from signal with default
+    direction = signal.get('direction', 'BUY')  # Get direction with default
+    entry_price = signal.get('entry_price', 0)  # Get entry price
+    stop_loss = signal.get('stop_loss', 0)  # Get stop loss
+    take_profit = signal.get('take_profit', 0)  # Get take profit
+    
+    # Determine order type based on direction
+    order_type = mt5.ORDER_TYPE_BUY if direction == 'BUY' else mt5.ORDER_TYPE_SELL
+    
+    for attempt in range(1, exec_params['max_attempts'] + 1):
+        exec_params = get_symbol_execution_params(symbol, attempt)
+        
+        # Use exec_params['slippage'] in your MT5 order request
+        request = {
+            "action": mt5.TRADE_ACTION_DEAL,
+            "symbol": symbol,
+            "volume": volume,
+            "type": order_type,
+            "price": entry_price,
+            "sl": stop_loss,
+            "tp": take_profit,
+            "deviation": exec_params['slippage'],  # Use optimized slippage
+            "magic": 234000,
+            "comment": f"RL-Opt-{attempt}",
+            "type_time": mt5.ORDER_TIME_GTC,
+            "type_filling": mt5.ORDER_FILLING_FOK if symbol == 'XAUUSD' else mt5.ORDER_FILLING_IOC,
+        }
+        
+        # Your existing execution logic here...
+
+        """
+Enhanced Execution Manager with Gold Optimization
+Add this to your existing execution_manager.py
+"""
+
+def execute_trade_with_gold_optimization(self, signal: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """Enhanced trade execution with XAUUSD optimization"""
+    try:
+        symbol = signal['symbol']
+        direction = signal['direction']
+        entry_price = signal['entry_price']
+        stop_loss = signal.get('stop_loss')
+        take_profit = signal.get('take_profit')
+        volume = signal.get('volume', 0.01)
+        
+        # Import the gold optimizer
+        from core.gold_execution_optimizer import gold_optimizer
+        
+        # Check if trade should be skipped due to market conditions
+        current_spread = self.get_current_spread(symbol)
+        market_volatility = self.get_market_volatility(symbol)
+        
+        if gold_optimizer.should_skip_trade(symbol, current_spread, market_volatility):
+            return {
+                'success': False,
+                'error': f'{symbol} trade skipped due to poor market conditions',
+                'skip_reason': 'market_conditions'
+            }
+        
+        # Validate and adjust levels for gold
+        adjusted_levels = gold_optimizer.validate_and_adjust_levels(
+            symbol, entry_price, stop_loss, take_profit
+        )
+        
+        entry_price = adjusted_levels['entry_price']
+        stop_loss = adjusted_levels['stop_loss']
+        take_profit = adjusted_levels['take_profit']
+        
+        if adjusted_levels['adjusted']:
+            self.logger.info(f"✅ {symbol} levels adjusted for optimal execution")
+        
+        # Get execution parameters
+        exec_params = gold_optimizer.get_execution_parameters(symbol, attempt=1)
+        
+        # Execute with optimized parameters
+        return self._execute_with_optimized_parameters(
+            symbol, direction, entry_price, stop_loss, take_profit, 
+            volume, exec_params
+        )
+        
+    except Exception as e:
+        self.logger.error(f"Error in gold-optimized execution: {e}")
+        return {'success': False, 'error': str(e)}
+
+def _execute_with_optimized_parameters(self, symbol: str, direction: str, 
+                                     entry_price: float, stop_loss: float, 
+                                     take_profit: float, volume: float,
+                                     exec_params: Dict[str, Any]) -> Dict[str, Any]:
+    """Execute trade with optimized parameters"""
+    try:
+        import MetaTrader5 as mt5
+        
+        max_attempts = exec_params['max_attempts']
+        retry_delay = exec_params['retry_delay']
+        
+        for attempt in range(1, max_attempts + 1):
+            try:
+                # Get fresh execution parameters for this attempt
+                if symbol == 'XAUUSD':
+                    from core.gold_execution_optimizer import gold_optimizer
+                    current_params = gold_optimizer.get_execution_parameters(symbol, attempt)
+                    slippage = current_params['slippage']
+                else:
+                    slippage = exec_params['slippage']
+                
+                # Prepare MT5 order request
+                order_type = mt5.ORDER_TYPE_BUY if direction == 'BUY' else mt5.ORDER_TYPE_SELL
+                
+                request = {
+                    "action": mt5.TRADE_ACTION_DEAL,
+                    "symbol": symbol,
+                    "volume": volume,
+                    "type": order_type,
+                    "price": entry_price,
+                    "sl": stop_loss,
+                    "tp": take_profit,
+                    "deviation": slippage,  # Use optimized slippage
+                    "magic": 234000,
+                    "comment": f"RL-Gold-Opt-{attempt}",
+                    "type_time": mt5.ORDER_TIME_GTC,
+                    "type_filling": mt5.ORDER_FILLING_FOK if symbol == 'XAUUSD' else mt5.ORDER_FILLING_IOC,
+                }
+                
+                self.logger.info(f"🚀 Executing {symbol} order (Attempt {attempt}/{max_attempts})")
+                self.logger.info(f"   Slippage: {slippage} points")
+                self.logger.info(f"   Volume: {volume} lots")
+                self.logger.info(f"   Price: {entry_price}")
+                
+                # Send order to MT5
+                result = mt5.order_send(request)
+                
+                if result.retcode == mt5.TRADE_RETCODE_DONE:
+                    self.logger.info(f"✅ {symbol} order executed successfully!")
+                    self.logger.info(f"   Ticket: {result.order}")
+                    self.logger.info(f"   Executed Price: {result.price}")
+                    self.logger.info(f"   Executed Volume: {result.volume}")
+                    
+                    return {
+                        'success': True,
+                        'ticket': result.order,
+                        'symbol': symbol,
+                        'direction': direction,
+                        'volume': result.volume,
+                        'entry_price': result.price,
+                        'stop_loss': stop_loss,
+                        'take_profit': take_profit,
+                        'slippage_used': slippage,
+                        'attempt': attempt,
+                        'timestamp': datetime.now()
+                    }
+                
+                elif result.retcode == mt5.TRADE_RETCODE_REQUOTE:
+                    self.logger.warning(f"Requote received for {symbol} (attempt {attempt})")
+                    if attempt < max_attempts:
+                        self.logger.info(f"Retrying in {retry_delay} seconds...")
+                        time.sleep(retry_delay)
+                        continue
+                    else:
+                        self.logger.error(f"❌ {symbol} execution failed after {max_attempts} attempts - too many requotes")
+                        return {
+                            'success': False,
+                            'error': f'Execution failed after {max_attempts} attempts - requotes',
+                            'retcode': result.retcode
+                        }
+                
+                else:
+                    self.logger.error(f"❌ {symbol} execution failed: {result.comment} (code: {result.retcode})")
+                    if attempt < max_attempts and result.retcode in [mt5.TRADE_RETCODE_PRICE_OFF, mt5.TRADE_RETCODE_INVALID_PRICE]:
+                        self.logger.info(f"Retrying in {retry_delay} seconds...")
+                        time.sleep(retry_delay)
+                        continue
+                    else:
+                        return {
+                            'success': False,
+                            'error': f'{result.comment} (code: {result.retcode})',
+                            'retcode': result.retcode
+                        }
+                        
+            except Exception as e:
+                self.logger.error(f"Exception during {symbol} execution attempt {attempt}: {e}")
+                if attempt < max_attempts:
+                    time.sleep(retry_delay)
+                    continue
+                else:
+                    return {'success': False, 'error': str(e)}
+        
+        return {'success': False, 'error': 'Max attempts reached'}
+        
+    except Exception as e:
+        self.logger.error(f"Critical error in optimized execution: {e}")
+        return {'success': False, 'error': str(e)}
+
+def get_current_spread(self, symbol: str) -> float:
+    """Get current spread for symbol"""
+    try:
+        import MetaTrader5 as mt5
+        tick = mt5.symbol_info_tick(symbol)
+        if tick:
+            spread = tick.ask - tick.bid
+            return spread
+        return 0.0
+    except:
+        return 0.0
+
+def get_market_volatility(self, symbol: str) -> float:
+    """Get current market volatility estimate"""
+    try:
+        import MetaTrader5 as mt5
+        rates = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_M15, 0, 20)
+        if rates and len(rates) > 1:
+            prices = [rate['close'] for rate in rates]
+            returns = [(prices[i] - prices[i-1]) / prices[i-1] for i in range(1, len(prices))]
+            volatility = sum(abs(r) for r in returns) / len(returns)
+            return volatility
+        return 0.01
+    except:
+        return 0.01
