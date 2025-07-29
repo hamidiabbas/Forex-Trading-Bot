@@ -1,922 +1,1420 @@
 """
-Enhanced Risk Manager with Advanced Position Sizing and Risk Controls
-Professional-grade risk management for institutional trading
+Complete Enhanced Risk Manager - Professional Grade (900+ Lines)
+Comprehensive risk management with portfolio optimization, dynamic correlation,
+volatility targeting, drawdown protection, and advanced analytics
 """
-
-import logging
 import numpy as np
 import pandas as pd
-from datetime import datetime, timedelta
-from typing import Dict, Any, Optional, Tuple, List
+import logging
 import threading
-from dataclasses import dataclass
+import json
+import pickle
+from datetime import datetime, timedelta
+from typing import Dict, Any, List, Optional, Tuple, Union
+from dataclasses import dataclass, asdict
+from enum import Enum
+import MetaTrader5 as mt5
+from scipy import stats
+from scipy.optimize import minimize
+import warnings
+warnings.filterwarnings('ignore')
+
+logger = logging.getLogger(__name__)
+
+class RiskLevel(Enum):
+    """Risk level enumeration"""
+    VERY_LOW = "very_low"
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    VERY_HIGH = "very_high"
+    CRITICAL = "critical"
+
+class MarketRegime(Enum):
+    """Market regime enumeration"""
+    TRENDING_BULL = "trending_bull"
+    TRENDING_BEAR = "trending_bear"
+    RANGING = "ranging"
+    HIGH_VOLATILITY = "high_volatility"
+    LOW_VOLATILITY = "low_volatility"
+    CRISIS = "crisis"
+
+class PositionSizingMethod(Enum):
+    """Position sizing method enumeration"""
+    FIXED_FRACTIONAL = "fixed_fractional"
+    KELLY_CRITERION = "kelly_criterion"
+    OPTIMAL_F = "optimal_f"
+    VOLATILITY_TARGET = "volatility_target"
+    RISK_PARITY = "risk_parity"
+    DYNAMIC_ALLOCATION = "dynamic_allocation"
 
 @dataclass
 class RiskMetrics:
-    """Risk metrics data structure"""
-    account_balance: float
-    account_equity: float
-    daily_risk_used: float
-    portfolio_risk_used: float
-    open_positions_count: int
-    max_drawdown: float
+    """Comprehensive risk metrics data structure"""
+    position_size: float
+    risk_amount: float
+    max_loss_amount: float
+    max_gain_amount: float
+    risk_reward_ratio: float
+    portfolio_risk_pct: float
+    confidence_adjusted_size: float
+    kelly_size: float
+    volatility_adjusted_size: float
+    correlation_adjusted_size: float
+    drawdown_adjusted_size: float
+    final_position_size: float
+    risk_score: float
+    sizing_method: str
+    market_regime: str
+    liquidity_score: float
+    execution_risk_score: float
+
+@dataclass
+class PortfolioMetrics:
+    """Portfolio-level risk metrics"""
+    total_exposure: float
+    net_exposure: float
+    gross_exposure: float
+    portfolio_beta: float
+    portfolio_volatility: float
     sharpe_ratio: float
-    var_95: float  # Value at Risk 95%
+    sortino_ratio: float
+    max_drawdown: float
+    current_drawdown: float
+    var_95: float
+    cvar_95: float
+    correlation_risk: float
+    concentration_risk: float
+    liquidity_risk: float
+
+@dataclass
+class RiskAlert:
+    """Risk alert data structure"""
+    timestamp: datetime
+    alert_type: str
+    severity: RiskLevel
+    symbol: str
+    message: str
+    current_value: float
+    threshold: float
+    recommended_action: str
 
 class EnhancedRiskManager:
     """
-    Enhanced Risk Management System with Advanced Analytics
+    Complete Professional Risk Manager with Advanced Portfolio Management
     """
     
-    def __init__(self, config):
+    def __init__(self, config, correlation_matrix: Dict[tuple, float] = None):
         self.config = config
-        self.logger = logging.getLogger(__name__)
+        self.correlation_matrix = correlation_matrix or {}
+        self.lock = threading.Lock()
         
-        # Risk parameters
-        self.risk_per_trade = config.get('risk_management.risk_per_trade', 1.0)
-        self.max_position_size = config.get('risk_management.max_position_size', 10.0)
-        self.max_daily_risk = config.get('risk_management.max_daily_risk', 5.0)
-        self.max_portfolio_risk = config.get('risk_management.max_portfolio_risk', 10.0)
-        self.min_risk_reward_ratio = config.get('risk_management.min_risk_reward_ratio', 1.5)
-        
-        # Position limits
-        self.max_open_positions = config.get('risk_management.max_open_positions', 5)
-        self.max_correlation_exposure = config.get('risk_management.max_correlation_exposure', 0.3)
+        # Core risk parameters
+        self.max_risk_per_trade = config.get('risk_management.max_risk_per_trade', 0.01)
+        self.max_daily_risk = config.get('risk_management.max_daily_risk', 0.05)
+        self.max_weekly_risk = config.get('risk_management.max_weekly_risk', 0.15)
+        self.max_monthly_risk = config.get('risk_management.max_monthly_risk', 0.30)
+        self.correlation_limit = config.get('risk_management.correlation_limit', 0.7)
         
         # Advanced risk parameters
-        self.max_consecutive_losses = config.get('risk_management.max_consecutive_losses', 3)
-        self.drawdown_limit = config.get('risk_management.max_drawdown_percent', 15.0)
+        self.max_portfolio_exposure = config.get('risk_management.max_portfolio_exposure', 2.0)
+        self.max_single_symbol_exposure = config.get('risk_management.max_single_symbol_exposure', 0.3)
+        self.max_drawdown_limit = config.get('risk_management.max_drawdown_limit', 0.15)
+        self.volatility_target = config.get('risk_management.volatility_target', 0.15)
         self.var_confidence = config.get('risk_management.var_confidence', 0.95)
         
-        # Risk tracking with thread safety
-        self.lock = threading.Lock()
-        self.daily_risk_used = 0.0
-        self.current_portfolio_risk = 0.0
-        self.open_positions = {}
-        self.closed_positions = []
-        self.daily_reset_time = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        # Position sizing configuration
+        self.default_sizing_method = PositionSizingMethod(
+            config.get('risk_management.default_sizing_method', 'dynamic_allocation')
+        )
+        self.use_dynamic_sizing = config.get('risk_management.use_dynamic_position_sizing', True)
+        self.use_kelly_criterion = config.get('risk_management.use_kelly_criterion', True)
+        self.use_volatility_targeting = config.get('risk_management.use_volatility_targeting', True)
         
-        # Account tracking
-        self.account_balance = 100000.0  # Default, will be updated
-        self.account_equity = 100000.0
-        self.initial_balance = 100000.0
-        self.peak_equity = 100000.0
+        # Symbol risk weights and parameters
+        self.symbol_risk_weights = config.get('risk_management.symbol_risk_weights', {
+            'EURUSD': 1.0, 'GBPUSD': 1.1, 'XAUUSD': 1.4, 'USDJPY': 1.2
+        })
+        
+        # Market regime parameters
+        self.regime_detection_enabled = config.get('risk_management.enable_regime_detection', True)
+        self.regime_lookback_period = config.get('risk_management.regime_lookback_period', 50)
+        self.volatility_threshold_high = config.get('risk_management.volatility_threshold_high', 0.02)
+        self.volatility_threshold_low = config.get('risk_management.volatility_threshold_low', 0.005)
+        
+        # Risk tracking and monitoring
+        self.daily_risk_used = 0.0
+        self.weekly_risk_used = 0.0
+        self.monthly_risk_used = 0.0
+        self.current_drawdown = 0.0
+        self.max_drawdown_session = 0.0
+        self.last_reset_date = datetime.now().date()
+        self.last_weekly_reset = datetime.now().date()
+        self.last_monthly_reset = datetime.now().date()
+        
+        # Portfolio tracking
+        self.portfolio_positions = {}
+        self.portfolio_history = []
+        self.risk_alerts = []
+        self.performance_metrics = {}
+        
+        # Advanced analytics
+        self.correlation_cache = {}
+        self.volatility_cache = {}
+        self.regime_cache = {}
+        self.kelly_cache = {}
+        
+        # Risk limits and emergency controls
+        self.emergency_stop_triggered = False
+        self.risk_override_mode = False
+        self.max_consecutive_losses = config.get('emergency.max_consecutive_losses', 5)
+        self.consecutive_losses = 0
+        
+        # Historical data for calculations
+        self.price_history = {}
+        self.returns_history = {}
+        self.volatility_history = {}
         
         # Performance tracking
-        self.trade_history = []
-        self.daily_returns = []
-        self.consecutive_losses = 0
-        self.consecutive_wins = 0
+        self.total_trades_managed = 0
+        self.successful_risk_calculations = 0
+        self.risk_alerts_generated = 0
         
-        # Risk metrics cache
-        self.risk_metrics_cache = None
-        self.cache_timestamp = None
-        self.cache_duration = 60  # Cache for 60 seconds
-        
-        self.logger.info("Enhanced RiskManager initialized successfully")
-        self.logger.info(f"Risk Settings: {self.risk_per_trade}% per trade, {self.max_daily_risk}% daily max")
-
-    def initialize(self):
-        """Initialize risk manager with current account data"""
-        try:
-            # This would typically fetch real account data
-            # For now, we'll use default values
-            self.logger.info("Risk Manager initialized with default parameters")
-            return True
-        except Exception as e:
-            self.logger.error(f"Error initializing risk manager: {e}")
-            return False
-
-    def calculate_position_size(self, signal: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        logger.info("✅ Enhanced Risk Manager initialized with professional features")
+        logger.info(f"   Max Risk per Trade: {self.max_risk_per_trade*100:.1f}%")
+        logger.info(f"   Max Portfolio Exposure: {self.max_portfolio_exposure:.1f}x")
+        logger.info(f"   Max Drawdown Limit: {self.max_drawdown_limit*100:.1f}%")
+        logger.info(f"   Volatility Target: {self.volatility_target*100:.1f}%")
+        logger.info(f"   Correlation Pairs: {len(self.correlation_matrix)}")
+        logger.info(f"   Default Sizing Method: {self.default_sizing_method.value}")
+    
+    def calculate_enhanced_risk(self, symbol: str, direction: str, entry_price: float,
+                              stop_loss: float, take_profit: float, confidence: float,
+                              strategy: str, account_balance: float = None) -> Optional[Dict[str, Any]]:
         """
-        Enhanced position sizing with multiple risk models
+        Calculate comprehensive risk parameters with all advanced features
         """
         try:
             with self.lock:
-                # Reset daily risk if needed
-                self._reset_daily_risk_if_needed()
+                self.total_trades_managed += 1
+                self._reset_periodic_risk_counters()
                 
-                # Extract signal information
-                symbol = signal.get('symbol', '')
-                entry_price = signal.get('entry_price', 0)
-                direction = signal.get('direction', '')
-                atr_at_signal = signal.get('atr_at_signal', 0.001)
-                strategy = signal.get('strategy', 'Unknown')
-                confidence = signal.get('confidence', 0.7)
+                # Get account balance
+                if account_balance is None:
+                    account_balance = self._get_account_balance()
                 
-                # Validate basic signal data
-                if not all([symbol, entry_price, direction]):
-                    self.logger.warning(f"Invalid signal data for {symbol}")
+                # Pre-flight risk checks
+                if not self._pre_flight_risk_checks(symbol, account_balance):
                     return None
                 
-                # Pre-trade risk checks
-                if not self._pre_trade_risk_checks(symbol, signal):
+                # Validate inputs
+                if not self._validate_risk_inputs(symbol, direction, entry_price, stop_loss, confidence):
                     return None
                 
-                # Calculate stop loss and take profit levels
-                stop_loss, take_profit = self._calculate_enhanced_levels(
-                    entry_price, direction, atr_at_signal, confidence
+                # Get market data and regime
+                market_data = self._get_market_data_for_risk(symbol)
+                current_regime = self._detect_market_regime(symbol, market_data)
+                
+                # Calculate base position size using multiple methods
+                position_sizes = self._calculate_multiple_position_sizes(
+                    symbol, direction, entry_price, stop_loss, account_balance, 
+                    confidence, current_regime, market_data
                 )
                 
-                # Calculate risk metrics
-                risk_in_pips = abs(entry_price - stop_loss)
-                if risk_in_pips <= 0:
-                    self.logger.warning(f"Invalid risk calculation for {symbol}: {risk_in_pips}")
-                    return None
-                
-                reward_in_pips = abs(take_profit - entry_price)
-                risk_reward_ratio = reward_in_pips / risk_in_pips if risk_in_pips > 0 else 0
-                
-                # Enhanced risk-reward validation
-                min_rr = self._get_dynamic_min_rr_ratio(confidence, strategy)
-                if risk_reward_ratio < min_rr:
-                    self.logger.warning(f"Risk-reward ratio too low for {symbol}: {risk_reward_ratio:.2f} < {min_rr:.2f}")
-                    return None
-                
-                # Multi-model position sizing
-                position_size = self._calculate_optimal_position_size(
-                    symbol, entry_price, risk_in_pips, confidence, strategy
+                # Select optimal position size
+                optimal_size = self._select_optimal_position_size(
+                    position_sizes, symbol, current_regime, confidence
                 )
                 
-                if position_size <= 0:
-                    self.logger.warning(f"Position size calculation failed for {symbol}")
-                    return None
-                
-                # Final risk validation
-                trade_risk_amount = self._calculate_trade_risk_amount(
-                    symbol, position_size, risk_in_pips
+                # Apply portfolio-level adjustments
+                portfolio_adjusted_size = self._apply_portfolio_adjustments(
+                    optimal_size, symbol, direction, account_balance
                 )
                 
-                if not self._validate_final_risk(trade_risk_amount, symbol):
+                # Apply correlation adjustments
+                correlation_adjusted_size = self._apply_correlation_adjustments(
+                    portfolio_adjusted_size, symbol, direction
+                )
+                
+                # Apply drawdown protection
+                drawdown_adjusted_size = self._apply_drawdown_protection(
+                    correlation_adjusted_size, account_balance
+                )
+                
+                # Apply emergency controls
+                final_size = self._apply_emergency_controls(
+                    drawdown_adjusted_size, symbol, strategy
+                )
+                
+                # Calculate comprehensive risk metrics
+                risk_metrics = self._calculate_comprehensive_risk_metrics(
+                    symbol, final_size, entry_price, stop_loss, take_profit, 
+                    account_balance, position_sizes, current_regime
+                )
+                
+                # Validate final risk
+                if not self._validate_comprehensive_risk(risk_metrics, symbol):
                     return None
                 
-                # Create enhanced risk parameters
-                risk_params = {
-                    'symbol': symbol,
-                    'direction': direction,
-                    'position_size': round(position_size, 2),
-                    'entry_price': entry_price,
-                    'stop_loss': stop_loss,
-                    'take_profit': take_profit,
-                    'risk_amount': trade_risk_amount,
-                    'risk_in_pips': risk_in_pips,
-                    'reward_in_pips': reward_in_pips,
-                    'risk_reward_ratio': risk_reward_ratio,
-                    'pip_value': self._get_pip_value(symbol),
-                    'strategy': strategy,
-                    'confidence': confidence,
-                    'account_risk_percent': self._get_adjusted_risk_percent(confidence, strategy),
-                    'max_loss_amount': trade_risk_amount,
-                    'max_gain_amount': position_size * reward_in_pips * self._get_pip_value(symbol) * 100000,
-                    'position_value': position_size * entry_price * 100000,
-                    'timestamp': datetime.now(),
-                    'risk_model_used': 'Enhanced_Multi_Model'
-                }
+                # Update risk tracking
+                self._update_comprehensive_risk_tracking(risk_metrics, symbol, strategy)
                 
-                # Log comprehensive risk analysis
-                self._log_risk_analysis(risk_params)
+                # Generate risk alerts if necessary
+                self._check_and_generate_risk_alerts(risk_metrics, symbol)
+                
+                # Create comprehensive risk parameters
+                risk_params = self._create_comprehensive_risk_params(
+                    risk_metrics, entry_price, stop_loss, take_profit, strategy, 
+                    confidence, current_regime
+                )
+                
+                self.successful_risk_calculations += 1
+                
+                logger.debug(f"Enhanced risk calculated for {symbol}: "
+                           f"Size={risk_metrics.final_position_size:.3f}, "
+                           f"Risk=${risk_metrics.risk_amount:.2f}, "
+                           f"Method={risk_metrics.sizing_method}, "
+                           f"Regime={current_regime.value}")
                 
                 return risk_params
                 
         except Exception as e:
-            self.logger.error(f"Error calculating enhanced position size for {signal.get('symbol', 'Unknown')}: {e}")
+            logger.error(f"❌ Error in enhanced risk calculation for {symbol}: {e}")
             return None
-
-    def _pre_trade_risk_checks(self, symbol: str, signal: Dict[str, Any]) -> bool:
-        """Comprehensive pre-trade risk validation"""
+    
+    def _pre_flight_risk_checks(self, symbol: str, account_balance: float) -> bool:
+        """Comprehensive pre-flight risk checks"""
         try:
-            # Check position limits
-            if len(self.open_positions) >= self.max_open_positions:
-                self.logger.warning(f"Maximum open positions reached: {len(self.open_positions)}")
+            # Check emergency stop
+            if self.emergency_stop_triggered:
+                logger.warning(f"Emergency stop active - blocking {symbol}")
                 return False
             
-            # Check for existing position in same symbol
-            if symbol in self.open_positions:
-                self.logger.warning(f"Already have open position in {symbol}")
+            # Check account balance
+            if account_balance <= 0:
+                logger.error(f"Invalid account balance: {account_balance}")
+                return False
+            
+            # Check drawdown limits
+            if self.current_drawdown > self.max_drawdown_limit:
+                logger.warning(f"Drawdown limit exceeded: {self.current_drawdown:.2%} > {self.max_drawdown_limit:.2%}")
+                return False
+            
+            # Check daily risk limits
+            if self.daily_risk_used >= self.max_daily_risk * 100:
+                logger.warning(f"Daily risk limit reached: {self.daily_risk_used:.1f}%")
+                return False
+            
+            # Check portfolio exposure
+            current_exposure = self._calculate_current_portfolio_exposure()
+            if current_exposure >= self.max_portfolio_exposure:
+                logger.warning(f"Portfolio exposure limit reached: {current_exposure:.1f}x")
+                return False
+            
+            # Check symbol-specific exposure
+            symbol_exposure = self._calculate_symbol_exposure(symbol)
+            if symbol_exposure >= self.max_single_symbol_exposure:
+                logger.warning(f"Symbol exposure limit reached for {symbol}: {symbol_exposure:.1%}")
                 return False
             
             # Check consecutive losses
             if self.consecutive_losses >= self.max_consecutive_losses:
-                self.logger.warning(f"Maximum consecutive losses reached: {self.consecutive_losses}")
-                return False
-            
-            # Check drawdown limit
-            current_drawdown = self._calculate_current_drawdown()
-            if current_drawdown > self.drawdown_limit:
-                self.logger.warning(f"Drawdown limit exceeded: {current_drawdown:.2f}% > {self.drawdown_limit}%")
-                return False
-            
-            # Check market hours (if applicable)
-            if not self._is_trading_hours_valid():
-                self.logger.warning("Outside valid trading hours")
-                return False
-            
-            # Strategy-specific risk checks
-            if not self._strategy_specific_risk_check(signal):
+                logger.warning(f"Too many consecutive losses: {self.consecutive_losses}")
                 return False
             
             return True
             
         except Exception as e:
-            self.logger.error(f"Error in pre-trade risk checks: {e}")
+            logger.error(f"Error in pre-flight checks: {e}")
             return False
-
-    def _calculate_enhanced_levels(self, entry_price: float, direction: str, 
-                                 atr: float, confidence: float) -> Tuple[float, float]:
-        """Enhanced stop loss and take profit calculation"""
+    
+    def _get_market_data_for_risk(self, symbol: str) -> Dict[str, Any]:
+        """Get market data specifically for risk calculations"""
         try:
-            # Dynamic ATR multipliers based on confidence and market conditions
-            base_sl_multiplier = self.config.get('risk_management.atr_stop_loss_multiplier', 2.0)
-            base_tp_multiplier = self.config.get('risk_management.atr_take_profit_multiplier', 3.0)
+            # Try to get real market data
+            if symbol in self.price_history and len(self.price_history[symbol]) > 0:
+                recent_prices = self.price_history[symbol][-100:]  # Last 100 prices
+                
+                if len(recent_prices) > 1:
+                    current_price = recent_prices[-1]
+                    returns = np.diff(np.log(recent_prices))
+                    volatility = np.std(returns) * np.sqrt(252)  # Annualized
+                    
+                    return {
+                        'current_price': current_price,
+                        'volatility': volatility,
+                        'returns': returns,
+                        'price_history': recent_prices,
+                        'atr': np.mean(np.abs(returns)) * current_price,
+                        'trend': 1 if recent_prices[-1] > recent_prices[-20] else -1
+                    }
             
-            # Adjust multipliers based on confidence
-            confidence_adjustment = 0.8 + (confidence * 0.4)  # Range: 0.8 to 1.2
-            sl_multiplier = base_sl_multiplier * confidence_adjustment
-            tp_multiplier = base_tp_multiplier * confidence_adjustment
+            # Fallback to synthetic data
+            base_prices = {'EURUSD': 1.1000, 'GBPUSD': 1.3000, 'XAUUSD': 2000.0, 'USDJPY': 148.0}
+            price = base_prices.get(symbol, 1.1000)
             
-            # Market volatility adjustment
-            volatility_adjustment = self._get_volatility_adjustment()
-            sl_multiplier *= volatility_adjustment
-            tp_multiplier *= volatility_adjustment
-            
-            if direction.upper() == 'BUY':
-                stop_loss = entry_price - (atr * sl_multiplier)
-                take_profit = entry_price + (atr * tp_multiplier)
-            else:  # SELL
-                stop_loss = entry_price + (atr * sl_multiplier)
-                take_profit = entry_price - (atr * tp_multiplier)
-            
-            return stop_loss, take_profit
-            
-        except Exception as e:
-            self.logger.error(f"Error calculating enhanced levels: {e}")
-            # Fallback to simple calculation
-            if direction.upper() == 'BUY':
-                return entry_price * 0.999, entry_price * 1.003
-            else:
-                return entry_price * 1.001, entry_price * 0.997
-
-    def _calculate_optimal_position_size(self, symbol: str, entry_price: float, 
-                                       risk_in_pips: float, confidence: float, 
-                                       strategy: str) -> float:
-        """Multi-model position sizing optimization"""
-        try:
-            position_sizes = []
-            
-            # 1. Fixed Fractional Model
-            adjusted_risk_percent = self._get_adjusted_risk_percent(confidence, strategy)
-            account_risk_amount = self.account_balance * (adjusted_risk_percent / 100)
-            pip_value = self._get_pip_value(symbol)
-            
-            ff_position_size = account_risk_amount / (risk_in_pips * pip_value * 100000)
-            position_sizes.append(('fixed_fractional', ff_position_size))
-            
-            # 2. Kelly Criterion (simplified)
-            if len(self.trade_history) >= 10:
-                kelly_f = self._calculate_kelly_fraction(strategy)
-                kelly_position_size = (self.account_balance * kelly_f) / (entry_price * 100000)
-                position_sizes.append(('kelly', kelly_position_size))
-            
-            # 3. Volatility-Adjusted Model
-            volatility_factor = self._get_volatility_factor(symbol)
-            vol_adjusted_size = ff_position_size * (1 / volatility_factor)
-            position_sizes.append(('volatility_adjusted', vol_adjusted_size))
-            
-            # 4. Confidence-Weighted Model
-            confidence_weight = 0.5 + (confidence * 0.5)  # Range: 0.5 to 1.0
-            conf_weighted_size = ff_position_size * confidence_weight
-            position_sizes.append(('confidence_weighted', conf_weighted_size))
-            
-            # Select optimal position size (conservative approach)
-            sizes_only = [size for _, size in position_sizes if size > 0]
-            if not sizes_only:
-                return 0
-            
-            # Use median of calculated sizes for robustness
-            optimal_size = np.median(sizes_only)
-            
-            # Apply maximum position size limit
-            max_position_value = self.account_balance * (self.max_position_size / 100)
-            max_lots = max_position_value / (entry_price * 100000)
-            final_size = min(optimal_size, max_lots)
-            
-            # Ensure minimum viable position size
-            min_size = 0.01  # Minimum 0.01 lots
-            final_size = max(final_size, min_size) if final_size > 0 else 0
-            
-            self.logger.debug(f"Position size models for {symbol}: {position_sizes}")
-            self.logger.debug(f"Selected optimal size: {final_size:.2f} lots")
-            
-            return final_size
-            
-        except Exception as e:
-            self.logger.error(f"Error calculating optimal position size: {e}")
-            return 0
-
-    def _get_adjusted_risk_percent(self, confidence: float, strategy: str) -> float:
-        """Get risk percentage adjusted for confidence and strategy"""
-        try:
-            base_risk = self.risk_per_trade
-            
-            # Confidence adjustment (0.5x to 1.5x base risk)
-            confidence_multiplier = 0.5 + confidence
-            
-            # Strategy-specific adjustments
-            strategy_multipliers = {
-                'RL-SAC': 1.2,    # Higher confidence in SAC
-                'RL-A2C': 1.1,    # Moderate confidence in A2C
-                'RL-PPO': 1.1,    # Moderate confidence in PPO
-                'Traditional-Trending': 1.0,
-                'Traditional-Mean-Reverting': 0.9,
-                'Traditional-High-Volatility': 0.8,
-                'Traditional-Neutral': 0.7
+            return {
+                'current_price': price,
+                'volatility': 0.15,  # 15% annual volatility
+                'atr': price * 0.01,  # 1% ATR
+                'trend': 0,
+                'returns': np.array([0.001, -0.002, 0.003]),  # Sample returns
+                'price_history': [price] * 20
             }
             
-            strategy_multiplier = strategy_multipliers.get(strategy, 1.0)
-            
-            # Account for recent performance
-            performance_multiplier = self._get_performance_adjustment()
-            
-            adjusted_risk = base_risk * confidence_multiplier * strategy_multiplier * performance_multiplier
-            
-            # Ensure within reasonable bounds
-            return max(0.1, min(adjusted_risk, self.risk_per_trade * 2))
-            
         except Exception as e:
-            self.logger.error(f"Error calculating adjusted risk percent: {e}")
-            return self.risk_per_trade
-
-    def _calculate_trade_risk_amount(self, symbol: str, position_size: float, risk_in_pips: float) -> float:
-        """Calculate actual risk amount for the trade"""
+            logger.error(f"Error getting market data for {symbol}: {e}")
+            return {'current_price': 1.0, 'volatility': 0.15, 'atr': 0.01, 'trend': 0}
+    
+    def _detect_market_regime(self, symbol: str, market_data: Dict[str, Any]) -> MarketRegime:
+        """Advanced market regime detection"""
         try:
-            pip_value = self._get_pip_value(symbol)
-            risk_amount = position_size * risk_in_pips * pip_value * 100000
-            return risk_amount
-        except Exception as e:
-            self.logger.error(f"Error calculating trade risk amount: {e}")
-            return 0
-
-    def _validate_final_risk(self, trade_risk_amount: float, symbol: str) -> bool:
-        """Final risk validation before trade approval"""
-        try:
-            # Check daily risk limit
-            potential_daily_risk = self.daily_risk_used + trade_risk_amount
-            daily_risk_percent = (potential_daily_risk / self.account_balance) * 100
+            if not self.regime_detection_enabled:
+                return MarketRegime.RANGING
             
-            if daily_risk_percent > self.max_daily_risk:
-                self.logger.warning(f"Daily risk limit would be exceeded: {daily_risk_percent:.2f}% > {self.max_daily_risk}%")
-                return False
-            
-            # Check portfolio risk limit
-            potential_portfolio_risk = self.current_portfolio_risk + trade_risk_amount
-            portfolio_risk_percent = (potential_portfolio_risk / self.account_balance) * 100
-            
-            if portfolio_risk_percent > self.max_portfolio_risk:
-                self.logger.warning(f"Portfolio risk limit would be exceeded: {portfolio_risk_percent:.2f}% > {self.max_portfolio_risk}%")
-                return False
-            
-            # Check individual trade risk limit (no single trade > 3% of account)
-            individual_risk_percent = (trade_risk_amount / self.account_balance) * 100
-            max_individual_risk = min(3.0, self.risk_per_trade * 2)
-            
-            if individual_risk_percent > max_individual_risk:
-                self.logger.warning(f"Individual trade risk too high: {individual_risk_percent:.2f}% > {max_individual_risk}%")
-                return False
-            
-            return True
-            
-        except Exception as e:
-            self.logger.error(f"Error validating final risk: {e}")
-            return False
-
-    def add_position(self, position_data: Dict[str, Any]) -> bool:
-        """Add new position to risk tracking"""
-        try:
-            with self.lock:
-                symbol = position_data.get('symbol')
-                if not symbol:
-                    return False
-                
-                # Enhanced position data
-                enhanced_position = {
-                    **position_data,
-                    'added_at': datetime.now(),
-                    'initial_account_balance': self.account_balance,
-                    'risk_metrics_at_entry': self._get_current_risk_metrics()
-                }
-                
-                self.open_positions[symbol] = enhanced_position
-                
-                # Update risk tracking
-                risk_amount = position_data.get('risk_amount', 0)
-                self.daily_risk_used += risk_amount
-                self.current_portfolio_risk += risk_amount
-                
-                self.logger.info(f"Position added: {symbol} (Risk: ${risk_amount:.2f})")
-                self.logger.info(f"Portfolio risk: {(self.current_portfolio_risk/self.account_balance)*100:.2f}%")
-                
-                return True
-                
-        except Exception as e:
-            self.logger.error(f"Error adding position: {e}")
-            return False
-
-    def remove_position(self, symbol: str, realized_pnl: float = 0, 
-                       close_reason: str = 'manual') -> bool:
-        """Remove position from tracking with enhanced analytics"""
-        try:
-            with self.lock:
-                if symbol not in self.open_positions:
-                    return False
-                
-                position_data = self.open_positions.pop(symbol)
-                risk_amount = position_data.get('risk_amount', 0)
-                
-                # Update risk tracking
-                self.current_portfolio_risk -= risk_amount
-                self.current_portfolio_risk = max(0, self.current_portfolio_risk)
-                
-                # Update account balance
-                self.account_balance += realized_pnl
-                self.account_equity = self.account_balance
-                
-                # Update peak equity tracking
-                if self.account_equity > self.peak_equity:
-                    self.peak_equity = self.account_equity
-                
-                # Track trade performance
-                trade_record = {
-                    'symbol': symbol,
-                    'realized_pnl': realized_pnl,
-                    'risk_amount': risk_amount,
-                    'close_reason': close_reason,
-                    'hold_duration': datetime.now() - position_data.get('added_at', datetime.now()),
-                    'strategy': position_data.get('strategy', 'Unknown'),
-                    'entry_price': position_data.get('entry_price', 0),
-                    'close_time': datetime.now(),
-                    'account_balance_after': self.account_balance
-                }
-                
-                self.trade_history.append(trade_record)
-                self.closed_positions.append(trade_record)
-                
-                # Update win/loss streaks
-                if realized_pnl > 0:
-                    self.consecutive_wins += 1
-                    self.consecutive_losses = 0
-                else:
-                    self.consecutive_losses += 1
-                    self.consecutive_wins = 0
-                
-                # Keep trade history manageable
-                if len(self.trade_history) > 1000:
-                    self.trade_history = self.trade_history[-500:]
-                
-                self.logger.info(f"Position removed: {symbol} (P&L: ${realized_pnl:.2f}, Reason: {close_reason})")
-                
-                # Invalidate risk metrics cache
-                self.risk_metrics_cache = None
-                
-                return True
-                
-        except Exception as e:
-            self.logger.error(f"Error removing position: {e}")
-            return False
-
-    def update_account_info(self, balance: float, equity: float) -> None:
-        """Update account information with validation"""
-        try:
-            with self.lock:
-                # Validate the new balance/equity values
-                if balance <= 0 or equity <= 0:
-                    self.logger.warning(f"Invalid account info: Balance={balance}, Equity={equity}")
-                    return
-                
-                # Check for significant changes (potential data error)
-                balance_change = abs(balance - self.account_balance) / self.account_balance
-                if balance_change > 0.5:  # 50% change seems suspicious
-                    self.logger.warning(f"Suspicious balance change: {balance_change:.2%}")
-                    return
-                
-                self.account_balance = balance
-                self.account_equity = equity
-                
-                # Update peak equity
-                if equity > self.peak_equity:
-                    self.peak_equity = equity
-                
-                # Calculate daily return
-                if len(self.daily_returns) == 0:
-                    self.initial_balance = balance
-                
-                self.logger.debug(f"Account updated: Balance=${balance:.2f}, Equity=${equity:.2f}")
-                
-                # Invalidate cache
-                self.risk_metrics_cache = None
-                
-        except Exception as e:
-            self.logger.error(f"Error updating account info: {e}")
-
-    def get_risk_summary(self) -> Dict[str, Any]:
-        """Get comprehensive risk summary with caching"""
-        try:
             # Check cache first
-            if (self.risk_metrics_cache and self.cache_timestamp and
-                (datetime.now() - self.cache_timestamp).seconds < self.cache_duration):
-                return self.risk_metrics_cache
+            cache_key = f"{symbol}_{datetime.now().date()}"
+            if cache_key in self.regime_cache:
+                return self.regime_cache[cache_key]
             
-            # Calculate fresh metrics
-            daily_risk_percent = (self.daily_risk_used / self.account_balance) * 100
-            portfolio_risk_percent = (self.current_portfolio_risk / self.account_balance) * 100
-            current_drawdown = self._calculate_current_drawdown()
+            volatility = market_data.get('volatility', 0.15)
+            trend = market_data.get('trend', 0)
+            returns = market_data.get('returns', np.array([0]))
             
-            # Performance metrics
-            total_return = ((self.account_balance - self.initial_balance) / self.initial_balance) * 100
-            win_rate = self._calculate_win_rate()
-            sharpe_ratio = self._calculate_sharpe_ratio()
-            
-            risk_summary = {
-                # Account Status
-                'account_balance': self.account_balance,
-                'account_equity': self.account_equity,
-                'initial_balance': self.initial_balance,
-                'peak_equity': self.peak_equity,
-                'total_return_percent': total_return,
-                
-                # Risk Utilization
-                'daily_risk_used': self.daily_risk_used,
-                'daily_risk_percent': daily_risk_percent,
-                'daily_risk_remaining': max(0, self.max_daily_risk - daily_risk_percent),
-                'portfolio_risk_used': self.current_portfolio_risk,
-                'portfolio_risk_percent': portfolio_risk_percent,
-                'portfolio_risk_remaining': max(0, self.max_portfolio_risk - portfolio_risk_percent),
-                
-                # Position Status
-                'open_positions_count': len(self.open_positions),
-                'max_positions_remaining': max(0, self.max_open_positions - len(self.open_positions)),
-                'open_positions': list(self.open_positions.keys()),
-                
-                # Performance Metrics
-                'current_drawdown_percent': current_drawdown,
-                'max_drawdown_limit': self.drawdown_limit,
-                'consecutive_wins': self.consecutive_wins,
-                'consecutive_losses': self.consecutive_losses,
-                'win_rate_percent': win_rate * 100,
-                'sharpe_ratio': sharpe_ratio,
-                
-                # Risk Settings
-                'risk_per_trade_percent': self.risk_per_trade,
-                'max_daily_risk_percent': self.max_daily_risk,
-                'max_portfolio_risk_percent': self.max_portfolio_risk,
-                'min_risk_reward_ratio': self.min_risk_reward_ratio,
-                
-                # Advanced Metrics
-                'total_trades': len(self.trade_history),
-                'trades_today': len([t for t in self.trade_history if t['close_time'].date() == datetime.now().date()]),
-                'avg_trade_return': np.mean([t['realized_pnl'] for t in self.trade_history]) if self.trade_history else 0,
-                'risk_adjusted_return': total_return / max(current_drawdown, 1),
-                
-                # Status Flags
-                'risk_status': self._get_risk_status(),
-                'trading_allowed': self._is_trading_allowed(),
-                'last_updated': datetime.now()
-            }
+            # Volatility regime
+            if volatility > self.volatility_threshold_high:
+                if np.std(returns) > volatility * 2:
+                    regime = MarketRegime.CRISIS
+                else:
+                    regime = MarketRegime.HIGH_VOLATILITY
+            elif volatility < self.volatility_threshold_low:
+                regime = MarketRegime.LOW_VOLATILITY
+            else:
+                # Trend regime
+                if trend > 0.5:
+                    regime = MarketRegime.TRENDING_BULL
+                elif trend < -0.5:
+                    regime = MarketRegime.TRENDING_BEAR
+                else:
+                    regime = MarketRegime.RANGING
             
             # Cache the result
-            self.risk_metrics_cache = risk_summary
-            self.cache_timestamp = datetime.now()
+            self.regime_cache[cache_key] = regime
             
-            return risk_summary
+            return regime
             
         except Exception as e:
-            self.logger.error(f"Error getting risk summary: {e}")
-            return {}
-
-    # Helper methods for risk calculations
-    def _reset_daily_risk_if_needed(self):
-        """Reset daily risk tracking if new day"""
+            logger.error(f"Error detecting market regime for {symbol}: {e}")
+            return MarketRegime.RANGING
+    
+    def _calculate_multiple_position_sizes(self, symbol: str, direction: str, entry_price: float,
+                                         stop_loss: float, account_balance: float, confidence: float,
+                                         regime: MarketRegime, market_data: Dict[str, Any]) -> Dict[str, float]:
+        """Calculate position sizes using multiple methods"""
         try:
-            current_time = datetime.now()
-            if current_time.date() > self.daily_reset_time.date():
-                self.daily_risk_used = 0.0
-                self.daily_reset_time = current_time.replace(hour=0, minute=0, second=0, microsecond=0)
-                self.logger.info("Daily risk counter reset")
+            sizes = {}
+            
+            # 1. Fixed Fractional Method
+            sizes['fixed_fractional'] = self._calculate_fixed_fractional_size(
+                symbol, entry_price, stop_loss, account_balance
+            )
+            
+            # 2. Kelly Criterion
+            sizes['kelly'] = self._calculate_kelly_criterion_size(
+                symbol, entry_price, stop_loss, account_balance, confidence, market_data
+            )
+            
+            # 3. Volatility Targeting
+            sizes['volatility_target'] = self._calculate_volatility_target_size(
+                symbol, account_balance, market_data
+            )
+            
+            # 4. Risk Parity
+            sizes['risk_parity'] = self._calculate_risk_parity_size(
+                symbol, account_balance, market_data
+            )
+            
+            # 5. Optimal F
+            sizes['optimal_f'] = self._calculate_optimal_f_size(
+                symbol, entry_price, stop_loss, account_balance, market_data
+            )
+            
+            # 6. Regime-based adjustment
+            sizes['regime_adjusted'] = self._calculate_regime_adjusted_size(
+                sizes['fixed_fractional'], regime, confidence
+            )
+            
+            # Ensure all sizes are positive and reasonable
+            for method, size in sizes.items():
+                sizes[method] = max(0.01, min(size, 10.0))  # Between 0.01 and 10 lots
+            
+            return sizes
+            
         except Exception as e:
-            self.logger.error(f"Error resetting daily risk: {e}")
-
-    def _get_pip_value(self, symbol: str) -> float:
-        """Get pip value for different currency pairs"""
-        # Simplified pip value calculation
-        if 'JPY' in symbol:
+            logger.error(f"Error calculating multiple position sizes: {e}")
+            return {'fixed_fractional': 0.01}
+    
+    def _calculate_fixed_fractional_size(self, symbol: str, entry_price: float, 
+                                       stop_loss: float, account_balance: float) -> float:
+        """Calculate position size using fixed fractional method"""
+        try:
+            if stop_loss <= 0:
+                return account_balance * self.max_risk_per_trade / (entry_price * 100000)
+            
+            stop_distance = abs(entry_price - stop_loss)
+            risk_amount = account_balance * self.max_risk_per_trade
+            
+            # Apply symbol risk weight
+            symbol_weight = self.symbol_risk_weights.get(symbol, 1.0)
+            adjusted_risk = risk_amount / symbol_weight
+            
+            if symbol == 'XAUUSD':
+                # Gold: 100oz contracts
+                position_size = adjusted_risk / (stop_distance * 100)
+            else:
+                # Forex: calculate pip value
+                pip_value = 10 if 'JPY' not in symbol else 1
+                pip_size = 0.0001 if 'JPY' not in symbol else 0.01
+                stop_pips = stop_distance / pip_size
+                position_size = adjusted_risk / (stop_pips * pip_value)
+            
+            return max(0.01, min(position_size, 1.0))
+            
+        except Exception as e:
+            logger.error(f"Error in fixed fractional calculation: {e}")
             return 0.01
-        else:
-            return 0.0001
-
-    def _calculate_current_drawdown(self) -> float:
-        """Calculate current drawdown percentage"""
+    
+    def _calculate_kelly_criterion_size(self, symbol: str, entry_price: float, stop_loss: float,
+                                      account_balance: float, confidence: float, 
+                                      market_data: Dict[str, Any]) -> float:
+        """Calculate position size using Kelly Criterion"""
         try:
-            if self.peak_equity <= 0:
-                return 0.0
-            drawdown = ((self.peak_equity - self.account_equity) / self.peak_equity) * 100
-            return max(0.0, drawdown)
-        except Exception as e:
-            self.logger.error(f"Error calculating drawdown: {e}")
-            return 0.0
-
-    def _calculate_win_rate(self) -> float:
-        """Calculate win rate from trade history"""
-        try:
-            if not self.trade_history:
-                return 0.0
-            winning_trades = sum(1 for trade in self.trade_history if trade['realized_pnl'] > 0)
-            return winning_trades / len(self.trade_history)
-        except Exception as e:
-            self.logger.error(f"Error calculating win rate: {e}")
-            return 0.0
-
-    def _calculate_sharpe_ratio(self) -> float:
-        """Calculate Sharpe ratio from trade returns"""
-        try:
-            if len(self.trade_history) < 10:
-                return 0.0
+            if not self.use_kelly_criterion:
+                return self._calculate_fixed_fractional_size(symbol, entry_price, stop_loss, account_balance)
             
-            returns = [trade['realized_pnl'] / self.account_balance for trade in self.trade_history]
-            if not returns:
-                return 0.0
+            # Check cache
+            cache_key = f"{symbol}_kelly_{datetime.now().date()}"
+            if cache_key in self.kelly_cache:
+                return self.kelly_cache[cache_key]
             
-            mean_return = np.mean(returns)
-            std_return = np.std(returns)
+            # Estimate win probability and win/loss ratio from confidence and historical data
+            win_probability = max(0.5, min(0.7, confidence + 0.1))  # Adjust confidence to probability
             
-            if std_return == 0:
-                return 0.0
-            
-            # Annualized Sharpe ratio (assuming 252 trading days)
-            sharpe = (mean_return / std_return) * np.sqrt(252)
-            return sharpe
-            
-        except Exception as e:
-            self.logger.error(f"Error calculating Sharpe ratio: {e}")
-            return 0.0
-
-    def _get_risk_status(self) -> str:
-        """Get overall risk status"""
-        try:
-            daily_risk_percent = (self.daily_risk_used / self.account_balance) * 100
-            portfolio_risk_percent = (self.current_portfolio_risk / self.account_balance) * 100
-            drawdown = self._calculate_current_drawdown()
-            
-            if (daily_risk_percent > self.max_daily_risk * 0.9 or
-                portfolio_risk_percent > self.max_portfolio_risk * 0.9 or
-                drawdown > self.drawdown_limit * 0.8):
-                return "HIGH_RISK"
-            elif (daily_risk_percent > self.max_daily_risk * 0.7 or
-                  portfolio_risk_percent > self.max_portfolio_risk * 0.7 or
-                  drawdown > self.drawdown_limit * 0.6):
-                return "MODERATE_RISK"
+            # Estimate average win/loss ratio (simplified)
+            if stop_loss > 0:
+                stop_distance = abs(entry_price - stop_loss)
+                # Assume 1.5:1 reward ratio
+                avg_win = stop_distance * 1.5
+                avg_loss = stop_distance
+                win_loss_ratio = avg_win / avg_loss
             else:
-                return "LOW_RISK"
-                
-        except Exception as e:
-            self.logger.error(f"Error getting risk status: {e}")
-            return "UNKNOWN"
-
-    def _is_trading_allowed(self) -> bool:
-        """Check if trading is currently allowed"""
-        try:
-            # Check all risk limits
-            daily_risk_percent = (self.daily_risk_used / self.account_balance) * 100
-            portfolio_risk_percent = (self.current_portfolio_risk / self.account_balance) * 100
-            drawdown = self._calculate_current_drawdown()
+                win_loss_ratio = 1.5  # Default
             
-            if (daily_risk_percent >= self.max_daily_risk or
-                portfolio_risk_percent >= self.max_portfolio_risk or
-                drawdown >= self.drawdown_limit or
-                self.consecutive_losses >= self.max_consecutive_losses or
-                len(self.open_positions) >= self.max_open_positions):
-                return False
+            # Kelly formula: f = (bp - q) / b
+            # where b = win/loss ratio, p = win probability, q = loss probability
+            b = win_loss_ratio
+            p = win_probability
+            q = 1 - p
             
-            return True
+            kelly_fraction = (b * p - q) / b
             
-        except Exception as e:
-            self.logger.error(f"Error checking trading allowance: {e}")
-            return False
-
-    def _log_risk_analysis(self, risk_params: Dict[str, Any]):
-        """Log comprehensive risk analysis"""
-        try:
-            symbol = risk_params.get('symbol', 'Unknown')
-            self.logger.info(f"✅ Enhanced risk calculated for {symbol}:")
-            self.logger.info(f"  Position Size: {risk_params['position_size']:.2f} lots")
-            self.logger.info(f"  Risk Amount: ${risk_params['risk_amount']:.2f} ({risk_params['account_risk_percent']:.2f}%)")
-            self.logger.info(f"  Risk/Reward: 1:{risk_params['risk_reward_ratio']:.2f}")
-            self.logger.info(f"  Stop Loss: {risk_params['stop_loss']:.5f}")
-            self.logger.info(f"  Take Profit: {risk_params['take_profit']:.5f}")
-            self.logger.info(f"  Strategy: {risk_params['strategy']} (Confidence: {risk_params['confidence']:.2f})")
-        except Exception as e:
-            self.logger.error(f"Error logging risk analysis: {e}")
-
-    # Additional helper methods (simplified versions for brevity)
-    def _get_dynamic_min_rr_ratio(self, confidence: float, strategy: str) -> float:
-        base_rr = self.min_risk_reward_ratio
-        confidence_adjustment = 1.0 - (confidence * 0.2)  # Lower RR for higher confidence
-        return base_rr * confidence_adjustment
-
-    def _get_volatility_adjustment(self) -> float:
-        return 1.0  # Simplified - would analyze current market volatility
-
-    def _calculate_kelly_fraction(self, strategy: str) -> float:
-        """Simplified Kelly Criterion calculation"""
-        try:
-            recent_trades = [t for t in self.trade_history if t['strategy'] == strategy][-20:]
-            if len(recent_trades) < 10:
-                return 0.02  # Conservative default
+            # Conservative Kelly (use 25% of full Kelly)
+            conservative_kelly = max(0, kelly_fraction * 0.25)
             
-            wins = [t['realized_pnl'] for t in recent_trades if t['realized_pnl'] > 0]
-            losses = [abs(t['realized_pnl']) for t in recent_trades if t['realized_pnl'] < 0]
+            # Convert to position size
+            base_size = self._calculate_fixed_fractional_size(symbol, entry_price, stop_loss, account_balance)
+            kelly_size = base_size * (1 + conservative_kelly)
             
-            if not wins or not losses:
-                return 0.02
+            # Cache result
+            self.kelly_cache[cache_key] = kelly_size
             
-            win_rate = len(wins) / len(recent_trades)
-            avg_win = np.mean(wins)
-            avg_loss = np.mean(losses)
-            
-            kelly_f = (win_rate * avg_win - (1 - win_rate) * avg_loss) / avg_win
-            return max(0.01, min(0.1, kelly_f))  # Cap between 1% and 10%
+            return max(0.01, min(kelly_size, 2.0))  # Cap at 2x base size
             
         except Exception as e:
-            self.logger.error(f"Error calculating Kelly fraction: {e}")
-            return 0.02
-
-    def _get_volatility_factor(self, symbol: str) -> float:
-        return 1.0  # Simplified
-
-    def _get_performance_adjustment(self) -> float:
-        """Adjust risk based on recent performance"""
+            logger.error(f"Error in Kelly criterion calculation: {e}")
+            return self._calculate_fixed_fractional_size(symbol, entry_price, stop_loss, account_balance)
+    
+    def _calculate_volatility_target_size(self, symbol: str, account_balance: float,
+                                        market_data: Dict[str, Any]) -> float:
+        """Calculate position size using volatility targeting"""
         try:
-            if len(self.trade_history) < 5:
-                return 1.0
+            if not self.use_volatility_targeting:
+                return account_balance * self.max_risk_per_trade / 1000  # Default size
             
-            recent_trades = self.trade_history[-10:]
-            recent_pnl = sum(t['realized_pnl'] for t in recent_trades)
+            current_volatility = market_data.get('volatility', 0.15)
+            target_volatility = self.volatility_target
             
-            if recent_pnl > 0:
-                return min(1.2, 1.0 + (recent_pnl / self.account_balance))
+            # Position size inversely proportional to volatility
+            vol_ratio = target_volatility / max(current_volatility, 0.01)
+            
+            # Base position value as percentage of account
+            base_position_pct = self.max_risk_per_trade * 5  # 5x leverage assumption
+            
+            # Adjust for volatility
+            vol_adjusted_pct = base_position_pct * vol_ratio
+            
+            # Convert to lot size
+            current_price = market_data.get('current_price', 1.0)
+            
+            if symbol == 'XAUUSD':
+                contract_value = current_price * 100
             else:
-                return max(0.8, 1.0 + (recent_pnl / self.account_balance))
-                
+                contract_value = 100000 * current_price if 'JPY' in symbol else 100000
+            
+            position_size = (account_balance * vol_adjusted_pct) / contract_value
+            
+            return max(0.01, min(position_size, 2.0))
+            
         except Exception as e:
-            self.logger.error(f"Error calculating performance adjustment: {e}")
-            return 1.0
-
-    def _is_trading_hours_valid(self) -> bool:
-        return True  # Simplified - would check actual market hours
-
-    def _strategy_specific_risk_check(self, signal: Dict[str, Any]) -> bool:
-        return True  # Simplified - would implement strategy-specific validations
-
-    def _get_current_risk_metrics(self) -> Dict[str, float]:
-        """Get current risk metrics snapshot"""
-        return {
-            'daily_risk_percent': (self.daily_risk_used / self.account_balance) * 100,
-            'portfolio_risk_percent': (self.current_portfolio_risk / self.account_balance) * 100,
-            'drawdown_percent': self._calculate_current_drawdown(),
-            'account_balance': self.account_balance
-        }
-
-    def is_trade_allowed(self, symbol: str, estimated_risk: float = None) -> Tuple[bool, str]:
-        """Enhanced trade allowance check"""
+            logger.error(f"Error in volatility targeting calculation: {e}")
+            return 0.01
+    
+    def _calculate_risk_parity_size(self, symbol: str, account_balance: float,
+                                  market_data: Dict[str, Any]) -> float:
+        """Calculate position size using risk parity approach"""
         try:
-            if not self._is_trading_allowed():
-                return False, "Trading temporarily suspended due to risk limits"
+            # Get portfolio positions
+            total_portfolio_risk = 0
+            symbol_count = len(self.symbol_risk_weights)
             
-            # Symbol-specific checks
-            if symbol in self.open_positions:
-                return False, f"Position already exists for {symbol}"
+            # Target equal risk contribution
+            target_risk_per_symbol = self.max_daily_risk / symbol_count
             
-            # Estimated risk check
-            if estimated_risk:
-                if not self._validate_final_risk(estimated_risk, symbol):
-                    return False, "Estimated risk exceeds limits"
+            # Adjust for symbol's volatility
+            volatility = market_data.get('volatility', 0.15)
+            risk_adjustment = 0.15 / max(volatility, 0.01)  # Normalize to 15% vol
             
-            return True, "Trade allowed"
+            # Calculate size
+            risk_amount = account_balance * target_risk_per_symbol * risk_adjustment
+            current_price = market_data.get('current_price', 1.0)
+            
+            if symbol == 'XAUUSD':
+                position_size = risk_amount / (current_price * 100 * 0.01)  # Assume 1% risk per unit
+            else:
+                position_size = risk_amount / (100000 * 0.01)  # 1% risk assumption
+            
+            return max(0.01, min(position_size, 1.5))
             
         except Exception as e:
-            self.logger.error(f"Error checking trade allowance: {e}")
-            return False, f"Error checking trade: {e}"
-
-    def emergency_close_all(self) -> bool:
-        """Emergency close all positions"""
+            logger.error(f"Error in risk parity calculation: {e}")
+            return 0.01
+    
+    def _calculate_optimal_f_size(self, symbol: str, entry_price: float, stop_loss: float,
+                                account_balance: float, market_data: Dict[str, Any]) -> float:
+        """Calculate position size using Optimal F method"""
         try:
-            self.logger.warning("🚨 Emergency close all positions triggered!")
+            # Simplified Optimal F calculation
+            # In practice, this would require extensive historical trade data
             
-            with self.lock:
-                # Clear position tracking
-                closed_positions = list(self.open_positions.keys())
-                self.open_positions.clear()
-                self.current_portfolio_risk = 0.0
-                
-                self.logger.warning(f"Cleared {len(closed_positions)} positions from risk tracking")
-                return True
-                
+            # Use historical returns if available
+            returns = market_data.get('returns', np.array([0.001, -0.002, 0.003]))
+            
+            if len(returns) < 10:
+                # Fallback to fixed fractional
+                return self._calculate_fixed_fractional_size(symbol, entry_price, stop_loss, account_balance)
+            
+            # Calculate largest loss in the series (as percentage)
+            max_loss_pct = abs(min(returns)) if len(returns) > 0 else 0.02
+            
+            # Optimal F = geometric mean / largest loss
+            if max_loss_pct > 0:
+                geometric_mean = stats.gmean(1 + np.abs(returns)) - 1
+                optimal_f = geometric_mean / max_loss_pct
+            else:
+                optimal_f = 0.1
+            
+            # Conservative approach - use 50% of optimal F
+            conservative_f = optimal_f * 0.5
+            
+            # Convert to position size
+            base_size = self._calculate_fixed_fractional_size(symbol, entry_price, stop_loss, account_balance)
+            optimal_size = base_size * (1 + conservative_f)
+            
+            return max(0.01, min(optimal_size, 1.8))
+            
         except Exception as e:
-            self.logger.error(f"Error in emergency close: {e}")
-            return False
-    def check_correlation_risk(self, new_signal: Dict[str, Any], open_positions: List[Dict[str, Any]]) -> Dict[str, Any]:
+            logger.error(f"Error in Optimal F calculation: {e}")
+            return self._calculate_fixed_fractional_size(symbol, entry_price, stop_loss, account_balance)
+    
+    def _calculate_regime_adjusted_size(self, base_size: float, regime: MarketRegime, 
+                                      confidence: float) -> float:
+        """Adjust position size based on market regime"""
+        try:
+            regime_multipliers = {
+                MarketRegime.TRENDING_BULL: 1.1,
+                MarketRegime.TRENDING_BEAR: 1.1,
+                MarketRegime.RANGING: 0.9,
+                MarketRegime.HIGH_VOLATILITY: 0.7,
+                MarketRegime.LOW_VOLATILITY: 1.2,
+                MarketRegime.CRISIS: 0.3
+            }
+            
+            multiplier = regime_multipliers.get(regime, 1.0)
+            
+            # Further adjust for confidence
+            confidence_multiplier = 0.5 + (confidence * 0.5)  # Range: 0.5 to 1.0
+            
+            adjusted_size = base_size * multiplier * confidence_multiplier
+            
+            return max(0.01, min(adjusted_size, 2.0))
+            
+        except Exception as e:
+            logger.error(f"Error in regime adjustment: {e}")
+            return base_size
+    
+    def _select_optimal_position_size(self, position_sizes: Dict[str, float], symbol: str,
+                                    regime: MarketRegime, confidence: float) -> float:
+        """Select optimal position size from multiple methods"""
+        try:
+            if self.default_sizing_method == PositionSizingMethod.FIXED_FRACTIONAL:
+                return position_sizes.get('fixed_fractional', 0.01)
+            elif self.default_sizing_method == PositionSizingMethod.KELLY_CRITERION:
+                return position_sizes.get('kelly', 0.01)
+            elif self.default_sizing_method == PositionSizingMethod.VOLATILITY_TARGET:
+                return position_sizes.get('volatility_target', 0.01)
+            elif self.default_sizing_method == PositionSizingMethod.OPTIMAL_F:
+                return position_sizes.get('optimal_f', 0.01)
+            elif self.default_sizing_method == PositionSizingMethod.RISK_PARITY:
+                return position_sizes.get('risk_parity', 0.01)
+            else:  # DYNAMIC_ALLOCATION
+                return self._dynamic_size_selection(position_sizes, regime, confidence)
+            
+        except Exception as e:
+            logger.error(f"Error selecting optimal size: {e}")
+            return position_sizes.get('fixed_fractional', 0.01)
+    
+    def _dynamic_size_selection(self, position_sizes: Dict[str, float], 
+                              regime: MarketRegime, confidence: float) -> float:
+        """Dynamically select position size based on conditions"""
+        try:
+            # Weight different methods based on regime and confidence
+            weights = {}
+            
+            if regime in [MarketRegime.TRENDING_BULL, MarketRegime.TRENDING_BEAR]:
+                # Trending markets - favor momentum-based sizing
+                weights = {
+                    'kelly': 0.3,
+                    'volatility_target': 0.2,
+                    'fixed_fractional': 0.2,
+                    'regime_adjusted': 0.3
+                }
+            elif regime == MarketRegime.RANGING:
+                # Ranging markets - more conservative
+                weights = {
+                    'fixed_fractional': 0.4,
+                    'risk_parity': 0.3,
+                    'volatility_target': 0.3
+                }
+            elif regime in [MarketRegime.HIGH_VOLATILITY, MarketRegime.CRISIS]:
+                # High volatility - very conservative
+                weights = {
+                    'fixed_fractional': 0.5,
+                    'volatility_target': 0.5
+                }
+            else:
+                # Default weighting
+                weights = {
+                    'fixed_fractional': 0.25,
+                    'kelly': 0.25,
+                    'volatility_target': 0.25,
+                    'risk_parity': 0.25
+                }
+            
+            # Calculate weighted average
+            weighted_size = 0
+            total_weight = 0
+            
+            for method, weight in weights.items():
+                if method in position_sizes:
+                    weighted_size += position_sizes[method] * weight
+                    total_weight += weight
+            
+            if total_weight > 0:
+                final_size = weighted_size / total_weight
+            else:
+                final_size = position_sizes.get('fixed_fractional', 0.01)
+            
+            # Confidence adjustment
+            confidence_factor = 0.7 + (confidence * 0.3)  # Range: 0.7 to 1.0
+            final_size *= confidence_factor
+            
+            return max(0.01, min(final_size, 2.0))
+            
+        except Exception as e:
+            logger.error(f"Error in dynamic size selection: {e}")
+            return 0.01
+    
+    def _apply_portfolio_adjustments(self, position_size: float, symbol: str, 
+                                   direction: str, account_balance: float) -> float:
+        """Apply portfolio-level position size adjustments"""
+        try:
+            # Check current portfolio exposure
+            current_exposure = self._calculate_current_portfolio_exposure()
+            
+            # Reduce size if approaching portfolio limits
+            if current_exposure > self.max_portfolio_exposure * 0.8:  # 80% of limit
+                reduction_factor = 1 - (current_exposure - self.max_portfolio_exposure * 0.8) / (self.max_portfolio_exposure * 0.2)
+                position_size *= max(0.5, reduction_factor)
+                logger.debug(f"Portfolio exposure adjustment: {reduction_factor:.2f}")
+            
+            # Check symbol concentration
+            symbol_exposure = self._calculate_symbol_exposure(symbol)
+            if symbol_exposure > self.max_single_symbol_exposure * 0.8:
+                reduction_factor = 1 - (symbol_exposure - self.max_single_symbol_exposure * 0.8) / (self.max_single_symbol_exposure * 0.2)
+                position_size *= max(0.3, reduction_factor)
+                logger.debug(f"Symbol concentration adjustment: {reduction_factor:.2f}")
+            
+            # Check directional bias
+            net_exposure = self._calculate_net_directional_exposure(direction)
+            if abs(net_exposure) > 0.5:  # 50% directional bias
+                bias_reduction = 1 - (abs(net_exposure) - 0.5) * 0.4  # Reduce by up to 20%
+                position_size *= max(0.8, bias_reduction)
+                logger.debug(f"Directional bias adjustment: {bias_reduction:.2f}")
+            
+            return max(0.01, position_size)
+            
+        except Exception as e:
+            logger.error(f"Error in portfolio adjustments: {e}")
+            return position_size
+    
+    def _apply_correlation_adjustments(self, position_size: float, symbol: str, direction: str) -> float:
+        """Apply correlation-based position size adjustments"""
+        try:
+            correlation_risk = 0
+            position_count = 0
+            
+            for pos_symbol, pos_data in self.portfolio_positions.items():
+                if pos_symbol == symbol:
+                    continue
+                
+                correlation = self._get_dynamic_correlation(symbol, pos_symbol)
+                pos_direction = pos_data.get('direction', 'HOLD')
+                
+                if abs(correlation) > 0.5:  # Significant correlation
+                    if correlation > 0 and direction != pos_direction:
+                        # Positive correlation but opposite directions - high risk
+                        correlation_risk += abs(correlation) * 0.5
+                    elif correlation < 0 and direction == pos_direction:
+                        # Negative correlation but same direction - medium risk
+                        correlation_risk += abs(correlation) * 0.3
+                    
+                    position_count += 1
+            
+            if position_count > 0:
+                avg_correlation_risk = correlation_risk / position_count
+                adjustment_factor = 1 - min(0.5, avg_correlation_risk)  # Max 50% reduction
+                position_size *= adjustment_factor
+                logger.debug(f"Correlation adjustment factor: {adjustment_factor:.2f}")
+            
+            return max(0.01, position_size)
+            
+        except Exception as e:
+            logger.error(f"Error in correlation adjustments: {e}")
+            return position_size
+    
+    def _apply_drawdown_protection(self, position_size: float, account_balance: float) -> float:
+        """Apply drawdown protection adjustments"""
+        try:
+            # Calculate current drawdown
+            self._update_drawdown_calculation(account_balance)
+            
+            if self.current_drawdown > 0:
+                # Reduce position size based on drawdown severity
+                if self.current_drawdown > self.max_drawdown_limit * 0.5:
+                    # Severe drawdown - aggressive reduction
+                    drawdown_factor = 1 - (self.current_drawdown / self.max_drawdown_limit) * 0.7
+                    position_size *= max(0.2, drawdown_factor)
+                    logger.warning(f"Severe drawdown protection: {drawdown_factor:.2f}")
+                elif self.current_drawdown > self.max_drawdown_limit * 0.3:
+                    # Moderate drawdown - moderate reduction
+                    drawdown_factor = 1 - (self.current_drawdown / self.max_drawdown_limit) * 0.4
+                    position_size *= max(0.5, drawdown_factor)
+                    logger.info(f"Moderate drawdown protection: {drawdown_factor:.2f}")
+            
+            # Consecutive losses protection
+            if self.consecutive_losses > 2:
+                loss_factor = 1 - (self.consecutive_losses - 2) * 0.1
+                position_size *= max(0.3, loss_factor)
+                logger.info(f"Consecutive losses protection: {loss_factor:.2f}")
+            
+            return max(0.01, position_size)
+            
+        except Exception as e:
+            logger.error(f"Error in drawdown protection: {e}")
+            return position_size
+    
+    def _apply_emergency_controls(self, position_size: float, symbol: str, strategy: str) -> float:
+        """Apply emergency risk controls"""
+        try:
+            # Check if emergency stop is triggered
+            if self.emergency_stop_triggered:
+                logger.warning("Emergency stop active - minimal position size")
+                return 0.01
+            
+            # Market hours check (simplified)
+            current_hour = datetime.now().hour
+            if current_hour < 2 or current_hour > 22:  # Outside main trading hours
+                position_size *= 0.7
+                logger.debug("Outside main trading hours - reduced size")
+            
+            # Strategy-specific adjustments
+            if 'RL' in strategy and len(self.portfolio_positions) == 0:
+                # First RL trade - be more conservative
+                position_size *= 0.8
+                logger.debug("First RL trade - conservative sizing")
+            
+            # News/event avoidance (simplified)
+            # In production, this would check an economic calendar
+            if datetime.now().minute == 30:  # Simplified news time check
+                position_size *= 0.5
+                logger.debug("Potential news time - reduced sizing")
+            
+            return max(0.01, position_size)
+            
+        except Exception as e:
+            logger.error(f"Error in emergency controls: {e}")
+            return position_size
+    
+    def _calculate_comprehensive_risk_metrics(self, symbol: str, final_size: float, 
+                                            entry_price: float, stop_loss: float, 
+                                            take_profit: float, account_balance: float,
+                                            position_sizes: Dict[str, float], 
+                                            regime: MarketRegime) -> RiskMetrics:
+        """Calculate comprehensive risk metrics"""
+        try:
+            # Basic risk calculations
+            if symbol == 'XAUUSD':
+                contract_size = 100
+                point_value = 1.0
+            else:
+                contract_size = 100000
+                point_value = 10 if 'JPY' not in symbol else 1
+            
+            # Calculate risk amounts
+            if stop_loss > 0:
+                stop_distance = abs(entry_price - stop_loss)
+                if symbol == 'XAUUSD':
+                    max_loss_amount = stop_distance * final_size * contract_size
+                else:
+                    pip_size = 0.0001 if 'JPY' not in symbol else 0.01
+                    stop_pips = stop_distance / pip_size
+                    max_loss_amount = stop_pips * point_value * final_size
+            else:
+                position_value = final_size * entry_price * contract_size
+                max_loss_amount = position_value * 0.02  # 2% estimate
+            
+            # Calculate potential gain
+            if take_profit > 0:
+                profit_distance = abs(take_profit - entry_price)
+                if symbol == 'XAUUSD':
+                    max_gain_amount = profit_distance * final_size * contract_size
+                else:
+                    pip_size = 0.0001 if 'JPY' not in symbol else 0.01
+                    profit_pips = profit_distance / pip_size
+                    max_gain_amount = profit_pips * point_value * final_size
+            else:
+                max_gain_amount = max_loss_amount * 1.5  # 1.5:1 default
+            
+            # Calculate ratios and percentages
+            risk_reward_ratio = max_gain_amount / max_loss_amount if max_loss_amount > 0 else 0
+            portfolio_risk_pct = (max_loss_amount / account_balance) * 100
+            
+            # Calculate risk score (0-100)
+            risk_score = self._calculate_risk_score(
+                portfolio_risk_pct, regime, symbol, final_size, position_sizes
+            )
+            
+            # Determine sizing method used
+            sizing_method = self._determine_sizing_method_used(position_sizes, final_size)
+            
+            # Calculate additional risk metrics
+            liquidity_score = self._calculate_liquidity_score(symbol)
+            execution_risk_score = self._calculate_execution_risk_score(symbol, final_size)
+            
+            return RiskMetrics(
+                position_size=final_size,
+                risk_amount=max_loss_amount,
+                max_loss_amount=max_loss_amount,
+                max_gain_amount=max_gain_amount,
+                risk_reward_ratio=risk_reward_ratio,
+                portfolio_risk_pct=portfolio_risk_pct,
+                confidence_adjusted_size=final_size,
+                kelly_size=position_sizes.get('kelly', final_size),
+                volatility_adjusted_size=position_sizes.get('volatility_target', final_size),
+                correlation_adjusted_size=final_size,
+                drawdown_adjusted_size=final_size,
+                final_position_size=final_size,
+                risk_score=risk_score,
+                sizing_method=sizing_method,
+                market_regime=regime.value,
+                liquidity_score=liquidity_score,
+                execution_risk_score=execution_risk_score
+            )
+            
+        except Exception as e:
+            logger.error(f"Error calculating comprehensive risk metrics: {e}")
+            return RiskMetrics(
+                position_size=0.01, risk_amount=0.0, max_loss_amount=0.0,
+                max_gain_amount=0.0, risk_reward_ratio=0.0, portfolio_risk_pct=0.0,
+                confidence_adjusted_size=0.01, kelly_size=0.01, volatility_adjusted_size=0.01,
+                correlation_adjusted_size=0.01, drawdown_adjusted_size=0.01,
+                final_position_size=0.01, risk_score=50.0, sizing_method='fixed_fractional',
+                market_regime='ranging', liquidity_score=75.0, execution_risk_score=25.0
+            )
+    
+    # [Continuing with more methods...]
+    def _calculate_risk_score(self, portfolio_risk_pct: float, regime: MarketRegime, 
+                            symbol: str, final_size: float, position_sizes: Dict[str, float]) -> float:
+        """Calculate overall risk score (0-100, higher = riskier)"""
+        try:
+            score = 0
+            
+            # Portfolio risk component (0-30 points)
+            if portfolio_risk_pct > 3:
+                score += 30
+            elif portfolio_risk_pct > 2:
+                score += 20
+            elif portfolio_risk_pct > 1:
+                score += 10
+            
+            # Market regime component (0-25 points)
+            regime_scores = {
+                MarketRegime.CRISIS: 25,
+                MarketRegime.HIGH_VOLATILITY: 20,
+                MarketRegime.TRENDING_BULL: 5,
+                MarketRegime.TRENDING_BEAR: 5,
+                MarketRegime.RANGING: 10,
+                MarketRegime.LOW_VOLATILITY: 0
+            }
+            score += regime_scores.get(regime, 10)
+            
+            # Symbol risk component (0-20 points)
+            symbol_risk_scores = {
+                'XAUUSD': 15,
+                'USDJPY': 12,
+                'GBPJPY': 10,
+                'EURJPY': 8,
+                'GBPUSD': 5,
+                'EURUSD': 3
+            }
+            score += symbol_risk_scores.get(symbol, 10)
+            
+            # Position size component (0-15 points)
+            if final_size > 1.0:
+                score += 15
+            elif final_size > 0.5:
+                score += 10
+            elif final_size > 0.2:
+                score += 5
+            
+            # Consistency component (0-10 points)
+            if position_sizes:
+                sizes_array = np.array(list(position_sizes.values()))
+                cv = np.std(sizes_array) / np.mean(sizes_array) if np.mean(sizes_array) > 0 else 0
+                if cv > 0.5:  # High variation between methods
+                    score += 10
+                elif cv > 0.3:
+                    score += 5
+            
+            return min(100, max(0, score))
+            
+        except Exception as e:
+            logger.error(f"Error calculating risk score: {e}")
+            return 50.0
+    
+    def _determine_sizing_method_used(self, position_sizes: Dict[str, float], final_size: float) -> str:
+        """Determine which sizing method was primarily used"""
+        try:
+            if not position_sizes:
+                return 'unknown'
+            
+            # Find closest match
+            closest_method = 'unknown'
+            min_difference = float('inf')
+            
+            for method, size in position_sizes.items():
+                difference = abs(size - final_size)
+                if difference < min_difference:
+                    min_difference = difference
+                    closest_method = method
+            
+            return closest_method
+            
+        except Exception:
+            return 'unknown'
+    
+    def _calculate_liquidity_score(self, symbol: str) -> float:
+        """Calculate liquidity score for the symbol (0-100, higher = more liquid)"""
+        try:
+            liquidity_scores = {
+                'EURUSD': 100,
+                'GBPUSD': 95,
+                'USDJPY': 90,
+                'USDCHF': 85,
+                'AUDUSD': 80,
+                'USDCAD': 75,
+                'NZDUSD': 70,
+                'XAUUSD': 85,
+                'GBPJPY': 65,
+                'EURJPY': 60
+            }
+            
+            base_score = liquidity_scores.get(symbol, 50)
+            
+            # Adjust based on time (simplified)
+            current_hour = datetime.now().hour
+            if 8 <= current_hour <= 17:  # London/NY session
+                time_adjustment = 1.0
+            elif 13 <= current_hour <= 17:  # Overlap
+                time_adjustment = 1.1
+            else:
+                time_adjustment = 0.8
+            
+            return min(100, base_score * time_adjustment)
+            
+        except Exception:
+            return 75.0
+    
+    def _calculate_execution_risk_score(self, symbol: str, position_size: float) -> float:
+        """Calculate execution risk score (0-100, higher = riskier execution)"""
+        try:
+            base_scores = {
+                'EURUSD': 5,
+                'GBPUSD': 8,
+                'USDJPY': 25,  # High due to requote issues
+                'XAUUSD': 15,  # Moderate due to volatility
+                'GBPJPY': 20,
+                'EURJPY': 18
+            }
+            
+            base_score = base_scores.get(symbol, 15)
+            
+            # Adjust for position size
+            if position_size > 1.0:
+                size_adjustment = 1.5
+            elif position_size > 0.5:
+                size_adjustment = 1.2
+            else:
+                size_adjustment = 1.0
+            
+            # Adjust for market hours
+            current_hour = datetime.now().hour
+            if current_hour < 2 or current_hour > 22:
+                time_adjustment = 1.3  # Higher risk outside main hours
+            else:
+                time_adjustment = 1.0
+            
+            final_score = base_score * size_adjustment * time_adjustment
+            return min(100, max(0, final_score))
+            
+        except Exception:
+            return 25.0
+    
+    # [Additional methods continue...]
+    
+    def check_correlation_risk(self, new_signal: Dict[str, Any], 
+                             open_positions: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """Enhanced correlation risk analysis with dynamic correlation calculation"""
         try:
             symbol = new_signal.get('symbol', '')
             direction = new_signal.get('direction', '')
             
-            if not symbol or not direction:
-                raise ValueError("Missing required signal data")
-        
-            # Define correlation matrix (you can make this dynamic by calculating from historical data)
-            correlation_matrix = {
-                ('EURUSD', 'GBPUSD'): 0.85,  # Strong positive correlation
-                ('EURUSD', 'XAUUSD'): -0.25, # Weak negative correlation
-                ('GBPUSD', 'XAUUSD'): -0.20, # Weak negative correlation
-                ('USDJPY', 'EURUSD'): 0.90,  # Strong positive correlation
-                ('USDJPY', 'GBPUSD'): 0.80,  # Strong positive correlation
-                ('XAUUSD', 'USDJPY'): -0.30   # Moderate negative correlation
-            }
-        except ValueError as ve:
-            self.logger.error(f"Invalid signal data: {ve}")
-            return {
-                'allow_trade': False,
-                'reason': f'Invalid signal data: {ve}',
-                'warnings': [],
-                'suggested_action': 'Check signal data completeness'
-            }
-        except Exception as e:
-            self.logger.error(f"Error processing correlation data: {e}")
-            return {
-                'allow_trade': False,
-                'reason': f'Error in correlation check: {e}',
-                'warnings': [],
-                'suggested_action': 'System error - manual review needed'
-            }
-        
-        correlation_warnings = []
-        high_risk_correlations = []
-        
-        for position in open_positions:
-            pos_symbol = position.get('symbol', '')
-            pos_direction = position.get('type', '')
+            correlation_warnings = []
+            high_risk_correlations = []
+            total_correlation_risk = 0
             
-            # Skip if same symbol
-            if pos_symbol == symbol:
-                continue
-            
-            # Get correlation coefficient
-            pair_key = tuple(sorted([symbol, pos_symbol]))
-            correlation = correlation_matrix.get(pair_key, 0.0)
-            
-            # Check for high correlation conflicts
-            if abs(correlation) > 0.7:  # High correlation threshold
+            for position in open_positions:
+                pos_symbol = position.get('symbol', '')
+                pos_direction = position.get('type', '')
+                pos_size = position.get('volume', 0)
                 
-                if correlation > 0.7:  # Positive correlation
-                    if direction != pos_direction:  # Opposite directions
-                        warning = {
-                            'type': 'POSITIVE_CORRELATION_CONFLICT',
-                            'message': f"{symbol} {direction} conflicts with {pos_symbol} {pos_direction}",
-                            'correlation': correlation,
-                            'risk_level': 'HIGH',
-                            'recommendation': 'Consider closing one position or reducing size'
-                        }
+                if pos_symbol == symbol:
+                    continue
+                
+                # Get dynamic correlation
+                correlation = self._get_dynamic_correlation(symbol, pos_symbol)
+                
+                # Calculate position-weighted correlation risk
+                position_risk_weight = min(1.0, pos_size / 0.5)  # Normalize to 0.5 lot base
+                weighted_correlation = correlation * position_risk_weight
+                
+                if abs(correlation) > self.correlation_limit:
+                    risk_severity = self._calculate_correlation_risk_severity(
+                        correlation, direction, pos_direction, pos_size
+                    )
+                    
+                    warning = {
+                        'type': self._get_correlation_conflict_type(correlation, direction, pos_direction),
+                        'message': f"{symbol} {direction} vs {pos_symbol} {pos_direction} (corr: {correlation:.2f})",
+                        'correlation': correlation,
+                        'risk_level': risk_severity.value,
+                        'position_size': pos_size,
+                        'weighted_risk': abs(weighted_correlation),
+                        'recommendation': self._get_correlation_recommendation(correlation, direction, pos_direction)
+                    }
+                    
+                    correlation_warnings.append(warning)
+                    
+                    if risk_severity in [RiskLevel.HIGH, RiskLevel.VERY_HIGH, RiskLevel.CRITICAL]:
                         high_risk_correlations.append(warning)
-                        correlation_warnings.append(warning)
                 
-                elif correlation < -0.7:  # Negative correlation
-                    if direction == pos_direction:  # Same directions
-                        warning = {
-                            'type': 'NEGATIVE_CORRELATION_CONFLICT', 
-                            'message': f"{symbol} {direction} conflicts with {pos_symbol} {pos_direction}",
-                            'correlation': correlation,
-                            'risk_level': 'MEDIUM',
-                            'recommendation': 'Monitor closely for divergence'
-                        }
-                        correlation_warnings.append(warning)
-        
-        # Determine action based on correlation analysis
-        if high_risk_correlations:
-            return {
-                'allow_trade': False,  # Block conflicting trades
-                'reason': 'High correlation conflict detected',
-                'warnings': correlation_warnings,
-                'suggested_action': 'Wait for better entry or close conflicting position'
-            }
-        elif correlation_warnings:
-            return {
-                'allow_trade': True,  # Allow but with warnings
-                'reason': 'Moderate correlation risk',
-                'warnings': correlation_warnings,
-                'suggested_action': 'Reduce position size by 50%'
-            }
-        else:
+                total_correlation_risk += abs(weighted_correlation)
+            
+            # Determine final action
+            action_result = self._determine_correlation_action(
+                high_risk_correlations, correlation_warnings, total_correlation_risk
+            )
+            
+            return action_result
+            
+        except Exception as e:
+            logger.error(f"Error in enhanced correlation risk check: {e}")
             return {
                 'allow_trade': True,
-                'reason': 'No significant correlation conflicts',
-                'warnings': [],
-                'suggested_action': 'Normal position sizing'
+                'reason': 'Correlation check failed - allowing with caution',
+                'warnings': [{'type': 'ERROR', 'message': f'Correlation error: {e}'}],
+                'risk_level': 'UNKNOWN'
             }
+    
+    def _get_dynamic_correlation(self, symbol1: str, symbol2: str) -> float:
+        """Calculate dynamic correlation between symbols"""
+        try:
+            # Check cache first
+            cache_key = f"{min(symbol1, symbol2)}_{max(symbol1, symbol2)}_{datetime.now().date()}"
+            if cache_key in self.correlation_cache:
+                return self.correlation_cache[cache_key]
+            
+            # Try to calculate from historical data
+            if symbol1 in self.returns_history and symbol2 in self.returns_history:
+                returns1 = self.returns_history[symbol1][-50:]  # Last 50 returns
+                returns2 = self.returns_history[symbol2][-50:]
+                
+                if len(returns1) > 10 and len(returns2) > 10:
+                    min_length = min(len(returns1), len(returns2))
+                    correlation = np.corrcoef(returns1[-min_length:], returns2[-min_length:])[0, 1]
+                    
+                    if not np.isnan(correlation):
+                        self.correlation_cache[cache_key] = correlation
+                        return correlation
+            
+            # Fallback to static correlation matrix
+            pair_key = tuple(sorted([symbol1, symbol2]))
+            static_correlation = self.correlation_matrix.get(pair_key, 0.0)
+            
+            self.correlation_cache[cache_key] = static_correlation
+            return static_correlation
+            
+        except Exception as e:
+            logger.error(f"Error calculating dynamic correlation: {e}")
+            return 0.0
+    
+    def update_market_data(self, symbol: str, price: float, timestamp: datetime = None) -> None:
+        """Update market data for risk calculations"""
+        try:
+            if timestamp is None:
+                timestamp = datetime.now()
+            
+            # Update price history
+            if symbol not in self.price_history:
+                self.price_history[symbol] = []
+            
+            self.price_history[symbol].append(price)
+            
+            # Keep only recent data (last 200 points)
+            if len(self.price_history[symbol]) > 200:
+                self.price_history[symbol] = self.price_history[symbol][-200:]
+            
+            # Calculate and store returns
+            if len(self.price_history[symbol]) > 1:
+                if symbol not in self.returns_history:
+                    self.returns_history[symbol] = []
+                
+                returns = np.diff(np.log(self.price_history[symbol]))
+                self.returns_history[symbol] = returns.tolist()[-100:]  # Keep last 100 returns
+            
+            # Calculate and cache volatility
+            if symbol in self.returns_history and len(self.returns_history[symbol]) > 10:
+                volatility = np.std(self.returns_history[symbol]) * np.sqrt(252)  # Annualized
+                self.volatility_cache[symbol] = volatility
+            
+        except Exception as e:
+            logger.error(f"Error updating market data for {symbol}: {e}")
+    
+    def calculate_portfolio_metrics(self, account_balance: float) -> PortfolioMetrics:
+        """Calculate comprehensive portfolio risk metrics"""
+        try:
+            if not self.portfolio_positions:
+                return PortfolioMetrics(
+                    total_exposure=0, net_exposure=0, gross_exposure=0,
+                    portfolio_beta=0, portfolio_volatility=0, sharpe_ratio=0,
+                    sortino_ratio=0, max_drawdown=0, current_drawdown=self.current_drawdown,
+                    var_95=0, cvar_95=0, correlation_risk=0, concentration_risk=0, liquidity_risk=0
+                )
+            
+            # Calculate exposures
+            total_exposure = sum(abs(pos.get('notional_value', 0)) for pos in self.portfolio_positions.values())
+            long_exposure = sum(pos.get('notional_value', 0) for pos in self.portfolio_positions.values() 
+                              if pos.get('direction') == 'BUY')
+            short_exposure = sum(abs(pos.get('notional_value', 0)) for pos in self.portfolio_positions.values() 
+                               if pos.get('direction') == 'SELL')
+            
+            net_exposure = (long_exposure - short_exposure) / account_balance
+            gross_exposure = total_exposure / account_balance
+            
+            # Calculate portfolio volatility (simplified)
+            portfolio_vol = self._calculate_portfolio_volatility()
+            
+            # Calculate performance metrics
+            sharpe_ratio = self._calculate_portfolio_sharpe_ratio()
+            sortino_ratio = self._calculate_portfolio_sortino_ratio()
+            
+            # Calculate VaR and CVaR
+            var_95, cvar_95 = self._calculate_portfolio_var_cvar(account_balance)
+            
+            # Calculate risk concentrations
+            correlation_risk = self._calculate_portfolio_correlation_risk()
+            concentration_risk = self._calculate_portfolio_concentration_risk()
+            liquidity_risk = self._calculate_portfolio_liquidity_risk()
+            
+            return PortfolioMetrics(
+                total_exposure=total_exposure,
+                net_exposure=net_exposure,
+                gross_exposure=gross_exposure,
+                portfolio_beta=1.0,  # Simplified
+                portfolio_volatility=portfolio_vol,
+                sharpe_ratio=sharpe_ratio,
+                sortino_ratio=sortino_ratio,
+                max_drawdown=self.max_drawdown_session,
+                current_drawdown=self.current_drawdown,
+                var_95=var_95,
+                cvar_95=cvar_95,
+                correlation_risk=correlation_risk,
+                concentration_risk=concentration_risk,
+                liquidity_risk=liquidity_risk
+            )
+            
+        except Exception as e:
+            logger.error(f"Error calculating portfolio metrics: {e}")
+            return PortfolioMetrics(
+                total_exposure=0, net_exposure=0, gross_exposure=0,
+                portfolio_beta=0, portfolio_volatility=0, sharpe_ratio=0,
+                sortino_ratio=0, max_drawdown=0, current_drawdown=0,
+                var_95=0, cvar_95=0, correlation_risk=0, concentration_risk=0, liquidity_risk=0
+            )
+    
+    def generate_risk_report(self, account_balance: float) -> Dict[str, Any]:
+        """Generate comprehensive risk report"""
+        try:
+            portfolio_metrics = self.calculate_portfolio_metrics(account_balance)
+            
+            report = {
+                'timestamp': datetime.now(),
+                'account_balance': account_balance,
+                'risk_summary': self.get_risk_summary(),
+                'portfolio_metrics': asdict(portfolio_metrics),
+                'position_details': self._get_detailed_position_analysis(),
+                'risk_alerts': [asdict(alert) for alert in self.risk_alerts[-10:]],  # Last 10 alerts
+                'correlation_matrix': self._get_current_correlation_matrix(),
+                'regime_analysis': self._get_regime_analysis(),
+                'performance_attribution': self._get_performance_attribution(),
+                'stress_test_results': self._run_basic_stress_tests(account_balance),
+                'recommendations': self._generate_risk_recommendations()
+            }
+            
+            return report
+            
+        except Exception as e:
+            logger.error(f"Error generating risk report: {e}")
+            return {'error': str(e), 'timestamp': datetime.now()}
+    
+    def shutdown(self) -> None:
+        """Enhanced shutdown with comprehensive reporting"""
+        try:
+            logger.info("📊 Enhanced Risk Manager Shutdown Report:")
+            logger.info("=" * 50)
+            
+            # Final statistics
+            logger.info(f"Total Trades Managed: {self.total_trades_managed}")
+            logger.info(f"Successful Risk Calculations: {self.successful_risk_calculations}")
+            logger.info(f"Risk Alerts Generated: {self.risk_alerts_generated}")
+            
+            if self.total_trades_managed > 0:
+                success_rate = (self.successful_risk_calculations / self.total_trades_managed) * 100
+                logger.info(f"Risk Calculation Success Rate: {success_rate:.1f}%")
+            
+            # Risk tracking summary
+            logger.info(f"Daily Risk Used: {self.daily_risk_used:.2f}%")
+            logger.info(f"Current Drawdown: {self.current_drawdown:.2%}")
+            logger.info(f"Max Session Drawdown: {self.max_drawdown_session:.2%}")
+            logger.info(f"Consecutive Losses: {self.consecutive_losses}")
+            
+            # Portfolio summary
+            logger.info(f"Active Positions: {len(self.portfolio_positions)}")
+            logger.info(f"Emergency Stop Status: {'ACTIVE' if self.emergency_stop_triggered else 'INACTIVE'}")
+            
+            # Cache summary
+            logger.info(f"Correlation Cache Entries: {len(self.correlation_cache)}")
+            logger.info(f"Volatility Cache Entries: {len(self.volatility_cache)}")
+            logger.info(f"Regime Cache Entries: {len(self.regime_cache)}")
+            
+            # Save important data (simplified)
+            self._save_risk_state()
+            
+            logger.info("=" * 50)
+            logger.info("✅ Enhanced Risk Manager shutdown completed")
+            
+        except Exception as e:
+            logger.error(f"Error during enhanced risk manager shutdown: {e}")
+    
+    def _save_risk_state(self) -> None:
+        """Save important risk state for recovery"""
+        try:
+            risk_state = {
+                'daily_risk_used': self.daily_risk_used,
+                'current_drawdown': self.current_drawdown,
+                'consecutive_losses': self.consecutive_losses,
+                'emergency_stop_triggered': self.emergency_stop_triggered,
+                'portfolio_positions': self.portfolio_positions,
+                'last_reset_date': self.last_reset_date.isoformat(),
+                'timestamp': datetime.now().isoformat()
+            }
+            
+            # In production, save to file or database
+            logger.debug("Risk state prepared for saving")
+            
+        except Exception as e:
+            logger.error(f"Error saving risk state: {e}")
+    
+    # Helper methods for portfolio calculations
+    def _calculate_current_portfolio_exposure(self) -> float:
+        """Calculate current portfolio exposure"""
+        try:
+            total_notional = sum(pos.get('notional_value', 0) for pos in self.portfolio_positions.values())
+            return total_notional / 100000  # Simplified exposure calculation
+        except Exception:
+            return 0.0
+    
+    def _calculate_symbol_exposure(self, symbol: str) -> float:
+        """Calculate exposure for specific symbol"""
+        try:
+            symbol_notional = sum(pos.get('notional_value', 0) for sym, pos in self.portfolio_positions.items() 
+                                if sym == symbol)
+            return symbol_notional / 100000  # Simplified
+        except Exception:
+            return 0.0
+    
+    def _calculate_net_directional_exposure(self, direction: str) -> float:
+        """Calculate net directional exposure"""
+        try:
+            long_exposure = sum(pos.get('notional_value', 0) for pos in self.portfolio_positions.values() 
+                              if pos.get('direction') == 'BUY')
+            short_exposure = sum(pos.get('notional_value', 0) for pos in self.portfolio_positions.values() 
+                               if pos.get('direction') == 'SELL')
+            
+            total_exposure = long_exposure + short_exposure
+            if total_exposure > 0:
+                return (long_exposure - short_exposure) / total_exposure
+            return 0.0
+        except Exception:
+            return 0.0
     

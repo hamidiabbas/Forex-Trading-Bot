@@ -1,6 +1,6 @@
 """
-Enhanced Execution Manager with Advanced Order Management
-Professional-grade trade execution for MetaTrader 5 - XAUUSD OPTIMIZED VERSION
+Enhanced Execution Manager with XAUUSD Requote Protection
+Professional-grade trade execution for MetaTrader 5 - XAUUSD OPTIMIZED
 """
 
 import logging
@@ -42,7 +42,7 @@ class EnhancedPosition:
 
 class EnhancedExecutionManager:
     """
-    Enhanced execution manager with advanced order management and monitoring
+    Enhanced execution manager with XAUUSD requote protection
     """
     
     def __init__(self, config, market_intelligence):
@@ -61,10 +61,42 @@ class EnhancedExecutionManager:
         self.max_slippage = config.get('mt5.max_slippage', 3)
         self.execution_timeout = config.get('mt5.execution_timeout', 30)
         
+        # ✅ ENHANCED: Symbol-specific execution parameters
+        self.symbol_execution_params = {
+            'XAUUSD': {
+                'max_slippage': 12,  # Much higher for Gold
+                'max_retry_attempts': 8,  # More retries for Gold
+                'retry_delay': 0.3,  # Faster retries for Gold
+                'max_slippage_escalation': 25  # Can go up to 25 points on requotes
+            },
+            'USDJPY': {
+                'max_slippage': 8,
+                'max_retry_attempts': 6,
+                'retry_delay': 0.5,
+                'max_slippage_escalation': 15
+            },
+            'GBPJPY': {
+                'max_slippage': 6,
+                'max_retry_attempts': 5,
+                'retry_delay': 0.5,
+                'max_slippage_escalation': 12
+            },
+            'EURJPY': {
+                'max_slippage': 6,
+                'max_retry_attempts': 5,
+                'retry_delay': 0.5,
+                'max_slippage_escalation': 12
+            },
+            'DEFAULT': {
+                'max_slippage': 3,
+                'max_retry_attempts': 3,
+                'retry_delay': 1.0,
+                'max_slippage_escalation': 8
+            }
+        }
+        
         # Advanced execution features
         self.enable_partial_fills = config.get('execution.enable_partial_fills', True)
-        self.max_retry_attempts = config.get('execution.max_retry_attempts', 3)
-        self.retry_delay = config.get('execution.retry_delay_seconds', 1)
         
         # Position tracking with thread safety
         self.position_lock = threading.Lock()
@@ -97,17 +129,26 @@ class EnhancedExecutionManager:
             'PRICE_CHANGED': 10020,
             'REJECT': 10006,
             'ERROR': 10013,
-            'UNSUPPORTED_FILLING': 10030
+            'UNSUPPORTED_FILLING': 10030,
+            'TRADE_CONTEXT_BUSY': 10041,
+            'TOO_MANY_REQUESTS': 10040
         }
         
         # Symbol filling mode cache for performance
         self.symbol_filling_modes = {}
         
+        # ✅ NEW: Requote statistics tracking
+        self.requote_stats = {}
+        
         # Initialize MT5 connection
         self._connect_mt5()
         
-        self.logger.info("Enhanced ExecutionManager initialized successfully")
+        self.logger.info("Enhanced ExecutionManager with XAUUSD protection initialized successfully")
         self.logger.info(f"Connected to MT5: {'Yes' if self.connected else 'No'}")
+
+    def _get_symbol_execution_params(self, symbol: str) -> Dict[str, Any]:
+        """Get symbol-specific execution parameters"""
+        return self.symbol_execution_params.get(symbol, self.symbol_execution_params['DEFAULT'])
 
     def _connect_mt5(self) -> bool:
         """Enhanced MT5 connection with comprehensive error handling"""
@@ -145,15 +186,16 @@ class EnhancedExecutionManager:
                 self.logger.info(f"Equity: ${self.account_equity:.2f}")
                 self.logger.info(f"Server: {account_info.server}")
                 
-                # Test connection with a symbol info request
-                test_symbol = self.config.get('trading.symbols', ['EURUSD'])[0]
-                symbol_info = mt5.symbol_info(test_symbol)
-                if symbol_info is None:
-                    self.logger.warning(f"Test symbol {test_symbol} not available")
-                else:
-                    self.logger.info(f"Test symbol {test_symbol} accessible")
-                    # Cache filling mode for test symbol
-                    self._cache_symbol_filling_mode(test_symbol, symbol_info)
+                # Test connection with symbols
+                test_symbols = self.config.get('trading.symbols', ['EURUSD', 'GBPUSD', 'XAUUSD'])
+                for symbol in test_symbols:
+                    symbol_info = mt5.symbol_info(symbol)
+                    if symbol_info is None:
+                        self.logger.warning(f"Test symbol {symbol} not available")
+                    else:
+                        self.logger.info(f"Test symbol {symbol} accessible")
+                        # Cache filling mode for symbol
+                        self._cache_symbol_filling_mode(symbol, symbol_info)
                 
                 return True
                 
@@ -163,7 +205,7 @@ class EnhancedExecutionManager:
 
     def execute_trade(self, signal: Dict[str, Any], risk_params: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """
-        Enhanced trade execution with comprehensive error handling and monitoring
+        Enhanced trade execution with XAUUSD requote protection
         """
         if not self.connected:
             self.logger.warning("MT5 not connected, attempting reconnection...")
@@ -184,6 +226,13 @@ class EnhancedExecutionManager:
             entry_price = risk_params.get('entry_price', 0)
             stop_loss = risk_params.get('stop_loss', 0)
             take_profit = risk_params.get('take_profit', 0)
+            
+            # ✅ NEW: Log symbol-specific execution parameters
+            exec_params = self._get_symbol_execution_params(symbol)
+            self.logger.info(f"🎯 Executing {symbol} with optimized parameters:")
+            self.logger.info(f"   Max Slippage: {exec_params['max_slippage']} points")
+            self.logger.info(f"   Max Retries: {exec_params['max_retry_attempts']}")
+            self.logger.info(f"   Retry Delay: {exec_params['retry_delay']}s")
             
             # Validate execution parameters
             validation_result = self._validate_execution_parameters(
@@ -229,8 +278,8 @@ class EnhancedExecutionManager:
                 self.failed_trades += 1
                 return None
             
-            # Execute order with retry logic
-            execution_result = self._execute_order_with_retry(order_request)
+            # ✅ ENHANCED: Execute order with symbol-specific retry logic
+            execution_result = self._execute_order_with_enhanced_retry(order_request)
             
             if execution_result and execution_result.get('success'):
                 # Process successful execution
@@ -241,11 +290,18 @@ class EnhancedExecutionManager:
                 self.successful_trades += 1
                 self.total_trades += 1
                 
+                # ✅ NEW: Update requote statistics
+                self._update_requote_stats(symbol, execution_result.get('attempt', 1), True)
+                
                 return trade_result
             else:
                 # Process failed execution
                 self._process_failed_execution(execution_result, symbol, direction)
                 self.failed_trades += 1
+                
+                # ✅ NEW: Update requote statistics
+                self._update_requote_stats(symbol, execution_result.get('attempts', 1), False)
+                
                 return None
                 
         except Exception as e:
@@ -332,9 +388,11 @@ class EnhancedExecutionManager:
             if symbol_info is None:
                 return None
             
-            # Validate tick data freshness (within last 10 seconds)
+            # ✅ ENHANCED: More lenient freshness check for volatile instruments
             current_time = datetime.now().timestamp()
-            if current_time - tick.time > 10:
+            freshness_threshold = 15 if symbol == 'XAUUSD' else 10  # Allow older ticks for Gold
+            
+            if current_time - tick.time > freshness_threshold:
                 self.logger.warning(f"Stale tick data for {symbol}: {current_time - tick.time} seconds old")
             
             return {
@@ -432,7 +490,7 @@ class EnhancedExecutionManager:
     def _create_order_request(self, symbol: str, direction: str, position_size: float,
                             execution_price: float, stop_loss: float, take_profit: float,
                             strategy: str, confidence: float) -> Optional[Dict[str, Any]]:
-        """✅ UPDATED: Create order request with XAUUSD-optimized slippage settings"""
+        """✅ ENHANCED: Create order request with symbol-specific optimized settings"""
         try:
             order_type = mt5.ORDER_TYPE_BUY if direction.upper() == 'BUY' else mt5.ORDER_TYPE_SELL
             
@@ -440,28 +498,11 @@ class EnhancedExecutionManager:
             timestamp = datetime.now().strftime('%H%M%S')
             comment = f"{strategy[:8]}_{timestamp}_C{int(confidence*100)}"
             
-            # ✅ UPDATED: Dynamic slippage based on symbol (with XAUUSD optimization)
-            if symbol == 'USDJPY':
-                max_slippage = 5  # Higher slippage tolerance for USDJPY (legacy - not used)
-                self.logger.debug(f"Using legacy USDJPY slippage ({max_slippage}) for {symbol}")
-            elif symbol in ['GBPJPY', 'EURJPY', 'AUDJPY', 'CADJPY', 'CHFJPY']:
-                max_slippage = 4  # Medium slippage for JPY pairs
-                self.logger.debug(f"Using medium slippage ({max_slippage}) for JPY pair {symbol}")
-            elif symbol == 'XAUUSD':  # ✅ NEW: Gold-specific optimized settings
-                max_slippage = 4  # Medium slippage for Gold (excellent liquidity)
-                self.logger.debug(f"Using Gold-optimized slippage ({max_slippage}) for {symbol}")
-            elif symbol in ['GBPUSD', 'AUDUSD', 'NZDUSD', 'USDCAD']:
-                max_slippage = self.max_slippage  # Default slippage for major pairs
-                self.logger.debug(f"Using standard slippage ({max_slippage}) for major pair {symbol}")
-            elif symbol in ['EURUSD']:
-                max_slippage = self.max_slippage  # Default slippage for EUR pairs
-                self.logger.debug(f"Using standard slippage ({max_slippage}) for EUR pair {symbol}")
-            elif symbol in ['XAGUSD', 'BTCUSD', 'ETHUSD']:  # Other precious metals and crypto
-                max_slippage = 5  # Higher slippage for volatile instruments
-                self.logger.debug(f"Using high slippage ({max_slippage}) for volatile instrument {symbol}")
-            else:
-                max_slippage = self.max_slippage  # Default slippage for other pairs
-                self.logger.debug(f"Using default slippage ({max_slippage}) for {symbol}")
+            # ✅ ENHANCED: Get symbol-specific parameters
+            exec_params = self._get_symbol_execution_params(symbol)
+            max_slippage = exec_params['max_slippage']
+            
+            self.logger.debug(f"Using {symbol}-optimized slippage: {max_slippage} points")
             
             # Determine best filling mode for the broker
             filling_mode = self._get_compatible_filling_mode(symbol)
@@ -474,7 +515,7 @@ class EnhancedExecutionManager:
                 "price": execution_price,
                 "sl": stop_loss if stop_loss > 0 else 0,
                 "tp": take_profit if take_profit > 0 else 0,
-                "deviation": max_slippage,  # Use symbol-specific slippage
+                "deviation": max_slippage,  # Use symbol-specific optimized slippage
                 "magic": self.magic_number,
                 "comment": comment,
                 "type_time": mt5.ORDER_TIME_GTC,
@@ -548,16 +589,27 @@ class EnhancedExecutionManager:
         except Exception as e:
             self.logger.error(f"Error caching filling mode for {symbol}: {e}")
 
-    def _execute_order_with_retry(self, order_request: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        """Execute order with enhanced retry logic and requote handling"""
-        last_error = None
+    def _execute_order_with_enhanced_retry(self, order_request: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """✅ ENHANCED: Execute order with symbol-specific retry logic and advanced requote handling"""
+        symbol = order_request['symbol']
+        exec_params = self._get_symbol_execution_params(symbol)
         
-        for attempt in range(self.max_retry_attempts):
+        max_retry_attempts = exec_params['max_retry_attempts']
+        retry_delay = exec_params['retry_delay']
+        max_slippage_escalation = exec_params['max_slippage_escalation']
+        
+        last_error = None
+        initial_slippage = order_request['deviation']
+        
+        self.logger.info(f"🎯 Starting {symbol} execution with {max_retry_attempts} max attempts, {retry_delay}s delays")
+        
+        for attempt in range(max_retry_attempts):
             try:
-                self.logger.info(f"🚀 Executing {order_request['type']} order for {order_request['symbol']} "
-                               f"(Attempt {attempt + 1}/{self.max_retry_attempts})")
+                self.logger.info(f"🚀 Executing {order_request['type']} order for {symbol} "
+                               f"(Attempt {attempt + 1}/{max_retry_attempts})")
                 self.logger.info(f"   Volume: {order_request['volume']} lots")
                 self.logger.info(f"   Price: {order_request['price']:.5f}")
+                self.logger.info(f"   Slippage: {order_request['deviation']} points")
                 self.logger.info(f"   Stop Loss: {order_request['sl']:.5f}")
                 self.logger.info(f"   Take Profit: {order_request['tp']:.5f}")
                 
@@ -567,9 +619,12 @@ class EnhancedExecutionManager:
                 if result is None:
                     last_error = "No result returned from MT5"
                     self.logger.warning(f"Attempt {attempt + 1} failed: {last_error}")
-                    if attempt < self.max_retry_attempts - 1:
-                        time.sleep(self.retry_delay)
+                    if attempt < max_retry_attempts - 1:
+                        time.sleep(retry_delay)
                     continue
+                
+                # ✅ ENHANCED: Detailed error code analysis
+                self.logger.info(f"MT5 Result Code: {result.retcode} - {getattr(result, 'comment', 'No comment')}")
                 
                 # Check result using numeric codes
                 if result.retcode == self.MT5_RETURN_CODES['DONE']:  # 10009
@@ -578,45 +633,71 @@ class EnhancedExecutionManager:
                     self.logger.info(f"   Ticket: {result.order}")
                     self.logger.info(f"   Executed Volume: {result.volume} lots")
                     self.logger.info(f"   Executed Price: {result.price:.5f}")
+                    self.logger.info(f"   Final Slippage Used: {order_request['deviation']} points")
                     
                     return {
                         'success': True,
                         'result': result,
                         'attempt': attempt + 1,
-                        'symbol': order_request['symbol'],
-                        'direction': 'BUY' if order_request['type'] == mt5.ORDER_TYPE_BUY else 'SELL'
+                        'symbol': symbol,
+                        'direction': 'BUY' if order_request['type'] == mt5.ORDER_TYPE_BUY else 'SELL',
+                        'final_slippage': order_request['deviation']
                     }
                 
                 elif result.retcode in [self.MT5_RETURN_CODES['REQUOTE'], self.MT5_RETURN_CODES['PRICE_OFF']]:
-                    # Enhanced requote handling
-                    self.logger.warning(f"Requote received (code: {result.retcode}) for {order_request['symbol']}")
+                    # ✅ ENHANCED: Advanced requote handling with aggressive escalation
+                    self.logger.warning(f"🔄 Requote #{attempt + 1} for {symbol} (Code: {result.retcode})")
                     
-                    # Get fresh market data
-                    market_data = self._get_validated_market_data(order_request['symbol'])
+                    # Get ultra-fresh market data with multiple attempts
+                    market_data = None
+                    for price_attempt in range(3):
+                        market_data = self._get_validated_market_data(symbol)
+                        if market_data:
+                            break
+                        time.sleep(0.1)  # Very short delay between price fetches
+                    
                     if market_data:
+                        # Update price immediately
                         if order_request['type'] == mt5.ORDER_TYPE_BUY:
                             order_request['price'] = market_data['ask']
                         else:
                             order_request['price'] = market_data['bid']
                         
-                        # ✅ ENHANCED: Symbol-specific slippage increase on requotes
-                        if order_request['symbol'] == 'XAUUSD':
-                            order_request['deviation'] = min(8, order_request['deviation'] + 1)
-                            self.logger.info(f"Increased XAUUSD slippage to {order_request['deviation']}")
-                        elif order_request['symbol'] == 'USDJPY':
-                            order_request['deviation'] = min(10, order_request['deviation'] + 2)
-                            self.logger.info(f"Increased USDJPY slippage to {order_request['deviation']}")
-                        elif order_request['symbol'] in ['GBPJPY', 'EURJPY', 'AUDJPY']:
-                            order_request['deviation'] = min(8, order_request['deviation'] + 1)
-                            self.logger.info(f"Increased JPY pair slippage to {order_request['deviation']}")
+                        # ✅ ENHANCED: Aggressive slippage escalation for volatile instruments
+                        if symbol == 'XAUUSD':
+                            if attempt == 0:
+                                order_request['deviation'] = min(max_slippage_escalation, initial_slippage + 5)
+                            elif attempt == 1:
+                                order_request['deviation'] = min(max_slippage_escalation, initial_slippage + 10)
+                            elif attempt == 2:
+                                order_request['deviation'] = min(max_slippage_escalation, initial_slippage + 15)
+                            else:
+                                order_request['deviation'] = max_slippage_escalation
+                                
+                            self.logger.info(f"🥇 XAUUSD slippage escalated to {order_request['deviation']} points")
+                            
+                        elif symbol in ['USDJPY', 'GBPJPY', 'EURJPY']:
+                            # JPY pairs - moderate escalation
+                            slippage_increase = min(3, 2 + attempt)
+                            order_request['deviation'] = min(max_slippage_escalation, initial_slippage + slippage_increase)
+                            self.logger.info(f"🇯🇵 JPY pair slippage escalated to {order_request['deviation']} points")
+                            
                         else:
-                            order_request['deviation'] = min(6, order_request['deviation'] + 1)
-                            self.logger.info(f"Increased slippage to {order_request['deviation']} for {order_request['symbol']}")
+                            # Major pairs - conservative escalation
+                            slippage_increase = min(2, 1 + attempt)
+                            order_request['deviation'] = min(max_slippage_escalation, initial_slippage + slippage_increase)
+                            self.logger.info(f"💱 Major pair slippage escalated to {order_request['deviation']} points")
                         
-                        last_error = f"Requote - retrying with price {order_request['price']:.5f}"
+                        last_error = f"Requote - retrying with price {order_request['price']:.5f}, slippage {order_request['deviation']}"
                         self.logger.info(last_error)
+                        
+                        # ✅ ENHANCED: Even faster retry for requotes
+                        if attempt < max_retry_attempts - 1:
+                            time.sleep(retry_delay * 0.5)  # Half the normal retry delay for requotes
+                            
                     else:
-                        last_error = "Requote but failed to get fresh price"
+                        last_error = "Requote but failed to get fresh price after multiple attempts"
+                        self.logger.error(last_error)
                         break
                 
                 elif result.retcode == self.MT5_RETURN_CODES['UNSUPPORTED_FILLING']:
@@ -630,12 +711,22 @@ class EnhancedExecutionManager:
                     for alt_mode in alternative_modes:
                         if alt_mode != current_filling:
                             order_request['type_filling'] = alt_mode
-                            self.symbol_filling_modes[order_request['symbol']] = alt_mode
+                            self.symbol_filling_modes[symbol] = alt_mode
                             self.logger.info(f"Trying alternative filling mode: {alt_mode}")
                             break
                     else:
                         last_error = f"All filling modes failed (Code: {result.retcode})"
                         break
+                
+                elif result.retcode in [self.MT5_RETURN_CODES['TRADE_CONTEXT_BUSY'], self.MT5_RETURN_CODES['TOO_MANY_REQUESTS']]:
+                    # ✅ NEW: Handle broker busy/rate limiting
+                    busy_delay = retry_delay * (2 + attempt)  # Exponential backoff
+                    self.logger.warning(f"Broker busy (Code: {result.retcode}), waiting {busy_delay:.1f}s...")
+                    last_error = f"Broker busy - waiting {busy_delay:.1f}s"
+                    
+                    if attempt < max_retry_attempts - 1:
+                        time.sleep(busy_delay)
+                    continue
                 
                 elif result.retcode == self.MT5_RETURN_CODES['INSUFFICIENT_MONEY']:
                     last_error = f"Insufficient money - cannot retry (Code: {result.retcode})"
@@ -657,23 +748,63 @@ class EnhancedExecutionManager:
                     last_error = f"Order failed: Code {result.retcode} - {getattr(result, 'comment', 'No comment')}"
                     self.logger.warning(f"Attempt {attempt + 1} failed: {last_error}")
                 
-                # Wait before retry
-                if attempt < self.max_retry_attempts - 1:
-                    time.sleep(self.retry_delay)
+                # Standard wait before retry (unless already handled above)
+                if attempt < max_retry_attempts - 1:
+                    time.sleep(retry_delay)
                 
             except Exception as e:
                 last_error = f"Exception during execution: {e}"
                 self.logger.error(f"Attempt {attempt + 1} exception: {last_error}")
                 
-                if attempt < self.max_retry_attempts - 1:
-                    time.sleep(self.retry_delay)
+                if attempt < max_retry_attempts - 1:
+                    time.sleep(retry_delay)
         
         # All attempts failed
+        self.logger.error(f"❌ All {max_retry_attempts} execution attempts failed for {symbol}")
         return {
             'success': False,
             'error': last_error,
-            'attempts': self.max_retry_attempts
+            'attempts': max_retry_attempts,
+            'symbol': symbol,
+            'final_slippage': order_request['deviation']
         }
+
+    def _update_requote_stats(self, symbol: str, attempts_used: int, success: bool) -> None:
+        """Update requote statistics for analysis"""
+        try:
+            if symbol not in self.requote_stats:
+                self.requote_stats[symbol] = {
+                    'total_orders': 0,
+                    'successful_orders': 0,
+                    'total_attempts': 0,
+                    'requote_count': 0,
+                    'avg_attempts': 0.0,
+                    'success_rate': 0.0
+                }
+            
+            stats = self.requote_stats[symbol]
+            stats['total_orders'] += 1
+            stats['total_attempts'] += attempts_used
+            
+            if success:
+                stats['successful_orders'] += 1
+            
+            if attempts_used > 1:
+                stats['requote_count'] += (attempts_used - 1)
+            
+            # Update averages
+            stats['avg_attempts'] = stats['total_attempts'] / stats['total_orders']
+            stats['success_rate'] = (stats['successful_orders'] / stats['total_orders']) * 100
+            
+            # Log statistics periodically
+            if stats['total_orders'] % 10 == 0:
+                self.logger.info(f"📊 {symbol} Execution Stats:")
+                self.logger.info(f"   Success Rate: {stats['success_rate']:.1f}%")
+                self.logger.info(f"   Avg Attempts: {stats['avg_attempts']:.1f}")
+                self.logger.info(f"   Requote Rate: {(stats['requote_count']/stats['total_orders']*100):.1f}%")
+                
+        except Exception as e:
+            self.logger.error(f"Error updating requote stats: {e}")
 
     def _process_successful_execution(self, execution_result: Dict[str, Any], 
                                     signal: Dict[str, Any], risk_params: Dict[str, Any],
@@ -741,7 +872,8 @@ class EnhancedExecutionManager:
                 'risk_amount': risk_params.get('risk_amount', 0),
                 'expected_profit': risk_params.get('max_gain_amount', 0),
                 'attempts_used': execution_result.get('attempt', 1),
-                'filling_mode_used': result.request.type_filling
+                'filling_mode_used': result.request.type_filling,
+                'final_slippage_used': execution_result.get('final_slippage', result.request.deviation)
             }
             
             # Add to execution history
@@ -765,10 +897,12 @@ class EnhancedExecutionManager:
         try:
             error = execution_result.get('error', 'Unknown error')
             attempts = execution_result.get('attempts', 1)
+            final_slippage = execution_result.get('final_slippage', 'unknown')
             
             self.logger.error(f"❌ Order execution failed after {attempts} attempts")
             self.logger.error(f"   Symbol: {symbol}")
             self.logger.error(f"   Direction: {direction}")
+            self.logger.error(f"   Final Slippage: {final_slippage} points")
             self.logger.error(f"   Error: {error}")
             
             # Record failed execution
@@ -778,6 +912,7 @@ class EnhancedExecutionManager:
                 'direction': direction,
                 'error': error,
                 'attempts_used': attempts,
+                'final_slippage': final_slippage,
                 'timestamp': datetime.now()
             }
             
@@ -847,16 +982,19 @@ class EnhancedExecutionManager:
     def _monitor_position_advanced(self, tracked_position: EnhancedPosition, mt5_pos) -> None:
         """✅ FIXED: Advanced position monitoring with corrected profit percentage calculation"""
         try:
-            # ✅ IMPROVED: Better profit percentage calculation
+            # ✅ IMPROVED: Better profit percentage calculation for all instruments
             if tracked_position.risk_amount > 10.0:  # Only calculate if risk_amount is reasonable
                 profit_percent = (tracked_position.profit / tracked_position.risk_amount) * 100
             else:
                 # Use position value as reference for percentage calculation
                 if tracked_position.symbol == 'XAUUSD':
-                    # For XAUUSD, position value calculation
-                    position_value = tracked_position.volume * tracked_position.open_price * 100  # XAUUSD contract size
+                    # For XAUUSD, position value calculation (100oz contracts)
+                    position_value = tracked_position.volume * tracked_position.open_price * 100
+                elif tracked_position.symbol in ['USDJPY', 'GBPJPY', 'EURJPY']:
+                    # For JPY pairs, adjust for JPY as quote currency
+                    position_value = tracked_position.volume * 100000  # Standard lot size
                 else:
-                    # For forex pairs, standard calculation
+                    # For major pairs, standard calculation
                     position_value = tracked_position.volume * 100000  # Standard lot size
                 
                 if position_value > 0:
@@ -952,6 +1090,10 @@ class EnhancedExecutionManager:
             # Use compatible filling mode for closing orders
             filling_mode = self._get_compatible_filling_mode(position.symbol)
             
+            # ✅ ENHANCED: Use symbol-specific slippage for closing
+            exec_params = self._get_symbol_execution_params(position.symbol)
+            close_slippage = exec_params['max_slippage']
+            
             request = {
                 "action": mt5.TRADE_ACTION_DEAL,
                 "symbol": position.symbol,
@@ -959,7 +1101,7 @@ class EnhancedExecutionManager:
                 "type": close_type,
                 "position": ticket,
                 "price": price,
-                "deviation": self.max_slippage,
+                "deviation": close_slippage,  # Use optimized slippage for closing too
                 "magic": self.magic_number,
                 "comment": f"Close_{reason}_{datetime.now().strftime('%H%M%S')}",
                 "type_time": mt5.ORDER_TIME_GTC,
@@ -1088,7 +1230,7 @@ class EnhancedExecutionManager:
             return []
 
     def get_execution_statistics(self) -> Dict[str, Any]:
-        """Get comprehensive execution statistics"""
+        """Get comprehensive execution statistics including requote data"""
         try:
             success_rate = (self.successful_trades / max(1, self.total_trades)) * 100
             
@@ -1118,7 +1260,8 @@ class EnhancedExecutionManager:
                 'connection_attempts': self.connection_attempts,
                 'last_account_update': self.last_account_update,
                 'execution_history_count': len(self.execution_history),
-                'cached_filling_modes': len(self.symbol_filling_modes)
+                'cached_filling_modes': len(self.symbol_filling_modes),
+                'requote_statistics': self.requote_stats.copy()  # ✅ NEW: Include requote stats
             }
             
         except Exception as e:
@@ -1136,16 +1279,19 @@ class EnhancedExecutionManager:
             if account_info is None:
                 return False
             
-            # Test symbol access
-            test_symbol = self.config.get('trading.symbols', ['EURUSD'])[0]
-            symbol_info = mt5.symbol_info(test_symbol)
-            if symbol_info is None:
-                return False
-            
-            # Test tick data
-            tick = mt5.symbol_info_tick(test_symbol)
-            if tick is None:
-                return False
+            # Test symbol access for all configured symbols
+            symbols = self.config.get('trading.symbols', ['EURUSD', 'GBPUSD', 'XAUUSD'])
+            for symbol in symbols:
+                symbol_info = mt5.symbol_info(symbol)
+                if symbol_info is None:
+                    self.logger.warning(f"Symbol {symbol} not accessible")
+                    return False
+                
+                # Test tick data
+                tick = mt5.symbol_info_tick(symbol)
+                if tick is None:
+                    self.logger.warning(f"No tick data for {symbol}")
+                    return False
             
             return True
             
@@ -1154,9 +1300,9 @@ class EnhancedExecutionManager:
             return False
 
     def shutdown(self) -> None:
-        """Enhanced shutdown with comprehensive cleanup"""
+        """Enhanced shutdown with comprehensive cleanup and statistics"""
         try:
-            self.logger.info("Shutting down Enhanced ExecutionManager...")
+            self.logger.info("Shutting down Enhanced ExecutionManager with XAUUSD protection...")
             
             # Log final statistics
             stats = self.get_execution_statistics()
@@ -1168,8 +1314,19 @@ class EnhancedExecutionManager:
             self.logger.info(f"  Avg Slippage: {stats.get('avg_slippage_pips', 0):.1f} pips")
             self.logger.info(f"  Cached Filling Modes: {stats.get('cached_filling_modes', 0)}")
             
+            # ✅ NEW: Log requote statistics by symbol
+            requote_stats = stats.get('requote_statistics', {})
+            if requote_stats:
+                self.logger.info("📊 Requote Statistics by Symbol:")
+                for symbol, symbol_stats in requote_stats.items():
+                    self.logger.info(f"  {symbol}:")
+                    self.logger.info(f"    Success Rate: {symbol_stats['success_rate']:.1f}%")
+                    self.logger.info(f"    Avg Attempts: {symbol_stats['avg_attempts']:.1f}")
+                    self.logger.info(f"    Requote Rate: {(symbol_stats['requote_count']/max(1,symbol_stats['total_orders'])*100):.1f}%")
+            
             # Clear caches
             self.symbol_filling_modes.clear()
+            self.requote_stats.clear()
             
             # Disconnect from MT5
             if self.connected:

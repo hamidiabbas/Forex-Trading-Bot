@@ -13,7 +13,7 @@ import os
 import configs.config as config
 from core.data_handler import DataHandler
 from core.market_intelligence import MarketIntelligence
-from trading_environment import TradingEnvironment
+from core.trading_environment import TradingEnvironment
 
 # FIXED: SAC Configuration optimized for trading
 SYMBOL = 'EURUSD'

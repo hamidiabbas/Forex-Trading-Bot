@@ -1,31 +1,27 @@
 """
-Enhanced Market Intelligence with Advanced Pattern Recognition
-Complete implementation with OBV overflow fix
+Enhanced Market Intelligence without TA-Lib Dependencies
+Complete implementation with custom technical indicators
 """
-
-import pandas as pd
 import numpy as np
+import pandas as pd
 import logging
 from typing import Dict, Any, Optional, List, Tuple
+import MetaTrader5 as mt5
 from datetime import datetime, timedelta
+import threading
 
-try:
-    import pandas_ta as ta
-    PANDAS_TA_AVAILABLE = True
-except ImportError:
-    PANDAS_TA_AVAILABLE = False
+logger = logging.getLogger(__name__)
 
 class EnhancedMarketIntelligence:
     """
-    Enhanced market intelligence with advanced analytics and pattern recognition
+    Complete Market Intelligence system without TA-Lib dependencies
     """
     
-    def __init__(self, data_handler, config):
-        self.data_handler = data_handler
+    def __init__(self, config):
         self.config = config
-        self.logger = logging.getLogger(__name__)
+        self.lock = threading.Lock()
         
-        # Configuration parameters
+        # Market intelligence parameters
         self.trend_threshold = config.get('market_intelligence.trend_threshold', 0.7)
         self.volatility_threshold = config.get('market_intelligence.volatility_threshold', 0.02)
         self.momentum_threshold = config.get('market_intelligence.momentum_threshold', 0.5)
@@ -35,830 +31,861 @@ class EnhancedMarketIntelligence:
         self.volatility_period = config.get('market_intelligence.volatility_analysis_period', 20)
         self.momentum_period = config.get('market_intelligence.momentum_analysis_period', 14)
         
-        # Performance tracking
-        self.regime_history = []
-        self.signal_history = []
-        self.pattern_cache = {}
+        # Strategy parameters
+        self.strategy_config = config.get('strategy', {})
+        self.rsi_overbought = self.strategy_config.get('rsi_overbought', 70)
+        self.rsi_oversold = self.strategy_config.get('rsi_oversold', 30)
+        self.bb_threshold = self.strategy_config.get('bb_threshold', 0.95)
+        self.macd_threshold = self.strategy_config.get('macd_signal_threshold', 0.001)
         
-        # Signal generation parameters
-        self.rsi_overbought = config.get('strategy.rsi_overbought', 70)
-        self.rsi_oversold = config.get('strategy.rsi_oversold', 30)
-        self.bb_threshold = config.get('strategy.bb_threshold', 0.95)
+        # Data cache
+        self.data_cache = {}
+        self.cache_expiry = 300  # 5 minutes
         
-        self.logger.info("Enhanced MarketIntelligence initialized successfully")
-
-    def identify_regime(self, df: pd.DataFrame) -> str:
-        """Enhanced market regime identification with multi-factor analysis"""
+        # Initialize MT5 connection
+        self._initialize_mt5()
+        
+        logger.info("✅ Enhanced Market Intelligence initialized (No TA-Lib)")
+        logger.info(f"   Trend Threshold: {self.trend_threshold}")
+        logger.info(f"   Analysis Periods: T{self.trend_period}, V{self.volatility_period}, M{self.momentum_period}")
+    
+    def _initialize_mt5(self) -> bool:
+        """Initialize MT5 connection for market intelligence"""
         try:
-            if df is None or len(df) < 50:
-                self.logger.warning("Insufficient data for regime identification")
-                return "Neutral"
+            if not mt5.initialize():
+                logger.warning("MT5 not available for market intelligence - using synthetic data mode")
+                return False
             
-            # Calculate multiple regime indicators
-            trend_strength = self._calculate_enhanced_trend_strength(df)
-            volatility_regime = self._calculate_enhanced_volatility_regime(df)
-            momentum_regime = self._calculate_enhanced_momentum_regime(df)
-            volume_regime = self._calculate_volume_regime(df)
-            
-            # Advanced regime scoring with weighted factors
-            regime_scores = {
-                'Trending': 0,
-                'Mean-Reverting': 0,
-                'High-Volatility': 0,
-                'Neutral': 0
-            }
-            
-            # Trend-based scoring (40% weight)
-            if trend_strength > 0.8:
-                regime_scores['Trending'] += 4
-            elif trend_strength > 0.6:
-                regime_scores['Trending'] += 3
-            elif trend_strength > 0.4:
-                regime_scores['Trending'] += 1
-            elif trend_strength < 0.3:
-                regime_scores['Mean-Reverting'] += 3
-            elif trend_strength < 0.4:
-                regime_scores['Mean-Reverting'] += 2
-            
-            # Volatility-based scoring (30% weight)
-            if volatility_regime > 0.8:
-                regime_scores['High-Volatility'] += 3
-            elif volatility_regime > 0.6:
-                regime_scores['High-Volatility'] += 2
-            elif volatility_regime < 0.3:
-                regime_scores['Mean-Reverting'] += 2
-            elif volatility_regime < 0.4:
-                regime_scores['Mean-Reverting'] += 1
-            
-            # Momentum-based scoring (20% weight)
-            if momentum_regime > 0.7:
-                regime_scores['Trending'] += 2
-            elif momentum_regime > 0.5:
-                regime_scores['Trending'] += 1
-            elif momentum_regime < 0.3:
-                regime_scores['Mean-Reverting'] += 2
-            
-            # Volume-based scoring (10% weight)
-            if volume_regime > 0.6:
-                regime_scores['Trending'] += 1
-            elif volume_regime < 0.4:
-                regime_scores['Mean-Reverting'] += 1
-            
-            # Determine regime
-            max_score = max(regime_scores.values())
-            if max_score == 0:
-                regime = "Neutral"
-            else:
-                regime = max(regime_scores, key=regime_scores.get)
-            
-            # Apply regime smoothing to avoid rapid changes
-            regime = self._smooth_regime_changes(regime)
-            
-            # Track regime history for analysis
-            self.regime_history.append({
-                'timestamp': datetime.now(),
-                'regime': regime,
-                'trend_strength': trend_strength,
-                'volatility_regime': volatility_regime,
-                'momentum_regime': momentum_regime,
-                'volume_regime': volume_regime,
-                'scores': regime_scores.copy()
-            })
-            
-            # Keep only last 100 regime readings
-            if len(self.regime_history) > 100:
-                self.regime_history = self.regime_history[-100:]
-            
-            self.logger.debug(f"Regime: {regime} (T:{trend_strength:.2f}, V:{volatility_regime:.2f}, M:{momentum_regime:.2f})")
-            return regime
+            logger.info("✅ MT5 connected for market intelligence")
+            return True
             
         except Exception as e:
-            self.logger.error(f"Error in enhanced regime identification: {e}")
-            return "Neutral"
-
-    def _smooth_regime_changes(self, current_regime: str) -> str:
-        """Smooth regime changes to avoid whipsaws"""
+            logger.warning(f"MT5 initialization failed: {e} - using synthetic data mode")
+            return False
+    
+    def get_market_data(self, symbol: str, timeframe: str = 'M15', count: int = 200) -> Optional[Dict[str, Any]]:
+        """
+        Get comprehensive market data with caching
+        """
         try:
-            if len(self.regime_history) < 3:
-                return current_regime
-            
-            # Get last 3 regime readings
-            recent_regimes = [entry['regime'] for entry in self.regime_history[-3:]]
-            
-            # If all recent regimes are the same and different from current, require stronger signal
-            if len(set(recent_regimes)) == 1 and recent_regimes[0] != current_regime:
-                # Require at least 2 consecutive readings of new regime
-                if len(self.regime_history) >= 2:
-                    if self.regime_history[-1]['regime'] == current_regime:
-                        return current_regime
-                    else:
-                        return recent_regimes[0]  # Keep previous regime
-            
-            return current_regime
-            
-        except Exception as e:
-            self.logger.error(f"Error smoothing regime changes: {e}")
-            return current_regime
-
-    def _calculate_enhanced_trend_strength(self, df: pd.DataFrame) -> float:
-        """Enhanced trend strength calculation with multiple indicators"""
-        try:
-            if 'Close' not in df.columns or len(df) < self.trend_period:
-                return 0.5
-            
-            close_prices = df['Close'].tail(self.trend_period)
-            trend_score = 0
-            max_conditions = 0
-            
-            # 1. Multiple moving average analysis
-            ma_periods = [10, 20, 50]
-            mas = {}
-            for period in ma_periods:
-                if len(close_prices) >= period:
-                    mas[f'MA_{period}'] = close_prices.rolling(period).mean()
-            
-            # MA alignment scoring
-            if len(mas) >= 3:
-                latest_price = close_prices.iloc[-1]
-                ma_values = [mas[f'MA_{p}'].iloc[-1] for p in ma_periods if f'MA_{p}' in mas]
+            with self.lock:
+                cache_key = f"{symbol}_{timeframe}_{count}"
                 
-                # Perfect uptrend: Price > MA10 > MA20 > MA50
-                if len(ma_values) == 3 and latest_price > ma_values[0] > ma_values[1] > ma_values[2]:
-                    trend_score += 4
-                elif len(ma_values) == 3 and latest_price < ma_values[0] < ma_values[1] < ma_values[2]:
-                    trend_score += 4
-                # Partial alignment
-                elif len(ma_values) >= 2:
-                    if (latest_price > ma_values[0] > ma_values[1]) or (latest_price < ma_values[0] < ma_values[1]):
-                        trend_score += 2
-                max_conditions += 4
-            
-            # 2. Slope consistency analysis
-            for period in ma_periods:
-                if f'MA_{period}' in mas:
-                    ma_series = mas[f'MA_{period}'].dropna()
-                    if len(ma_series) >= 10:
-                        # Calculate slope over last 10 periods
-                        slope = (ma_series.iloc[-1] - ma_series.iloc[-10]) / ma_series.iloc[-10]
-                        if abs(slope) > 0.005:  # 0.5% slope threshold
-                            trend_score += 1
-                        if abs(slope) > 0.01:   # 1% slope threshold
-                            trend_score += 1
-                        max_conditions += 2
-            
-            # 3. ADX trend strength
-            if 'ADX_14' in df.columns:
-                latest_adx = df['ADX_14'].iloc[-1]
-                if latest_adx > 30:
-                    trend_score += 3
-                elif latest_adx > 25:
-                    trend_score += 2
-                elif latest_adx > 20:
-                    trend_score += 1
-                max_conditions += 3
-            
-            # 4. Directional Movement analysis
-            if 'DMP_14' in df.columns and 'DMN_14' in df.columns:
-                di_plus = df['DMP_14'].iloc[-1]
-                di_minus = df['DMN_14'].iloc[-1]
-                di_diff = abs(di_plus - di_minus)
-                if di_diff > 10:  # Strong directional bias
-                    trend_score += 2
-                elif di_diff > 5:
-                    trend_score += 1
-                max_conditions += 2
-            
-            # 5. Price momentum consistency
-            momentum_periods = [5, 10, 20]
-            consistent_momentum = 0
-            for period in momentum_periods:
-                if len(close_prices) >= period:
-                    momentum = (close_prices.iloc[-1] - close_prices.iloc[-period]) / close_prices.iloc[-period]
-                    if abs(momentum) > 0.01:  # 1% momentum threshold
-                        consistent_momentum += 1
-                        if abs(momentum) > 0.02:  # 2% threshold
-                            consistent_momentum += 1
-            
-            # Reward consistent momentum across timeframes
-            if consistent_momentum >= 4:
-                trend_score += 2
-            elif consistent_momentum >= 2:
-                trend_score += 1
-            max_conditions += 2
-            
-            # Calculate final trend strength
-            if max_conditions > 0:
-                trend_strength = min(1.0, trend_score / max_conditions)
-            else:
-                trend_strength = 0.5
-            
-            return trend_strength
-            
-        except Exception as e:
-            self.logger.error(f"Error calculating enhanced trend strength: {e}")
-            return 0.5
-
-    def _calculate_enhanced_volatility_regime(self, df: pd.DataFrame) -> float:
-        """Enhanced volatility regime with multiple volatility measures"""
-        try:
-            if 'Close' not in df.columns:
-                return 0.5
-            
-            close_prices = df['Close'].tail(self.volatility_period * 3)
-            volatility_scores = []
-            
-            # 1. Returns-based volatility
-            returns = close_prices.pct_change().dropna()
-            if len(returns) >= self.volatility_period:
-                current_vol = returns.tail(self.volatility_period).std()
-                historical_vol = returns.std()
-                if historical_vol > 0:
-                    vol_ratio = current_vol / historical_vol
-                    volatility_scores.append(min(2.0, vol_ratio))  # Cap at 2.0
-            
-            # 2. ATR-based volatility
-            if 'ATRr_14' in df.columns:
-                atr_series = df['ATRr_14'].dropna()
-                if len(atr_series) >= self.volatility_period:
-                    current_atr = atr_series.tail(self.volatility_period).mean()
-                    historical_atr = atr_series.mean()
-                    if historical_atr > 0:
-                        atr_ratio = current_atr / historical_atr
-                        volatility_scores.append(min(2.0, atr_ratio))
-            
-            # 3. Bollinger Band width
-            if all(col in df.columns for col in ['BBU_20_2.0', 'BBL_20_2.0', 'BBM_20_2.0']):
-                bb_width = (df['BBU_20_2.0'] - df['BBL_20_2.0']) / df['BBM_20_2.0']
-                bb_series = bb_width.dropna()
-                if len(bb_series) >= self.volatility_period:
-                    current_bb_width = bb_series.tail(self.volatility_period).mean()
-                    historical_bb_width = bb_series.mean()
-                    if historical_bb_width > 0:
-                        bb_ratio = current_bb_width / historical_bb_width
-                        volatility_scores.append(min(2.0, bb_ratio))
-            
-            # 4. High-Low range volatility
-            if all(col in df.columns for col in ['High', 'Low', 'Close']):
-                hl_range = (df['High'] - df['Low']) / df['Close']
-                range_series = hl_range.dropna()
-                if len(range_series) >= self.volatility_period:
-                    current_range = range_series.tail(self.volatility_period).mean()
-                    historical_range = range_series.mean()
-                    if historical_range > 0:
-                        range_ratio = current_range / historical_range
-                        volatility_scores.append(min(2.0, range_ratio))
-            
-            # 5. Intraday volatility (if available)
-            if all(col in df.columns for col in ['Open', 'Close']):
-                gap_volatility = abs(df['Open'] - df['Close'].shift()) / df['Close'].shift()
-                gap_series = gap_volatility.dropna()
-                if len(gap_series) >= self.volatility_period:
-                    current_gap_vol = gap_series.tail(self.volatility_period).mean()
-                    historical_gap_vol = gap_series.mean()
-                    if historical_gap_vol > 0:
-                        gap_ratio = current_gap_vol / historical_gap_vol
-                        volatility_scores.append(min(2.0, gap_ratio))
-            
-            # Calculate weighted average volatility score
-            if volatility_scores:
-                # Give more weight to recent volatility measures
-                weights = [1.5, 1.3, 1.0, 0.8, 0.6][:len(volatility_scores)]
-                weighted_score = np.average(volatility_scores, weights=weights)
-                return min(1.0, weighted_score)
-            else:
-                return 0.5
+                # Check cache
+                if cache_key in self.data_cache:
+                    cached_data, timestamp = self.data_cache[cache_key]
+                    if (datetime.now() - timestamp).seconds < self.cache_expiry:
+                        return cached_data
                 
-        except Exception as e:
-            self.logger.error(f"Error calculating enhanced volatility regime: {e}")
-            return 0.5
-
-    def _calculate_enhanced_momentum_regime(self, df: pd.DataFrame) -> float:
-        """Enhanced momentum regime with multiple momentum indicators"""
-        try:
-            momentum_scores = []
-            
-            # 1. RSI momentum analysis
-            if 'RSI_14' in df.columns:
-                rsi_series = df['RSI_14'].dropna()
-                if len(rsi_series) >= 5:
-                    current_rsi = rsi_series.iloc[-1]
-                    rsi_change = rsi_series.iloc[-1] - rsi_series.iloc[-5]
+                # Get fresh data
+                market_data = self._fetch_market_data(symbol, timeframe, count)
+                
+                if market_data:
+                    # Cache the data
+                    self.data_cache[cache_key] = (market_data, datetime.now())
                     
-                    # RSI extreme momentum
-                    extreme_momentum = max(abs(current_rsi - 20), abs(current_rsi - 80)) / 30
-                    # RSI change momentum
-                    change_momentum = abs(rsi_change) / 20
+                    # Clean old cache entries
+                    self._clean_cache()
                     
-                    rsi_momentum = (extreme_momentum + change_momentum) / 2
-                    momentum_scores.append(min(1.0, rsi_momentum))
-            
-            # 2. MACD momentum analysis
-            if all(col in df.columns for col in ['MACD_12_26_9', 'MACDs_12_26_9', 'MACDh_12_26_9']):
-                macd = df['MACD_12_26_9'].iloc[-1]
-                macd_signal = df['MACDs_12_26_9'].iloc[-1]
-                macd_histogram = df['MACDh_12_26_9'].iloc[-1]
+                    return market_data
                 
-                # MACD line vs signal line divergence
-                macd_divergence = abs(macd - macd_signal)
-                # Histogram momentum
-                histogram_momentum = abs(macd_histogram)
-                
-                # Normalize MACD momentum
-                macd_series = abs(df['MACD_12_26_9'] - df['MACDs_12_26_9']).dropna()
-                if len(macd_series) > 0:
-                    avg_macd_diff = macd_series.mean()
-                    if avg_macd_diff > 0:
-                        normalized_macd = min(1.0, macd_divergence / avg_macd_diff)
-                        momentum_scores.append(normalized_macd)
-            
-            # 3. Multi-period price momentum
-            if 'Close' in df.columns:
-                close_prices = df['Close']
-                momentum_periods = [3, 5, 10, 14, 20]
-                period_scores = []
-                
-                for period in momentum_periods:
-                    if len(close_prices) >= period:
-                        price_momentum = abs(close_prices.iloc[-1] - close_prices.iloc[-period]) / close_prices.iloc[-period]
-                        # Scale momentum (multiply by 20 to normalize)
-                        scaled_momentum = min(1.0, price_momentum * 20)
-                        period_scores.append(scaled_momentum)
-                
-                if period_scores:
-                    # Weight shorter periods more heavily
-                    weights = [2.0, 1.5, 1.2, 1.0, 0.8][:len(period_scores)]
-                    weighted_momentum = np.average(period_scores, weights=weights)
-                    momentum_scores.append(weighted_momentum)
-            
-            # 4. Stochastic momentum
-            if 'STOCHk_14_3_3' in df.columns:
-                stoch_k = df['STOCHk_14_3_3'].iloc[-1]
-                # Distance from extreme levels (20 and 80)
-                stoch_extreme = max(abs(stoch_k - 20), abs(stoch_k - 80))
-                stoch_momentum = min(1.0, stoch_extreme / 30)
-                momentum_scores.append(stoch_momentum)
-            
-            # 5. Volume-price momentum
-            if 'Volume' in df.columns and df['Volume'].sum() > 0:
-                volume_series = df['Volume'].dropna()
-                if len(volume_series) >= 10 and len(df['Close']) >= 10:
-                    # Volume-weighted price change
-                    recent_volume = volume_series.tail(5).mean()
-                    historical_volume = volume_series.mean()
-                    
-                    if historical_volume > 0:
-                        volume_ratio = recent_volume / historical_volume
-                        price_change = abs(df['Close'].iloc[-1] - df['Close'].iloc[-5]) / df['Close'].iloc[-5]
-                        
-                        # Combine volume and price momentum
-                        vp_momentum = min(1.0, volume_ratio * price_change * 10)
-                        momentum_scores.append(vp_momentum)
-            
-            # 6. Acceleration momentum (rate of change of momentum)
-            if 'Close' in df.columns and len(df['Close']) >= 20:
-                close_prices = df['Close']
-                # Calculate momentum over two periods and compare
-                recent_momentum = (close_prices.iloc[-1] - close_prices.iloc[-10]) / close_prices.iloc[-10]
-                earlier_momentum = (close_prices.iloc[-10] - close_prices.iloc[-20]) / close_prices.iloc[-20]
-                
-                momentum_acceleration = abs(recent_momentum - earlier_momentum)
-                acceleration_score = min(1.0, momentum_acceleration * 10)
-                momentum_scores.append(acceleration_score)
-            
-            # Calculate final momentum score
-            if momentum_scores:
-                # Use weighted average with emphasis on price-based momentum
-                if len(momentum_scores) >= 3:
-                    weights = [1.0] * len(momentum_scores)
-                    weights[0] = 1.2  # RSI
-                    weights[2] = 1.3  # Price momentum (if exists)
-                    return np.average(momentum_scores, weights=weights)
-                else:
-                    return np.mean(momentum_scores)
-            else:
-                return 0.5
-                
-        except Exception as e:
-            self.logger.error(f"Error calculating enhanced momentum regime: {e}")
-            return 0.5
-
-    def _calculate_volume_regime(self, df: pd.DataFrame) -> float:
-        """✅ FIXED: Calculate volume-based regime score with overflow protection"""
-        try:
-            if 'Volume' not in df.columns or df['Volume'].sum() == 0:
-                return 0.5  # Neutral if no volume data
-            
-            volume_series = df['Volume'].dropna()
-            if len(volume_series) < 20:
-                return 0.5
-            
-            volume_scores = []
-            
-            # 1. Current vs historical volume ratio
-            current_volume = volume_series.tail(5).mean()
-            historical_volume = volume_series.mean()
-            
-            if historical_volume > 0:
-                volume_ratio = min(2.0, current_volume / historical_volume)
-                volume_scores.append(volume_ratio / 2.0)  # Normalize to 0-1
-            
-            # 2. Volume trend analysis
-            if len(volume_series) >= 20:
-                recent_vol_avg = volume_series.tail(10).mean()
-                earlier_vol_avg = volume_series.tail(20).head(10).mean()
-                
-                if earlier_vol_avg > 0:
-                    volume_trend = min(2.0, recent_vol_avg / earlier_vol_avg)
-                    volume_scores.append(volume_trend / 2.0)
-            
-            # 3. Volume spikes detection
-            if len(volume_series) >= 10:
-                vol_mean = volume_series.mean()
-                vol_std = volume_series.std()
-                
-                if vol_std > 0:
-                    # Count recent volume spikes (above 1.5 standard deviations)
-                    spike_threshold = vol_mean + (1.5 * vol_std)
-                    recent_spikes = (volume_series.tail(5) > spike_threshold).sum()
-                    spike_score = min(1.0, recent_spikes / 3)  # Normalize by max expected spikes
-                    volume_scores.append(spike_score)
-            
-            # 4. ✅ FIXED: Safe On-Balance Volume analysis with overflow protection
-            if 'Close' in df.columns and len(df['Close']) >= len(volume_series):
-                try:
-                    # Safe OBV calculation to prevent overflow
-                    price_changes = df['Close'].diff().iloc[-len(volume_series):]
-                    obv_changes = []
-                    
-                    for i, price_change in enumerate(price_changes):
-                        if pd.isna(price_change) or i >= len(volume_series):
-                            continue
-                        
-                        vol_value = float(volume_series.iloc[i])
-                        
-                        # ✅ FIXED: Cap extremely large volumes to prevent overflow
-                        if vol_value > 1e12:  # Cap at 1 trillion
-                            vol_value = 1e12
-                        elif vol_value < 0:  # Ensure positive volume
-                            vol_value = abs(vol_value)
-                        
-                        if price_change > 0:
-                            obv_changes.append(vol_value)
-                        elif price_change < 0:
-                            # ✅ FIXED: Safe negative volume handling to prevent overflow
-                            obv_changes.append(-min(vol_value, 1e12))  # Cap negative values too
-                        else:
-                            obv_changes.append(0)
-                    
-                    if len(obv_changes) >= 10:
-                        # ✅ FIXED: Safe OBV ratio calculation with overflow protection
-                        try:
-                            recent_obv = sum(obv_changes[-5:])
-                            historical_obv_avg = sum(obv_changes) / len(obv_changes)
-                            
-                            # Only calculate if meaningful volume and avoid division issues
-                            if abs(historical_obv_avg) > 1e6 and abs(historical_obv_avg) < 1e11:
-                                obv_ratio = abs(recent_obv / (historical_obv_avg * 5))
-                                obv_score = min(1.0, obv_ratio)
-                                volume_scores.append(obv_score)
-                        except (OverflowError, ZeroDivisionError):
-                            # Skip OBV score if calculation overflows
-                            self.logger.debug("OBV calculation skipped due to overflow")
-                            pass
-                        
-                except (OverflowError, ValueError) as e:
-                    self.logger.debug(f"OBV calculation skipped due to overflow: {e}")
-                    pass  # Skip OBV if calculation fails
-            
-            # Return average volume score
-            if volume_scores:
-                return np.mean(volume_scores)
-            else:
-                return 0.5
-                
-        except Exception as e:
-            self.logger.error(f"Error calculating volume regime: {e}")
-            return 0.5
-
-    def generate_traditional_signal(self, symbol: str, data_dict: Dict[str, pd.DataFrame], regime: str) -> Optional[Dict[str, Any]]:
-        """Generate traditional technical analysis signal based on regime"""
-        try:
-            execution_df = data_dict.get('EXECUTION')
-            if execution_df is None or len(execution_df) < 50:
                 return None
+                
+        except Exception as e:
+            logger.error(f"Error getting market data for {symbol}: {e}")
+            return None
+    
+    def _fetch_market_data(self, symbol: str, timeframe: str, count: int) -> Optional[Dict[str, Any]]:
+        """Fetch market data from MT5 or generate synthetic data"""
+        try:
+            # Try to get real data from MT5
+            if mt5.initialize():
+                mt5_timeframe = self._get_mt5_timeframe(timeframe)
+                rates = mt5.copy_rates_from_pos(symbol, mt5_timeframe, 0, count)
+                
+                if rates is not None and len(rates) > 0:
+                    df = pd.DataFrame(rates)
+                    df['time'] = pd.to_datetime(df['time'], unit='s')
+                    
+                    # Add technical indicators
+                    df_with_indicators = self._add_custom_technical_indicators(df)
+                    
+                    # Create market data dictionary
+                    market_data = self._create_market_data_dict(df_with_indicators, symbol)
+                    
+                    logger.debug(f"✅ Real market data loaded for {symbol}: {len(df)} bars")
+                    return market_data
             
-            # Get current market data
-            current_price = execution_df['Close'].iloc[-1]
-            atr_value = execution_df.get('ATRr_14', pd.Series([0.001])).iloc[-1]
+            # Fallback to synthetic data
+            logger.debug(f"Using synthetic data for {symbol}")
+            return self._generate_synthetic_market_data(symbol, count)
             
-            # Generate signal based on regime
-            signal = None
-            if regime == "Trending":
-                signal = self._generate_trend_following_signal(execution_df)
-            elif regime == "Mean-Reverting":
-                signal = self._generate_mean_reverting_signal(execution_df)
-            elif regime == "High-Volatility":
-                signal = self._generate_volatility_breakout_signal(execution_df)
-            else:  # Neutral
-                signal = self._generate_neutral_signal(execution_df)
+        except Exception as e:
+            logger.error(f"Error fetching market data for {symbol}: {e}")
+            return self._generate_synthetic_market_data(symbol, count)
+    
+    def _get_mt5_timeframe(self, timeframe: str):
+        """Convert timeframe string to MT5 constant"""
+        timeframe_map = {
+            'M1': mt5.TIMEFRAME_M1,
+            'M5': mt5.TIMEFRAME_M5,
+            'M15': mt5.TIMEFRAME_M15,
+            'M30': mt5.TIMEFRAME_M30,
+            'H1': mt5.TIMEFRAME_H1,
+            'H4': mt5.TIMEFRAME_H4,
+            'D1': mt5.TIMEFRAME_D1
+        }
+        return timeframe_map.get(timeframe, mt5.TIMEFRAME_M15)
+    
+    def _generate_synthetic_market_data(self, symbol: str, count: int) -> Dict[str, Any]:
+        """Generate synthetic market data for testing"""
+        try:
+            np.random.seed(hash(symbol) % 2**32)  # Consistent seed per symbol
             
-            if signal:
-                # Enhance signal with additional information
-                signal.update({
-                    'symbol': symbol,
-                    'entry_price': current_price,
-                    'atr_at_signal': atr_value,
-                    'strategy': f'Traditional-{regime}',
-                    'confidence': self._calculate_traditional_confidence(signal, execution_df, regime),
-                    'timestamp': datetime.now(),
-                    'regime': regime
+            # Base price for different symbols
+            base_prices = {
+                'EURUSD': 1.1000,
+                'GBPUSD': 1.3000,
+                'XAUUSD': 2000.0,
+                'USDJPY': 148.0
+            }
+            base_price = base_prices.get(symbol, 1.1000)
+            
+            # Generate price series
+            returns = np.random.normal(0.0001, 0.01, count)
+            dates = pd.date_range(start=datetime.now() - timedelta(hours=count), periods=count, freq='15min')
+            
+            price = base_price
+            ohlc_data = []
+            
+            for i in range(count):
+                open_price = price
+                return_val = returns[i]
+                close_price = open_price * (1 + return_val)
+                
+                # Generate high/low with some logic
+                volatility = abs(return_val) * 2
+                high_price = max(open_price, close_price) * (1 + volatility)
+                low_price = min(open_price, close_price) * (1 - volatility)
+                
+                ohlc_data.append({
+                    'time': dates[i],
+                    'open': open_price,
+                    'high': high_price,
+                    'low': low_price,
+                    'close': close_price,
+                    'tick_volume': np.random.randint(50, 200)
                 })
                 
-                # Add technical confirmation
-                signal['confirmations'] = self._get_signal_confirmations(execution_df, signal['direction'])
-                
-                # Track signal history
-                self.signal_history.append(signal.copy())
-                if len(self.signal_history) > 100:
-                    self.signal_history = self.signal_history[-100:]
-                
-                self.logger.debug(f"Traditional signal generated: {signal['direction']} ({signal['reason']})")
+                price = close_price
             
+            df = pd.DataFrame(ohlc_data)
+            df_with_indicators = self._add_custom_technical_indicators(df)
+            
+            return self._create_market_data_dict(df_with_indicators, symbol)
+            
+        except Exception as e:
+            logger.error(f"Error generating synthetic data for {symbol}: {e}")
+            return None
+    
+    def _add_custom_technical_indicators(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Add comprehensive technical indicators using custom implementations"""
+        try:
+            # Ensure we have enough data
+            if len(df) < 50:
+                logger.warning("Insufficient data for technical indicators")
+                return df
+            
+            # Price arrays
+            high = df['high'].values
+            low = df['low'].values
+            close = df['close'].values
+            open_prices = df['open'].values
+            volume = df.get('tick_volume', pd.Series([100] * len(df))).values
+            
+            # ✅ CUSTOM IMPLEMENTATIONS (No TA-Lib)
+            
+            # 1. Simple Moving Averages
+            df['sma_20'] = df['close'].rolling(window=20).mean()
+            df['sma_50'] = df['close'].rolling(window=50).mean()
+            
+            # 2. Exponential Moving Averages
+            df['ema_12'] = df['close'].ewm(span=12).mean()
+            df['ema_26'] = df['close'].ewm(span=26).mean()
+            
+            # 3. RSI (Custom Implementation)
+            df['rsi'] = self._calculate_rsi(df['close'])
+            
+            # 4. MACD (Custom Implementation)
+            macd_line, macd_signal, macd_histogram = self._calculate_macd(df['close'])
+            df['macd'] = macd_line
+            df['macd_signal'] = macd_signal
+            df['macd_histogram'] = macd_histogram
+            
+            # 5. Bollinger Bands (Custom Implementation)
+            bb_upper, bb_middle, bb_lower = self._calculate_bollinger_bands(df['close'])
+            df['bb_upper'] = bb_upper
+            df['bb_middle'] = bb_middle
+            df['bb_lower'] = bb_lower
+            
+            # 6. ATR (Custom Implementation)
+            df['atr'] = self._calculate_atr(df)
+            
+            # 7. Stochastic Oscillator (Custom Implementation)
+            stoch_k, stoch_d = self._calculate_stochastic(df)
+            df['stoch_k'] = stoch_k
+            df['stoch_d'] = stoch_d
+            
+            # 8. Williams %R (Custom Implementation)
+            df['williams_r'] = self._calculate_williams_r(df)
+            
+            # 9. CCI (Custom Implementation)
+            df['cci'] = self._calculate_cci(df)
+            
+            # 10. ADX (Custom Implementation)
+            df['adx'] = self._calculate_adx(df)
+            
+            # 11. Momentum (Custom Implementation)
+            df['momentum'] = self._calculate_momentum(df['close'])
+            
+            # 12. Volume indicators
+            if 'tick_volume' in df.columns:
+                df['volume_sma'] = df['tick_volume'].rolling(window=20).mean()
+                df['volume_ratio'] = df['tick_volume'] / df['volume_sma']
+            else:
+                df['volume_ratio'] = 1.0
+            
+            # 13. Custom indicators
+            df['price_change_pct'] = df['close'].pct_change()
+            df['daily_range_pct'] = (df['high'] - df['low']) / df['close']
+            df['body_size'] = abs(df['close'] - df['open']) / df['close']
+            
+            # 14. Trend indicators
+            df['sma_trend'] = np.where(df['close'] > df['sma_20'], 1, -1)
+            df['ema_crossover'] = np.where(df['ema_12'] > df['ema_26'], 1, -1)
+            
+            # 15. Support/Resistance levels
+            df['resistance'] = df['high'].rolling(window=20).max()
+            df['support'] = df['low'].rolling(window=20).min()
+            
+            # Fill NaN values
+            df = df.fillna(method='bfill').fillna(0)
+            
+            logger.debug(f"✅ Custom technical indicators added: {len(df.columns)} columns")
+            return df
+            
+        except Exception as e:
+            logger.error(f"Error adding custom technical indicators: {e}")
+            return df
+    
+    def _calculate_rsi(self, prices: pd.Series, period: int = 14) -> pd.Series:
+        """Custom RSI calculation"""
+        try:
+            delta = prices.diff()
+            gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
+            loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
+            rs = gain / loss
+            rsi = 100 - (100 / (1 + rs))
+            return rsi
+        except Exception:
+            return pd.Series([50] * len(prices), index=prices.index)
+    
+    def _calculate_macd(self, prices: pd.Series, fast: int = 12, slow: int = 26, signal: int = 9) -> Tuple[pd.Series, pd.Series, pd.Series]:
+        """Custom MACD calculation"""
+        try:
+            exp1 = prices.ewm(span=fast).mean()
+            exp2 = prices.ewm(span=slow).mean()
+            macd_line = exp1 - exp2
+            macd_signal = macd_line.ewm(span=signal).mean()
+            macd_histogram = macd_line - macd_signal
+            return macd_line, macd_signal, macd_histogram
+        except Exception:
+            zeros = pd.Series([0] * len(prices), index=prices.index)
+            return zeros, zeros, zeros
+    
+    def _calculate_bollinger_bands(self, prices: pd.Series, period: int = 20, std_dev: int = 2) -> Tuple[pd.Series, pd.Series, pd.Series]:
+        """Custom Bollinger Bands calculation"""
+        try:
+            sma = prices.rolling(window=period).mean()
+            std = prices.rolling(window=period).std()
+            upper_band = sma + (std * std_dev)
+            lower_band = sma - (std * std_dev)
+            return upper_band, sma, lower_band
+        except Exception:
+            sma = prices.rolling(window=period).mean()
+            return sma, sma, sma
+    
+    def _calculate_atr(self, df: pd.DataFrame, period: int = 14) -> pd.Series:
+        """Custom ATR calculation"""
+        try:
+            high_low = df['high'] - df['low']
+            high_close = np.abs(df['high'] - df['close'].shift())
+            low_close = np.abs(df['low'] - df['close'].shift())
+            
+            ranges = pd.concat([high_low, high_close, low_close], axis=1)
+            true_range = ranges.max(axis=1)
+            atr = true_range.rolling(window=period).mean()
+            return atr
+        except Exception:
+            return pd.Series([0.01] * len(df), index=df.index)
+    
+    def _calculate_stochastic(self, df: pd.DataFrame, k_period: int = 14, d_period: int = 3) -> Tuple[pd.Series, pd.Series]:
+        """Custom Stochastic Oscillator calculation"""
+        try:
+            lowest_low = df['low'].rolling(window=k_period).min()
+            highest_high = df['high'].rolling(window=k_period).max()
+            
+            k_percent = ((df['close'] - lowest_low) / (highest_high - lowest_low)) * 100
+            d_percent = k_percent.rolling(window=d_period).mean()
+            
+            return k_percent, d_percent
+        except Exception:
+            default_series = pd.Series([50] * len(df), index=df.index)
+            return default_series, default_series
+    
+    def _calculate_williams_r(self, df: pd.DataFrame, period: int = 14) -> pd.Series:
+        """Custom Williams %R calculation"""
+        try:
+            highest_high = df['high'].rolling(window=period).max()
+            lowest_low = df['low'].rolling(window=period).min()
+            
+            williams_r = ((highest_high - df['close']) / (highest_high - lowest_low)) * -100
+            return williams_r
+        except Exception:
+            return pd.Series([-50] * len(df), index=df.index)
+    
+    def _calculate_cci(self, df: pd.DataFrame, period: int = 14) -> pd.Series:
+        """Custom CCI calculation"""
+        try:
+            typical_price = (df['high'] + df['low'] + df['close']) / 3
+            sma_tp = typical_price.rolling(window=period).mean()
+            mean_deviation = typical_price.rolling(window=period).apply(
+                lambda x: np.abs(x - x.mean()).mean()
+            )
+            cci = (typical_price - sma_tp) / (0.015 * mean_deviation)
+            return cci
+        except Exception:
+            return pd.Series([0] * len(df), index=df.index)
+    
+    def _calculate_adx(self, df: pd.DataFrame, period: int = 14) -> pd.Series:
+        """Custom ADX calculation (simplified)"""
+        try:
+            # Calculate directional movement
+            high_diff = df['high'].diff()
+            low_diff = df['low'].diff()
+            
+            plus_dm = np.where((high_diff > low_diff) & (high_diff > 0), high_diff, 0)
+            minus_dm = np.where((low_diff > high_diff) & (low_diff > 0), low_diff, 0)
+            
+            # True Range
+            tr = self._calculate_atr(df, 1)  # Single period TR
+            
+            # Directional Indicators
+            plus_di = (pd.Series(plus_dm).rolling(window=period).mean() / tr.rolling(window=period).mean()) * 100
+            minus_di = (pd.Series(minus_dm).rolling(window=period).mean() / tr.rolling(window=period).mean()) * 100
+            
+            # ADX calculation
+            dx = (np.abs(plus_di - minus_di) / (plus_di + minus_di)) * 100
+            adx = dx.rolling(window=period).mean()
+            
+            return adx
+        except Exception:
+            return pd.Series([25] * len(df), index=df.index)
+    
+    def _calculate_momentum(self, prices: pd.Series, period: int = 10) -> pd.Series:
+        """Custom Momentum calculation"""
+        try:
+            momentum = prices.diff(period)
+            return momentum
+        except Exception:
+            return pd.Series([0] * len(prices), index=prices.index)
+    
+    def _create_market_data_dict(self, df: pd.DataFrame, symbol: str) -> Dict[str, Any]:
+        """Create comprehensive market data dictionary"""
+        try:
+            if len(df) == 0:
+                return None
+            
+            # Current (latest) values
+            current = df.iloc[-1]
+            
+            # Price data
+            market_data = {
+                'symbol': symbol,
+                'timestamp': current['time'] if 'time' in current else datetime.now(),
+                'open': float(current['open']),
+                'high': float(current['high']),
+                'low': float(current['low']),
+                'close': float(current['close']),
+                'current_price': float(current['close']),
+                'tick_volume': int(current.get('tick_volume', 100)),
+                
+                # Price changes
+                'price_change_pct': float(current.get('price_change_pct', 0)),
+                'daily_range_pct': float(current.get('daily_range_pct', 0)),
+                'body_size': float(current.get('body_size', 0)),
+                
+                # Technical indicators
+                'sma_20': float(current.get('sma_20', current['close'])),
+                'sma_50': float(current.get('sma_50', current['close'])),
+                'ema_12': float(current.get('ema_12', current['close'])),
+                'ema_26': float(current.get('ema_26', current['close'])),
+                
+                'rsi': float(current.get('rsi', 50)),
+                'macd': float(current.get('macd', 0)),
+                'macd_signal': float(current.get('macd_signal', 0)),
+                'macd_histogram': float(current.get('macd_histogram', 0)),
+                
+                'bb_upper': float(current.get('bb_upper', current['close'])),
+                'bb_middle': float(current.get('bb_middle', current['close'])),
+                'bb_lower': float(current.get('bb_lower', current['close'])),
+                
+                'atr': float(current.get('atr', current['close'] * 0.01)),
+                'stoch_k': float(current.get('stoch_k', 50)),
+                'stoch_d': float(current.get('stoch_d', 50)),
+                'williams_r': float(current.get('williams_r', -50)),
+                'cci': float(current.get('cci', 0)),
+                'adx': float(current.get('adx', 25)),
+                'momentum': float(current.get('momentum', 0)),
+                
+                # Volume
+                'volume_ratio': float(current.get('volume_ratio', 1.0)),
+                
+                # Derived indicators
+                'sma20_distance': (current['close'] - current.get('sma_20', current['close'])) / current['close'],
+                'sma50_distance': (current['close'] - current.get('sma_50', current['close'])) / current['close'],
+                'bb_position': self._calculate_bb_position(current),
+                'trend_strength': float(current.get('adx', 25)) / 100,
+                'volatility': float(current.get('atr', current['close'] * 0.01)) / current['close'],
+                
+                # Support/Resistance
+                'resistance': float(current.get('resistance', current['high'])),
+                'support': float(current.get('support', current['low'])),
+                'distance_to_resistance': (current.get('resistance', current['high']) - current['close']) / current['close'],
+                'distance_to_support': (current['close'] - current.get('support', current['low'])) / current['close'],
+                
+                # Market regime
+                'trend_direction': self._determine_trend_direction(df),
+                'market_phase': self._determine_market_phase(current),
+                'volatility_regime': self._determine_volatility_regime(df),
+                
+                # Raw dataframe for advanced analysis
+                'dataframe': df
+            }
+            
+            # Add symbol-specific adjustments
+            if symbol == 'XAUUSD':
+                market_data['contract_size'] = 100
+                market_data['tick_size'] = 0.01
+                market_data['tick_value'] = 1.0
+            else:
+                market_data['contract_size'] = 100000
+                market_data['tick_size'] = 0.0001 if 'JPY' not in symbol else 0.01
+                market_data['tick_value'] = 10 if 'JPY' not in symbol else 1
+            
+            return market_data
+            
+        except Exception as e:
+            logger.error(f"Error creating market data dict: {e}")
+            return None
+    
+    def _calculate_bb_position(self, current_data) -> float:
+        """Calculate position within Bollinger Bands (0-1)"""
+        try:
+            bb_upper = current_data.get('bb_upper', current_data['close'])
+            bb_lower = current_data.get('bb_lower', current_data['close'])
+            price = current_data['close']
+            
+            if bb_upper > bb_lower:
+                return (price - bb_lower) / (bb_upper - bb_lower)
+            return 0.5
+            
+        except Exception:
+            return 0.5
+    
+    def _determine_trend_direction(self, df: pd.DataFrame) -> str:
+        """Determine overall trend direction"""
+        try:
+            if len(df) < 20:
+                return 'NEUTRAL'
+            
+            recent_data = df.tail(20)
+            
+            # Multiple trend indicators
+            sma_trend = 1 if recent_data['close'].iloc[-1] > recent_data.get('sma_20', recent_data['close']).iloc[-1] else -1
+            ema_trend = 1 if recent_data.get('ema_12', recent_data['close']).iloc[-1] > recent_data.get('ema_26', recent_data['close']).iloc[-1] else -1
+            price_trend = 1 if recent_data['close'].iloc[-1] > recent_data['close'].iloc[0] else -1
+            
+            trend_score = sma_trend + ema_trend + price_trend
+            
+            if trend_score >= 2:
+                return 'BULLISH'
+            elif trend_score <= -2:
+                return 'BEARISH'
+            else:
+                return 'NEUTRAL'
+                
+        except Exception:
+            return 'NEUTRAL'
+    
+    def _determine_market_phase(self, current_data) -> str:
+        """Determine current market phase"""
+        try:
+            rsi = current_data.get('rsi', 50)
+            bb_position = self._calculate_bb_position(current_data)
+            adx = current_data.get('adx', 25)
+            
+            if adx > 25:  # Trending market
+                if rsi > 70 or bb_position > 0.8:
+                    return 'OVERBOUGHT_TREND'
+                elif rsi < 30 or bb_position < 0.2:
+                    return 'OVERSOLD_TREND'
+                else:
+                    return 'TRENDING'
+            else:  # Ranging market
+                if rsi > 60 or bb_position > 0.7:
+                    return 'OVERBOUGHT_RANGE'
+                elif rsi < 40 or bb_position < 0.3:
+                    return 'OVERSOLD_RANGE'
+                else:
+                    return 'RANGING'
+                    
+        except Exception:
+            return 'UNKNOWN'
+    
+    def _determine_volatility_regime(self, df: pd.DataFrame) -> str:
+        """Determine volatility regime"""
+        try:
+            if len(df) < 20:
+                return 'NORMAL'
+            
+            recent_atr = df.tail(20)['atr'].mean() if 'atr' in df.columns else 0
+            historical_atr = df['atr'].mean() if 'atr' in df.columns else 0
+            
+            if historical_atr > 0:
+                volatility_ratio = recent_atr / historical_atr
+                
+                if volatility_ratio > 1.5:
+                    return 'HIGH'
+                elif volatility_ratio < 0.7:
+                    return 'LOW'
+                else:
+                    return 'NORMAL'
+            
+            return 'NORMAL'
+            
+        except Exception:
+            return 'NORMAL'
+    
+    def generate_traditional_signal(self, symbol: str, market_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """
+        Generate traditional technical analysis signal
+        """
+        try:
+            if not market_data:
+                return None
+            
+            signals = []
+            
+            # RSI-based signals
+            rsi_signal = self._generate_rsi_signal(market_data)
+            if rsi_signal:
+                signals.append(rsi_signal)
+            
+            # Bollinger Bands signals
+            bb_signal = self._generate_bb_signal(market_data)
+            if bb_signal:
+                signals.append(bb_signal)
+            
+            # MACD signals
+            macd_signal = self._generate_macd_signal(market_data)
+            if macd_signal:
+                signals.append(macd_signal)
+            
+            # Moving Average signals
+            ma_signal = self._generate_ma_signal(market_data)
+            if ma_signal:
+                signals.append(ma_signal)
+            
+            # Combine signals
+            if signals:
+                combined_signal = self._combine_traditional_signals(signals, symbol, market_data)
+                return combined_signal
+            
+            return None
+            
+        except Exception as e:
+            logger.error(f"Error generating traditional signal for {symbol}: {e}")
+            return None
+    
+    def _generate_rsi_signal(self, market_data: Dict[str, Any]) -> Optional[Dict[str, str]]:
+        """Generate RSI-based signal"""
+        try:
+            rsi = market_data.get('rsi', 50)
+            
+            if rsi < self.rsi_oversold:
+                return {
+                    'type': 'RSI',
+                    'direction': 'BUY',
+                    'strength': min(1.0, (self.rsi_oversold - rsi) / 20),
+                    'reason': f'RSI oversold: {rsi:.1f}'
+                }
+            elif rsi > self.rsi_overbought:
+                return {
+                    'type': 'RSI',
+                    'direction': 'SELL',
+                    'strength': min(1.0, (rsi - self.rsi_overbought) / 20),
+                    'reason': f'RSI overbought: {rsi:.1f}'
+                }
+            
+            return None
+            
+        except Exception:
+            return None
+    
+    def _generate_bb_signal(self, market_data: Dict[str, Any]) -> Optional[Dict[str, str]]:
+        """Generate Bollinger Bands signal"""
+        try:
+            bb_position = market_data.get('bb_position', 0.5)
+            current_price = market_data.get('current_price', 0)
+            bb_upper = market_data.get('bb_upper', current_price)
+            bb_lower = market_data.get('bb_lower', current_price)
+            
+            if bb_position < 0.1:  # Near lower band
+                return {
+                    'type': 'BOLLINGER',
+                    'direction': 'BUY',
+                    'strength': 1.0 - bb_position * 10,
+                    'reason': f'Price near BB lower band: {current_price:.5f} vs {bb_lower:.5f}'
+                }
+            elif bb_position > 0.9:  # Near upper band
+                return {
+                    'type': 'BOLLINGER',
+                    'direction': 'SELL',
+                    'strength': (bb_position - 0.9) * 10,
+                    'reason': f'Price near BB upper band: {current_price:.5f} vs {bb_upper:.5f}'
+                }
+            
+            return None
+            
+        except Exception:
+            return None
+    
+    def _generate_macd_signal(self, market_data: Dict[str, Any]) -> Optional[Dict[str, str]]:
+        """Generate MACD signal"""
+        try:
+            macd = market_data.get('macd', 0)
+            macd_signal = market_data.get('macd_signal', 0)
+            macd_histogram = market_data.get('macd_histogram', 0)
+            
+            # MACD line crossing signal line
+            if macd > macd_signal and macd_histogram > 0:
+                strength = min(1.0, abs(macd_histogram) / self.macd_threshold)
+                if strength > 0.3:
+                    return {
+                        'type': 'MACD',
+                        'direction': 'BUY',
+                        'strength': strength,
+                        'reason': f'MACD bullish crossover: {macd:.6f} > {macd_signal:.6f}'
+                    }
+            elif macd < macd_signal and macd_histogram < 0:
+                strength = min(1.0, abs(macd_histogram) / self.macd_threshold)
+                if strength > 0.3:
+                    return {
+                        'type': 'MACD',
+                        'direction': 'SELL',
+                        'strength': strength,
+                        'reason': f'MACD bearish crossover: {macd:.6f} < {macd_signal:.6f}'
+                    }
+            
+            return None
+            
+        except Exception:
+            return None
+    
+    def _generate_ma_signal(self, market_data: Dict[str, Any]) -> Optional[Dict[str, str]]:
+        """Generate Moving Average signal"""
+        try:
+            current_price = market_data.get('current_price', 0)
+            sma_20 = market_data.get('sma_20', current_price)
+            sma_50 = market_data.get('sma_50', current_price)
+            ema_12 = market_data.get('ema_12', current_price)
+            ema_26 = market_data.get('ema_26', current_price)
+            
+            signals = 0
+            
+            # Price above/below MAs
+            if current_price > sma_20 > sma_50:
+                signals += 1
+            elif current_price < sma_20 < sma_50:
+                signals -= 1
+            
+            # EMA crossover
+            if ema_12 > ema_26:
+                signals += 1
+            elif ema_12 < ema_26:
+                signals -= 1
+            
+            if signals >= 2:
+                return {
+                    'type': 'MOVING_AVERAGE',
+                    'direction': 'BUY',
+                    'strength': 0.7,
+                    'reason': f'Bullish MA alignment: Price {current_price:.5f} > SMA20 {sma_20:.5f} > SMA50 {sma_50:.5f}'
+                }
+            elif signals <= -2:
+                return {
+                    'type': 'MOVING_AVERAGE',
+                    'direction': 'SELL',
+                    'strength': 0.7,
+                    'reason': f'Bearish MA alignment: Price {current_price:.5f} < SMA20 {sma_20:.5f} < SMA50 {sma_50:.5f}'
+                }
+            
+            return None
+            
+        except Exception:
+            return None
+    
+    def _combine_traditional_signals(self, signals: List[Dict], symbol: str, 
+                                   market_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Combine multiple traditional signals"""
+        try:
+            buy_signals = [s for s in signals if s['direction'] == 'BUY']
+            sell_signals = [s for s in signals if s['direction'] == 'SELL']
+            
+            # Calculate signal strength
+            buy_strength = sum(s['strength'] for s in buy_signals)
+            sell_strength = sum(s['strength'] for s in sell_signals)
+            
+            # Determine final signal
+            if buy_strength > sell_strength and buy_strength > 0.5:
+                direction = 'BUY'
+                confidence = min(0.9, buy_strength / len(signals))
+                reasons = [s['reason'] for s in buy_signals]
+            elif sell_strength > buy_strength and sell_strength > 0.5:
+                direction = 'SELL'
+                confidence = min(0.9, sell_strength / len(signals))
+                reasons = [s['reason'] for s in sell_signals]
+            else:
+                return None  # No clear signal
+            
+            # Calculate entry, stop loss, and take profit
+            current_price = market_data.get('current_price', 0)
+            atr = market_data.get('atr', current_price * 0.01)
+            
+            if direction == 'BUY':
+                entry_price = current_price
+                stop_loss = current_price - (atr * 2.0)
+                take_profit = current_price + (atr * 3.0)
+            else:
+                entry_price = current_price
+                stop_loss = current_price + (atr * 2.0)
+                take_profit = current_price - (atr * 3.0)
+            
+            # Create signal
+            signal = {
+                'symbol': symbol,
+                'direction': direction,
+                'confidence': confidence,
+                'strategy': 'Traditional-Multi-Indicator',
+                'entry_price': entry_price,
+                'stop_loss': stop_loss,
+                'take_profit': take_profit,
+                'timestamp': datetime.now(),
+                'reasons': reasons,
+                'signal_types': [s['type'] for s in signals if s['direction'] == direction],
+                'market_phase': market_data.get('market_phase', 'UNKNOWN'),
+                'trend_direction': market_data.get('trend_direction', 'NEUTRAL'),
+                'volatility_regime': market_data.get('volatility_regime', 'NORMAL')
+            }
+            
+            logger.debug(f"Traditional signal: {symbol} {direction} (confidence: {confidence:.2f})")
             return signal
             
         except Exception as e:
-            self.logger.error(f"Error generating traditional signal: {e}")
+            logger.error(f"Error combining traditional signals: {e}")
             return None
-
-    def _generate_trend_following_signal(self, df: pd.DataFrame) -> Optional[Dict[str, Any]]:
-        """Generate trend following signals"""
+    
+    def _clean_cache(self) -> None:
+        """Clean expired cache entries"""
         try:
-            signals = []
+            current_time = datetime.now()
+            expired_keys = []
             
-            # 1. EMA Crossover Strategy
-            if 'EMA_20' in df.columns and 'EMA_50' in df.columns and len(df) >= 3:
-                ema20_current = df['EMA_20'].iloc[-1]
-                ema50_current = df['EMA_50'].iloc[-1]
-                ema20_prev = df['EMA_20'].iloc[-2]
-                ema50_prev = df['EMA_50'].iloc[-2]
+            for key, (data, timestamp) in self.data_cache.items():
+                if (current_time - timestamp).seconds > self.cache_expiry:
+                    expired_keys.append(key)
+            
+            for key in expired_keys:
+                del self.data_cache[key]
+            
+            if expired_keys:
+                logger.debug(f"Cleaned {len(expired_keys)} expired cache entries")
                 
-                # Bullish crossover
-                if ema20_prev <= ema50_prev and ema20_current > ema50_current:
-                    signals.append({
-                        'direction': 'BUY',
-                        'reason': 'EMA_20_cross_above_EMA_50',
-                        'strength': 0.8
-                    })
-                # Bearish crossover
-                elif ema20_prev >= ema50_prev and ema20_current < ema50_current:
-                    signals.append({
-                        'direction': 'SELL',
-                        'reason': 'EMA_20_cross_below_EMA_50',
-                        'strength': 0.8
-                    })
+        except Exception as e:
+            logger.error(f"Error cleaning cache: {e}")
+    
+    def get_market_summary(self) -> Dict[str, Any]:
+        """Get market intelligence summary"""
+        try:
+            symbols = self.config.get_trading_symbols()
+            summary = {
+                'timestamp': datetime.now(),
+                'symbols_monitored': len(symbols),
+                'cache_entries': len(self.data_cache),
+                'mt5_connected': mt5.initialize() if mt5 else False,
+                'custom_indicators': True,  # Using custom implementations
+                'talib_dependency': False,  # No TA-Lib required
+                'analysis_parameters': {
+                    'trend_threshold': self.trend_threshold,
+                    'volatility_threshold': self.volatility_threshold,
+                    'momentum_threshold': self.momentum_threshold
+                }
+            }
             
-            # 2. MACD Trend Signal
-            if all(col in df.columns for col in ['MACD_12_26_9', 'MACDs_12_26_9']) and len(df) >= 3:
-                macd_current = df['MACD_12_26_9'].iloc[-1]
-                signal_current = df['MACDs_12_26_9'].iloc[-1]
-                macd_prev = df['MACD_12_26_9'].iloc[-2]
-                signal_prev = df['MACDs_12_26_9'].iloc[-2]
-                
-                # Bullish MACD crossover
-                if macd_prev <= signal_prev and macd_current > signal_current and macd_current > 0:
-                    signals.append({
-                        'direction': 'BUY',
-                        'reason': 'MACD_bullish_crossover',
-                        'strength': 0.7
-                    })
-                # Bearish MACD crossover
-                elif macd_prev >= signal_prev and macd_current < signal_current and macd_current < 0:
-                    signals.append({
-                        'direction': 'SELL',
-                        'reason': 'MACD_bearish_crossover',
-                        'strength': 0.7
-                    })
+            # Get current market state for each symbol
+            market_states = {}
+            for symbol in symbols[:3]:  # Limit to avoid too many calls
+                try:
+                    market_data = self.get_market_data(symbol)
+                    if market_data:
+                        market_states[symbol] = {
+                            'price': market_data.get('current_price', 0),
+                            'trend': market_data.get('trend_direction', 'NEUTRAL'),
+                            'phase': market_data.get('market_phase', 'UNKNOWN'),
+                            'volatility': market_data.get('volatility_regime', 'NORMAL'),
+                            'rsi': market_data.get('rsi', 50),
+                            'atr': market_data.get('atr', 0)
+                        }
+                except Exception:
+                    continue
             
-            # 3. ADX Strong Trend with Directional Movement
-            if all(col in df.columns for col in ['ADX_14', 'DMP_14', 'DMN_14']):
-                adx = df['ADX_14'].iloc[-1]
-                di_plus = df['DMP_14'].iloc[-1]
-                di_minus = df['DMN_14'].iloc[-1]
-                
-                if adx > 25:  # Strong trend
-                    if di_plus > di_minus + 5:  # Strong uptrend
-                        signals.append({
-                            'direction': 'BUY',
-                            'reason': 'ADX_strong_uptrend',
-                            'strength': 0.6
-                        })
-                    elif di_minus > di_plus + 5:  # Strong downtrend
-                        signals.append({
-                            'direction': 'SELL',
-                            'reason': 'ADX_strong_downtrend',
-                            'strength': 0.6
-                        })
-            
-            # Return strongest signal
-            if signals:
-                best_signal = max(signals, key=lambda x: x['strength'])
-                return best_signal
-            
-            return None
+            summary['market_states'] = market_states
+            return summary
             
         except Exception as e:
-            self.logger.error(f"Error in trend following signal generation: {e}")
-            return None
-
-    def _generate_mean_reverting_signal(self, df: pd.DataFrame) -> Optional[Dict[str, Any]]:
-        """Generate mean reverting signals"""
+            logger.error(f"Error getting market summary: {e}")
+            return {'error': str(e)}
+    
+    def shutdown(self) -> None:
+        """Clean shutdown of market intelligence"""
         try:
-            signals = []
+            logger.info("📊 Market Intelligence Final Summary:")
+            summary = self.get_market_summary()
+            logger.info(f"   Symbols Monitored: {summary.get('symbols_monitored', 0)}")
+            logger.info(f"   Cache Entries: {summary.get('cache_entries', 0)}")
+            logger.info(f"   Custom Indicators: ✅ No TA-Lib Dependencies")
             
-            # 1. RSI Overbought/Oversold
-            if 'RSI_14' in df.columns:
-                rsi = df['RSI_14'].iloc[-1]
-                
-                if rsi < self.rsi_oversold:
-                    signals.append({
-                        'direction': 'BUY',
-                        'reason': f'RSI_oversold_{rsi:.1f}',
-                        'strength': 0.7
-                    })
-                elif rsi > self.rsi_overbought:
-                    signals.append({
-                        'direction': 'SELL',
-                        'reason': f'RSI_overbought_{rsi:.1f}',
-                        'strength': 0.7
-                    })
+            # Clear cache
+            self.data_cache.clear()
             
-            # 2. Bollinger Bands Mean Reversion
-            if all(col in df.columns for col in ['Close', 'BBU_20_2.0', 'BBL_20_2.0', 'BBM_20_2.0']):
-                price = df['Close'].iloc[-1]
-                bb_upper = df['BBU_20_2.0'].iloc[-1]
-                bb_lower = df['BBL_20_2.0'].iloc[-1]
-                
-                # Calculate position within bands
-                bb_position = (price - bb_lower) / (bb_upper - bb_lower) if bb_upper != bb_lower else 0.5
-                
-                if bb_position > self.bb_threshold:  # Near upper band
-                    signals.append({
-                        'direction': 'SELL',
-                        'reason': f'BB_upper_reversion_{bb_position:.2f}',
-                        'strength': 0.6
-                    })
-                elif bb_position < (1 - self.bb_threshold):  # Near lower band
-                    signals.append({
-                        'direction': 'BUY',
-                        'reason': f'BB_lower_reversion_{bb_position:.2f}',
-                        'strength': 0.6
-                    })
+            # Shutdown MT5 connection
+            try:
+                mt5.shutdown()
+            except Exception:
+                pass
             
-            # Return strongest signal
-            if signals:
-                best_signal = max(signals, key=lambda x: x['strength'])
-                return best_signal
-            
-            return None
+            logger.info("✅ Market Intelligence shutdown completed")
             
         except Exception as e:
-            self.logger.error(f"Error in mean reverting signal generation: {e}")
-            return None
-
-    def _generate_volatility_breakout_signal(self, df: pd.DataFrame) -> Optional[Dict[str, Any]]:
-        """Generate volatility breakout signals"""
-        try:
-            signals = []
-            
-            # 1. Bollinger Band Breakout
-            if all(col in df.columns for col in ['Close', 'BBU_20_2.0', 'BBL_20_2.0']):
-                price = df['Close'].iloc[-1]
-                bb_upper = df['BBU_20_2.0'].iloc[-1]
-                bb_lower = df['BBL_20_2.0'].iloc[-1]
-                
-                if len(df) >= 2:
-                    prev_price = df['Close'].iloc[-2]
-                    
-                    # Breakout above upper band
-                    if prev_price <= bb_upper and price > bb_upper:
-                        signals.append({
-                            'direction': 'BUY',
-                            'reason': 'BB_upper_breakout',
-                            'strength': 0.7
-                        })
-                    # Breakout below lower band
-                    elif prev_price >= bb_lower and price < bb_lower:
-                        signals.append({
-                            'direction': 'SELL',
-                            'reason': 'BB_lower_breakout',
-                            'strength': 0.7
-                        })
-            
-            # Return strongest signal
-            if signals:
-                best_signal = max(signals, key=lambda x: x['strength'])
-                return best_signal
-            
-            return None
-            
-        except Exception as e:
-            self.logger.error(f"Error in volatility breakout signal generation: {e}")
-            return None
-
-    def _generate_neutral_signal(self, df: pd.DataFrame) -> Optional[Dict[str, Any]]:
-        """Generate neutral market signals"""
-        try:
-            # In neutral markets, look for clear technical setups
-            signals = []
-            
-            # Simple momentum signal
-            if 'RSI_14' in df.columns and 'MACD_12_26_9' in df.columns:
-                rsi = df['RSI_14'].iloc[-1]
-                macd = df['MACD_12_26_9'].iloc[-1]
-                
-                # Conservative signals only
-                if rsi < 25 and macd > 0:
-                    signals.append({
-                        'direction': 'BUY',
-                        'reason': 'neutral_oversold_momentum',
-                        'strength': 0.4
-                    })
-                elif rsi > 75 and macd < 0:
-                    signals.append({
-                        'direction': 'SELL',
-                        'reason': 'neutral_overbought_momentum',
-                        'strength': 0.4
-                    })
-            
-            # Return signal if found
-            if signals:
-                return max(signals, key=lambda x: x['strength'])
-            
-            return None
-            
-        except Exception as e:
-            self.logger.error(f"Error in neutral signal generation: {e}")
-            return None
-
-    def _calculate_traditional_confidence(self, signal: Dict[str, Any], 
-                                        df: pd.DataFrame, regime: str) -> float:
-        """Calculate confidence score for traditional signals"""
-        try:
-            base_confidence = signal.get('strength', 0.5)
-            
-            # Regime alignment bonus
-            regime_bonus = 0.1 if signal.get('reason', '').lower().find(regime.lower()) != -1 else 0
-            
-            # Technical confirmation bonus
-            confirmations = self._get_signal_confirmations(df, signal['direction'])
-            confirmation_bonus = len(confirmations) * 0.05
-            
-            # Volume confirmation
-            volume_bonus = 0.05 if self._has_volume_confirmation(df, signal['direction']) else 0
-            
-            final_confidence = min(0.95, base_confidence + regime_bonus + confirmation_bonus + volume_bonus)
-            return final_confidence
-            
-        except Exception as e:
-            self.logger.error(f"Error calculating traditional confidence: {e}")
-            return 0.5
-
-    def _get_signal_confirmations(self, df: pd.DataFrame, direction: str) -> List[str]:
-        """Get technical confirmations for signal"""
-        try:
-            confirmations = []
-            
-            if direction.upper() == 'BUY':
-                # Look for bullish confirmations
-                if 'RSI_14' in df.columns and df['RSI_14'].iloc[-1] < 50:
-                    confirmations.append('RSI_bullish')
-                if 'MACD_12_26_9' in df.columns and df['MACD_12_26_9'].iloc[-1] > 0:
-                    confirmations.append('MACD_bullish')
-            else:
-                # Look for bearish confirmations
-                if 'RSI_14' in df.columns and df['RSI_14'].iloc[-1] > 50:
-                    confirmations.append('RSI_bearish')
-                if 'MACD_12_26_9' in df.columns and df['MACD_12_26_9'].iloc[-1] < 0:
-                    confirmations.append('MACD_bearish')
-            
-            return confirmations
-            
-        except Exception as e:
-            self.logger.error(f"Error getting signal confirmations: {e}")
-            return []
-
-    def _has_volume_confirmation(self, df: pd.DataFrame, direction: str) -> bool:
-        """Check for volume confirmation"""
-        try:
-            if 'Volume' not in df.columns or df['Volume'].sum() == 0:
-                return False
-            
-            # Simple volume confirmation: above average volume
-            current_volume = df['Volume'].iloc[-1]
-            avg_volume = df['Volume'].tail(20).mean()
-            
-            return current_volume > avg_volume * 1.2  # 20% above average
-            
-        except Exception as e:
-            self.logger.error(f"Error checking volume confirmation: {e}")
-            return False
+            logger.error(f"Error during market intelligence shutdown: {e}")

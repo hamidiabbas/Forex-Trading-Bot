@@ -1,57 +1,128 @@
-# Professional Trading Bot Configuration
+# ✅ Complete Fixed Configuration
+# Trading Bot Configuration with Environment Variable Support
 
+# Core Trading Configuration
 trading:
-  symbols: ['EURUSD','GBPUSD','XAUUSD']  # Fixed symbols for trading
-  risk_per_trade: 1.0              # Risk 1% per trade
-  max_position_size: 10.0          # Maximum 10% of account per position
-  max_daily_risk: 5.0              # Maximum 5% daily risk
-  max_open_positions: 5            # Maximum 5 open positions
-  min_analysis_interval: 30        # Minimum seconds between analysis
-  loop_interval: 10                # Main loop sleep interval
-  close_positions_on_shutdown: false
+  symbols: ['EURUSD', 'GBPUSD', 'XAUUSD']  # ✅ FIXED: XAUUSD instead of USDJPY
+  risk_per_trade: 0.01  # 1% risk per trade
+  max_daily_risk: 0.05  # 5% maximum daily risk
+  max_positions_per_symbol: 1
+  max_total_positions: 3
+  enable_traditional_signals: true
+  enable_rl_signals: true
+  min_confidence_threshold: 0.6
+  risk_reward_ratio: 1.5
 
+# ✅ FIXED: MT5 Configuration with Environment Variables
 mt5:
-  login: 5038274604
-  server: "MetaQuotes-Demo"
-  path: "C:\\Program Files\\MetaTrader 5\\terminal64.exe"
+  login: ${MT5_LOGIN}  # Use environment variable
+  password: ${MT5_PASSWORD}  # Use environment variable  
+  server: ${MT5_SERVER}  # Use environment variable
   magic_number: 123456789
   max_slippage: 3
+  max_connection_attempts: 3
+  connection_timeout: 30
+
+# ✅ FIXED: Symbol-Specific Parameters (moved from hardcoded)
+symbol_params:
+  EURUSD:
+    slippage: 3
+    min_volume: 0.01
+    max_volume: 10.0
+    typical_spread: 1.5
+    volatility_adjustment: 1.0
+  GBPUSD:
+    slippage: 3
+    min_volume: 0.01
+    max_volume: 10.0
+    typical_spread: 2.0
+    volatility_adjustment: 1.1
+  XAUUSD:  # ✅ FIXED: Gold-specific parameters
+    slippage: 12  # Higher slippage for Gold
+    min_volume: 0.01
+    max_volume: 5.0
+    typical_spread: 4.0
+    volatility_adjustment: 1.5
+    max_retry_attempts: 8
+    retry_delay: 0.3
+
+# Execution Configuration
+execution:
+  enable_partial_fills: true
+  max_retry_attempts: 3
+  retry_delay_seconds: 1
   execution_timeout: 30
+  enable_slippage_protection: true
 
+# ✅ FIXED: Risk Management with Correlation Matrix
 risk_management:
-  atr_stop_loss_multiplier: 2.0
-  atr_take_profit_multiplier: 3.0
-  min_risk_reward_ratio: 1.5
-  max_correlation_exposure: 0.3
+  use_dynamic_position_sizing: true
+  max_risk_per_trade: 0.01
+  max_daily_risk: 0.05
+  stop_loss_multiplier: 2.0
+  take_profit_multiplier: 3.0
+  correlation_limit: 0.7
+  # ✅ FIXED: Correlation matrix moved from hardcoded
+  correlation_matrix:
+    EURUSD_GBPUSD: 0.85
+    EURUSD_XAUUSD: -0.25
+    GBPUSD_XAUUSD: -0.20
+  symbol_risk_weights:
+    EURUSD: 1.0
+    GBPUSD: 1.1
+    XAUUSD: 1.4  # Higher risk weight for Gold
 
+# ✅ FIXED: RL Model Configuration (SAC)
+rl_model:
+  model_type: 'SAC'  # Changed from PPO to SAC
+  model_path: './best_sac_model_EURUSD/best_model.zip'  # Updated path
+  observation_size: 32
+  enable_model_validation: true
+  prediction_confidence_threshold: 0.6
+  model_update_interval: 24
+
+# Market Intelligence
 market_intelligence:
   trend_threshold: 0.7
   volatility_threshold: 0.02
   momentum_threshold: 0.5
-  trend_analysis_period: 50
-  volatility_analysis_period: 20
-  momentum_analysis_period: 14
+  enable_regime_detection: true
 
-rl:
-  enabled: true
-  confidence_threshold: 0.6
-  fallback_to_traditional: true
-  performance_tracking: true
+# Strategy Configuration  
+strategy:
+  rsi_overbought: 70
+  rsi_oversold: 30
+  bb_threshold: 0.95
+  macd_signal_threshold: 0.001
+  adx_trend_threshold: 25
+  enable_confluence_trading: true
+  min_signal_confluence: 2
 
+# Notifications
 notifications:
-  email_enabled: false
-  slack_enabled: false
-  discord_enabled: false
-  telegram_enabled: false
-  console_enabled: true
+  enable_console_notifications: true
+  enable_email_notifications: false
+  enable_telegram_notifications: false
+  trade_notification_enabled: true
 
+# Performance Monitoring
+performance_monitor:
+  enable_monitoring: true
+  update_interval_seconds: 300
+  retention_days: 30
+  enable_trade_analytics: true
+
+# Logging
 logging:
-  level: "INFO"
-  file_path: "logs/trading_bot.log"
-  max_file_size: "10MB"
+  log_level: 'INFO'
+  enable_file_logging: true
+  log_file_path: 'logs/trading_bot.log'
+  max_log_file_size: 10485760  # 10MB
   backup_count: 5
 
-performance:
-  monitoring_enabled: true
-  update_interval: 300  # 5 minutes
-  metrics_retention_days: 30
+# Emergency Configuration
+emergency:
+  enable_emergency_stop: true
+  max_consecutive_losses: 5
+  emergency_close_threshold: 0.05
+  enable_weekend_close: true

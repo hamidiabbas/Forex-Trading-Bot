@@ -19,7 +19,8 @@ from typing import Dict, Any, Optional, List, Tuple, Union
 # Data handling imports
 import pandas as pd
 import numpy as np
-
+from core.trading_environment import TradingEnvironment
+from core.rl_model_manager import RLModelManager
 # Quick debug check
 symbols = ['EURUSD', 'GBPUSD', 'XAUUSD']  # Your fixed symbols
 print(f"✅ Trading symbols: {symbols}")
