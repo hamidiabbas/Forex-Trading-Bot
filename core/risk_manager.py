@@ -822,3 +822,101 @@ class EnhancedRiskManager:
         except Exception as e:
             self.logger.error(f"Error in emergency close: {e}")
             return False
+    def check_correlation_risk(self, new_signal: Dict[str, Any], open_positions: List[Dict[str, Any]]) -> Dict[str, Any]:
+        try:
+            symbol = new_signal.get('symbol', '')
+            direction = new_signal.get('direction', '')
+            
+            if not symbol or not direction:
+                raise ValueError("Missing required signal data")
+        
+            # Define correlation matrix (you can make this dynamic by calculating from historical data)
+            correlation_matrix = {
+                ('EURUSD', 'GBPUSD'): 0.85,  # Strong positive correlation
+                ('EURUSD', 'XAUUSD'): -0.25, # Weak negative correlation
+                ('GBPUSD', 'XAUUSD'): -0.20, # Weak negative correlation
+                ('USDJPY', 'EURUSD'): 0.90,  # Strong positive correlation
+                ('USDJPY', 'GBPUSD'): 0.80,  # Strong positive correlation
+                ('XAUUSD', 'USDJPY'): -0.30   # Moderate negative correlation
+            }
+        except ValueError as ve:
+            self.logger.error(f"Invalid signal data: {ve}")
+            return {
+                'allow_trade': False,
+                'reason': f'Invalid signal data: {ve}',
+                'warnings': [],
+                'suggested_action': 'Check signal data completeness'
+            }
+        except Exception as e:
+            self.logger.error(f"Error processing correlation data: {e}")
+            return {
+                'allow_trade': False,
+                'reason': f'Error in correlation check: {e}',
+                'warnings': [],
+                'suggested_action': 'System error - manual review needed'
+            }
+        
+        correlation_warnings = []
+        high_risk_correlations = []
+        
+        for position in open_positions:
+            pos_symbol = position.get('symbol', '')
+            pos_direction = position.get('type', '')
+            
+            # Skip if same symbol
+            if pos_symbol == symbol:
+                continue
+            
+            # Get correlation coefficient
+            pair_key = tuple(sorted([symbol, pos_symbol]))
+            correlation = correlation_matrix.get(pair_key, 0.0)
+            
+            # Check for high correlation conflicts
+            if abs(correlation) > 0.7:  # High correlation threshold
+                
+                if correlation > 0.7:  # Positive correlation
+                    if direction != pos_direction:  # Opposite directions
+                        warning = {
+                            'type': 'POSITIVE_CORRELATION_CONFLICT',
+                            'message': f"{symbol} {direction} conflicts with {pos_symbol} {pos_direction}",
+                            'correlation': correlation,
+                            'risk_level': 'HIGH',
+                            'recommendation': 'Consider closing one position or reducing size'
+                        }
+                        high_risk_correlations.append(warning)
+                        correlation_warnings.append(warning)
+                
+                elif correlation < -0.7:  # Negative correlation
+                    if direction == pos_direction:  # Same directions
+                        warning = {
+                            'type': 'NEGATIVE_CORRELATION_CONFLICT', 
+                            'message': f"{symbol} {direction} conflicts with {pos_symbol} {pos_direction}",
+                            'correlation': correlation,
+                            'risk_level': 'MEDIUM',
+                            'recommendation': 'Monitor closely for divergence'
+                        }
+                        correlation_warnings.append(warning)
+        
+        # Determine action based on correlation analysis
+        if high_risk_correlations:
+            return {
+                'allow_trade': False,  # Block conflicting trades
+                'reason': 'High correlation conflict detected',
+                'warnings': correlation_warnings,
+                'suggested_action': 'Wait for better entry or close conflicting position'
+            }
+        elif correlation_warnings:
+            return {
+                'allow_trade': True,  # Allow but with warnings
+                'reason': 'Moderate correlation risk',
+                'warnings': correlation_warnings,
+                'suggested_action': 'Reduce position size by 50%'
+            }
+        else:
+            return {
+                'allow_trade': True,
+                'reason': 'No significant correlation conflicts',
+                'warnings': [],
+                'suggested_action': 'Normal position sizing'
+            }
+    

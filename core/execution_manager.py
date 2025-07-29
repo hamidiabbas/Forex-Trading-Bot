@@ -1,6 +1,6 @@
 """
 Enhanced Execution Manager with Advanced Order Management
-Professional-grade trade execution for MetaTrader 5 - COMPLETE FIXED VERSION
+Professional-grade trade execution for MetaTrader 5 - XAUUSD OPTIMIZED VERSION
 """
 
 import logging
@@ -85,7 +85,7 @@ class EnhancedExecutionManager:
         self.account_balance = 0.0
         self.account_equity = 0.0
         
-        # ✅ FIXED: MT5 Return Codes (using numeric values)
+        # MT5 Return Codes (using numeric values)
         self.MT5_RETURN_CODES = {
             'DONE': 10009,
             'REQUOTE': 10004,
@@ -100,7 +100,7 @@ class EnhancedExecutionManager:
             'UNSUPPORTED_FILLING': 10030
         }
         
-        # ✅ NEW: Symbol filling mode cache for performance
+        # Symbol filling mode cache for performance
         self.symbol_filling_modes = {}
         
         # Initialize MT5 connection
@@ -432,7 +432,7 @@ class EnhancedExecutionManager:
     def _create_order_request(self, symbol: str, direction: str, position_size: float,
                             execution_price: float, stop_loss: float, take_profit: float,
                             strategy: str, confidence: float) -> Optional[Dict[str, Any]]:
-        """✅ FIXED: Create comprehensive order request with dynamic slippage for different symbols"""
+        """✅ UPDATED: Create order request with XAUUSD-optimized slippage settings"""
         try:
             order_type = mt5.ORDER_TYPE_BUY if direction.upper() == 'BUY' else mt5.ORDER_TYPE_SELL
             
@@ -440,17 +440,28 @@ class EnhancedExecutionManager:
             timestamp = datetime.now().strftime('%H%M%S')
             comment = f"{strategy[:8]}_{timestamp}_C{int(confidence*100)}"
             
-            # ✅ NEW: Dynamic slippage based on symbol
+            # ✅ UPDATED: Dynamic slippage based on symbol (with XAUUSD optimization)
             if symbol == 'USDJPY':
-                max_slippage = 5  # Higher slippage tolerance for USDJPY
-                self.logger.debug(f"Using increased slippage ({max_slippage}) for {symbol}")
+                max_slippage = 5  # Higher slippage tolerance for USDJPY (legacy - not used)
+                self.logger.debug(f"Using legacy USDJPY slippage ({max_slippage}) for {symbol}")
             elif symbol in ['GBPJPY', 'EURJPY', 'AUDJPY', 'CADJPY', 'CHFJPY']:
-                max_slippage = 4  # Medium slippage for other JPY pairs
+                max_slippage = 4  # Medium slippage for JPY pairs
                 self.logger.debug(f"Using medium slippage ({max_slippage}) for JPY pair {symbol}")
+            elif symbol == 'XAUUSD':  # ✅ NEW: Gold-specific optimized settings
+                max_slippage = 4  # Medium slippage for Gold (excellent liquidity)
+                self.logger.debug(f"Using Gold-optimized slippage ({max_slippage}) for {symbol}")
             elif symbol in ['GBPUSD', 'AUDUSD', 'NZDUSD', 'USDCAD']:
                 max_slippage = self.max_slippage  # Default slippage for major pairs
+                self.logger.debug(f"Using standard slippage ({max_slippage}) for major pair {symbol}")
+            elif symbol in ['EURUSD']:
+                max_slippage = self.max_slippage  # Default slippage for EUR pairs
+                self.logger.debug(f"Using standard slippage ({max_slippage}) for EUR pair {symbol}")
+            elif symbol in ['XAGUSD', 'BTCUSD', 'ETHUSD']:  # Other precious metals and crypto
+                max_slippage = 5  # Higher slippage for volatile instruments
+                self.logger.debug(f"Using high slippage ({max_slippage}) for volatile instrument {symbol}")
             else:
                 max_slippage = self.max_slippage  # Default slippage for other pairs
+                self.logger.debug(f"Using default slippage ({max_slippage}) for {symbol}")
             
             # Determine best filling mode for the broker
             filling_mode = self._get_compatible_filling_mode(symbol)
@@ -463,7 +474,7 @@ class EnhancedExecutionManager:
                 "price": execution_price,
                 "sl": stop_loss if stop_loss > 0 else 0,
                 "tp": take_profit if take_profit > 0 else 0,
-                "deviation": max_slippage,  # ✅ FIXED: Use dynamic slippage
+                "deviation": max_slippage,  # Use symbol-specific slippage
                 "magic": self.magic_number,
                 "comment": comment,
                 "type_time": mt5.ORDER_TIME_GTC,
@@ -538,7 +549,7 @@ class EnhancedExecutionManager:
             self.logger.error(f"Error caching filling mode for {symbol}: {e}")
 
     def _execute_order_with_retry(self, order_request: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        """✅ FIXED: Execute order with enhanced retry logic and requote handling"""
+        """Execute order with enhanced retry logic and requote handling"""
         last_error = None
         
         for attempt in range(self.max_retry_attempts):
@@ -577,7 +588,7 @@ class EnhancedExecutionManager:
                     }
                 
                 elif result.retcode in [self.MT5_RETURN_CODES['REQUOTE'], self.MT5_RETURN_CODES['PRICE_OFF']]:
-                    # ✅ ENHANCED: Better requote handling with multiple attempts
+                    # Enhanced requote handling
                     self.logger.warning(f"Requote received (code: {result.retcode}) for {order_request['symbol']}")
                     
                     # Get fresh market data
@@ -588,12 +599,18 @@ class EnhancedExecutionManager:
                         else:
                             order_request['price'] = market_data['bid']
                         
-                        # ✅ NEW: Increase slippage for requoted symbols
-                        if order_request['symbol'] == 'USDJPY':
+                        # ✅ ENHANCED: Symbol-specific slippage increase on requotes
+                        if order_request['symbol'] == 'XAUUSD':
+                            order_request['deviation'] = min(8, order_request['deviation'] + 1)
+                            self.logger.info(f"Increased XAUUSD slippage to {order_request['deviation']}")
+                        elif order_request['symbol'] == 'USDJPY':
                             order_request['deviation'] = min(10, order_request['deviation'] + 2)
-                            self.logger.info(f"Increased slippage to {order_request['deviation']} for {order_request['symbol']}")
+                            self.logger.info(f"Increased USDJPY slippage to {order_request['deviation']}")
                         elif order_request['symbol'] in ['GBPJPY', 'EURJPY', 'AUDJPY']:
                             order_request['deviation'] = min(8, order_request['deviation'] + 1)
+                            self.logger.info(f"Increased JPY pair slippage to {order_request['deviation']}")
+                        else:
+                            order_request['deviation'] = min(6, order_request['deviation'] + 1)
                             self.logger.info(f"Increased slippage to {order_request['deviation']} for {order_request['symbol']}")
                         
                         last_error = f"Requote - retrying with price {order_request['price']:.5f}"
@@ -830,22 +847,28 @@ class EnhancedExecutionManager:
     def _monitor_position_advanced(self, tracked_position: EnhancedPosition, mt5_pos) -> None:
         """✅ FIXED: Advanced position monitoring with corrected profit percentage calculation"""
         try:
-            # ✅ FIXED: Corrected profit percentage calculation to prevent division errors
-            if tracked_position.risk_amount > 0:
+            # ✅ IMPROVED: Better profit percentage calculation
+            if tracked_position.risk_amount > 10.0:  # Only calculate if risk_amount is reasonable
                 profit_percent = (tracked_position.profit / tracked_position.risk_amount) * 100
             else:
-                # Fallback calculation if risk_amount is 0 or invalid
-                account_equity = self.get_account_equity()
-                if account_equity > 0:
-                    profit_percent = (tracked_position.profit / (account_equity * 0.01)) * 100  # Use 1% of equity as reference
+                # Use position value as reference for percentage calculation
+                if tracked_position.symbol == 'XAUUSD':
+                    # For XAUUSD, position value calculation
+                    position_value = tracked_position.volume * tracked_position.open_price * 100  # XAUUSD contract size
+                else:
+                    # For forex pairs, standard calculation
+                    position_value = tracked_position.volume * 100000  # Standard lot size
+                
+                if position_value > 0:
+                    profit_percent = (tracked_position.profit / position_value) * 100
                 else:
                     profit_percent = 0.0
             
-            # ✅ FIXED: Cap extreme percentage values to prevent display issues
-            profit_percent = max(-1000.0, min(1000.0, profit_percent))
+            # Cap percentage values to reasonable range
+            profit_percent = max(-100.0, min(100.0, profit_percent))
             
-            # Log significant profit/loss changes with corrected percentages
-            if abs(tracked_position.profit) > 1.0:  # Only log if profit/loss > $1
+            # Only log significant moves (>$1) with reasonable percentages
+            if abs(tracked_position.profit) > 1.0:
                 if tracked_position.profit > 0:
                     self.logger.info(f"📈 Profit on {tracked_position.symbol}: ${tracked_position.profit:.2f} ({profit_percent:.1f}%)")
                 else:
