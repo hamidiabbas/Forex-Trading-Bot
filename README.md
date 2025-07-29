@@ -1,6 +1,5 @@
 Algorithmic Forex Trading Bot
 Version: 4.0
-Author: Gemini Al
 
 A modular, multi-strategy, and risk-managed automated Forex trading robot developed in Python for the MetaTrader 5 platform.
 
