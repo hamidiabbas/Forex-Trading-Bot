@@ -19,7 +19,7 @@
 import streamlit as st
 import pandas as pd
 import os
-from performance_analyzer import PerformanceAnalyzer
+from utils.performance_analyzer import PerformanceAnalyzer
 
 # --- Page Configuration ---
 st.set_page_config(page_title="Forex Bot Dashboard", page_icon="🤖", layout="wide")

@@ -19,8 +19,8 @@
 import itertools
 import pandas as pd
 from types import SimpleNamespace
-import config
-from backtester import Backtester
+import configs.config as config
+from core.backtester import Backtester
 
 def run_optimization():
     # ... (the main optimization loop is unchanged) ...

@@ -22,12 +22,12 @@ import pytz
 import random
 import MetaTrader5 as mt5
 
-import config
-from data_handler import DataHandler
-from market_intelligence import MarketIntelligence
-from risk_manager import RiskManager
-from strategy_manager import StrategyManager
-from performance_analyzer import PerformanceAnalyzer
+import configs.config as config
+from core.data_handler import DataHandler
+from core.market_intelligence import MarketIntelligence
+from core.risk_manager import RiskManager
+from core.strategy_manager import StrategyManager
+from utils.performance_analyzer import PerformanceAnalyzer
 
 class Backtester:
     def __init__(self, config_obj):

@@ -1,7 +1,7 @@
 # check_symbol_info.py (Corrected)
 
 import MetaTrader5 as mt5
-import config  # Your existing config file
+import configs.config as config  # Your existing config file
 
 def inspect_symbol(symbol):
     """

@@ -22,11 +22,11 @@ from datetime import datetime
 import pytz
 from stable_baselines3 import PPO
 
-import config
-from data_handler import DataHandler
-from market_intelligence import MarketIntelligence
+import configs.config as config
+from core.data_handler import DataHandler
+from core.market_intelligence import MarketIntelligence
 from trading_environment import TradingEnvironment
-from performance_analyzer import PerformanceAnalyzer
+from utils.performance_analyzer import PerformanceAnalyzer
 
 # --- 1. CONFIGURATION ---
 SYMBOL = 'EURUSD'
