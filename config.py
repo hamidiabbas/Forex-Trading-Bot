@@ -13,4 +13,6 @@ config = {
     }
 }
 
-print(f"✅ Config loaded with symbols: {SYMBOLS}")
+import logging
+logger = logging.getLogger(__name__)
+logger.info(f"Config loaded with symbols: {SYMBOLS}")
