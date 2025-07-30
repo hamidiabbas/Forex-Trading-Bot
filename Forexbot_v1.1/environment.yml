@@ -14,7 +14,7 @@ dependencies:
   - seaborn=0.13.2
   - stable-baselines3=2.3.2
   - gymnasium=0.29.1
-  - pip:a
+  - pip:
     - metatrader5==5.0.45
     - hurst==0.0.5
     - tensorflow==2.16.1
