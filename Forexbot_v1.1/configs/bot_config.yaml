@@ -1,0 +1,57 @@
+# Professional Trading Bot Configuration
+
+trading:
+  symbols: ['EURUSD','GBPUSD','XAUUSD']  # Fixed symbols for trading
+  risk_per_trade: 1.0              # Risk 1% per trade
+  max_position_size: 10.0          # Maximum 10% of account per position
+  max_daily_risk: 5.0              # Maximum 5% daily risk
+  max_open_positions: 5            # Maximum 5 open positions
+  min_analysis_interval: 30        # Minimum seconds between analysis
+  loop_interval: 10                # Main loop sleep interval
+  close_positions_on_shutdown: false
+
+mt5:
+  login: 5038274604
+  server: "MetaQuotes-Demo"
+  path: "C:\\Program Files\\MetaTrader 5\\terminal64.exe"
+  magic_number: 123456789
+  max_slippage: 3
+  execution_timeout: 30
+
+risk_management:
+  atr_stop_loss_multiplier: 2.0
+  atr_take_profit_multiplier: 3.0
+  min_risk_reward_ratio: 1.5
+  max_correlation_exposure: 0.3
+
+market_intelligence:
+  trend_threshold: 0.7
+  volatility_threshold: 0.02
+  momentum_threshold: 0.5
+  trend_analysis_period: 50
+  volatility_analysis_period: 20
+  momentum_analysis_period: 14
+
+rl:
+  enabled: true
+  confidence_threshold: 0.6
+  fallback_to_traditional: true
+  performance_tracking: true
+
+notifications:
+  email_enabled: false
+  slack_enabled: false
+  discord_enabled: false
+  telegram_enabled: false
+  console_enabled: true
+
+logging:
+  level: "INFO"
+  file_path: "logs/trading_bot.log"
+  max_file_size: "10MB"
+  backup_count: 5
+
+performance:
+  monitoring_enabled: true
+  update_interval: 300  # 5 minutes
+  metrics_retention_days: 30

@@ -1,0 +1,20 @@
+# environment.yml
+name: forex-bot
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  - pip
+  - pandas=2.1.4
+  - numpy=1.26.4
+  - scikit-learn=1.4.2
+  - streamlit=1.36.0
+  - python-dotenv=1.0.1
+  - seaborn=0.13.2
+  - stable-baselines3=2.3.2
+  - gymnasium=0.29.1
+  - pip:a
+    - metatrader5==5.0.45
+    - hurst==0.0.5
+    - tensorflow==2.16.1
