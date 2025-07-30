@@ -271,3 +271,26 @@ else:
 
 # Export for easy importing
 __all__ = ['config', 'TradingConfig']
+
+# Enhanced configuration for dynamic features
+ENHANCED_FEATURES = {
+    'technical_analysis': {
+        'min_confidence': 0.6,
+        'multi_timeframe_confirmation': True,
+        'reversal_detection_enabled': True
+    },
+    
+    'dynamic_position_management': {
+        'analysis_interval_seconds': 5,
+        'emergency_exit_threshold': -5.0,
+        'profit_taking_levels': [2.0, 4.0, 6.0],
+        'trailing_stop_enabled': True,
+        'scaling_enabled': True
+    },
+    
+    'risk_management': {
+        'max_risk_per_trade': 0.02,
+        'max_portfolio_risk': 0.06,
+        'correlation_limit': 0.7
+    }
+}

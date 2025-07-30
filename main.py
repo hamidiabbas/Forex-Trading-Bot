@@ -542,3 +542,309 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# main.py - Enhancement to your existing TradingBot class
+class TradingBot:
+    def run(self):
+        """Enhanced main trading loop with dynamic features"""
+        self.logger.info("🚀 Starting enhanced main trading loop...")
+        
+        # Display enhanced startup banner
+        self._display_enhanced_startup_banner()
+        
+        try:
+            # ADD: Start dynamic monitoring
+            if hasattr(self.execution_manager, 'start_dynamic_monitoring'):
+                self.execution_manager.start_dynamic_monitoring()
+            
+            while not self.stop_event.is_set():
+                loop_start = time.time()
+                
+                # Your existing status update...
+                self.status = f"Active - RL: {'On' if self.rl_model_manager.is_available() else 'Off'} - Dynamic: On"
+                
+                # Your existing symbol processing...
+                symbols = self.config.get('trading.symbols', ['EURUSD'])
+                
+                for symbol in symbols:
+                    try:
+                        # Your existing analysis interval check...
+                        if symbol in self.last_analysis_time:
+                            time_since_last = time.time() - self.last_analysis_time[symbol]
+                            min_interval = self.config.get('trading.min_analysis_interval', 30)
+                            if time_since_last < min_interval:
+                                continue
+                        
+                        # ENHANCE: Market analysis with dynamic features
+                        signal = self.analyze_market_enhanced(symbol)
+                        
+                        # ENHANCE: Process signal with dynamic features  
+                        if signal:
+                            self.process_signal_enhanced(signal)
+                        
+                        self.last_analysis_time[symbol] = time.time()
+                        
+                    except Exception as symbol_error:
+                        self.logger.error(f"Error processing {symbol}: {symbol_error}")
+                
+                # ENHANCE: Enhanced position management
+                try:
+                    self.execution_manager.manage_positions()  # Now includes dynamic features
+                except Exception as pos_error:
+                    self.logger.error(f"Error managing positions: {pos_error}")
+                
+                # Your existing performance monitoring...
+                try:
+                    self.performance_monitor.update()
+                except Exception as perf_error:
+                    self.logger.warning(f"Performance update failed: {perf_error}")
+                
+                # Your existing sleep logic...
+                loop_duration = time.time() - loop_start
+                sleep_time = max(0, self.config.get('trading.loop_interval', 10) - loop_duration)
+                time.sleep(sleep_time)
+                
+        except KeyboardInterrupt:
+            self.logger.info("⏹️ Shutdown signal received")
+        except Exception as e:
+            self.logger.error(f"Critical error in main loop: {e}")
+            self.logger.error(traceback.format_exc())
+        finally:
+            self.shutdown_enhanced()
+    
+    # ADD: Enhanced analysis method
+    def analyze_market_enhanced(self, symbol: str):
+        """Enhanced market analysis combining existing and dynamic features"""
+        try:
+            # Your existing analysis...
+            original_signal = self.analyze_market(symbol)
+            
+            # ADD: Enhanced signal with dynamic features
+            if hasattr(self.market_intelligence, 'generate_enhanced_signal'):
+                # Get multi-timeframe data using your existing data handler
+                data_dict = self.data_handler.get_multi_timeframe_data(symbol)
+                if data_dict:
+                    regime = self.market_intelligence.identify_regime(data_dict.get('BIAS'))
+                    enhanced_signal = self.market_intelligence.generate_enhanced_signal(
+                        symbol, data_dict, regime
+                    )
+                    
+                    if enhanced_signal:
+                        self.logger.info(f"📊 Enhanced signal generated for {symbol}")
+                        return enhanced_signal
+            
+            return original_signal
+            
+        except Exception as e:
+            self.logger.error(f"Error in enhanced market analysis: {e}")
+            return self.analyze_market(symbol)  # Fallback to existing method
+    
+    # ADD: Enhanced signal processing
+    def process_signal_enhanced(self, signal):
+        """Enhanced signal processing with dynamic features"""
+        try:
+            # Your existing risk management...
+            risk_params = self.risk_manager.calculate_position_size(signal)
+            if not risk_params:
+                return False
+            
+            # ENHANCE: Execute with dynamic features
+            if hasattr(self.execution_manager, 'execute_trade_with_dynamic_features'):
+                result = self.execution_manager.execute_trade_with_dynamic_features(signal, risk_params)
+            else:
+                result = self.execution_manager.execute_trade(signal, risk_params)  # Your existing method
+            
+            if result and result.get('success', False):
+                self.successful_signals += 1
+                self.logger.info(f"✅ Enhanced trade executed successfully for {signal['symbol']}")
+                return True
+            
+            return False
+            
+        except Exception as e:
+            self.logger.error(f"Error in enhanced signal processing: {e}")
+            return self.process_signal(signal)  # Fallback to existing method
+    
+    # ENHANCE: Shutdown method
+    def shutdown_enhanced(self):
+        """Enhanced shutdown with dynamic features cleanup"""
+        self.logger.info("⏹️ Shutting down Enhanced Trading Bot...")
+        
+        try:
+            # ADD: Stop dynamic monitoring
+            if hasattr(self.execution_manager, 'stop_dynamic_monitoring'):
+                self.execution_manager.stop_dynamic_monitoring()
+            
+            # Your existing shutdown logic...
+            self.shutdown()  # Call your existing shutdown method
+            
+        except Exception as e:
+            self.logger.error(f"Error during enhanced shutdown: {e}")
+    
+    def _display_enhanced_startup_banner(self):
+        """Enhanced startup banner with dynamic features info"""
+        self.logger.info("============================================================")
+        self.logger.info("🚀 ENHANCED FOREX TRADING BOT WITH DYNAMIC FEATURES")
+        self.logger.info("============================================================")
+        self.logger.info(f"RL Status: {'✅ Enabled' if self.rl_model_manager.is_available() else '❌ Disabled'}")
+        self.logger.info(f"Dynamic Features: ✅ Enabled")
+        self.logger.info(f"Position Scaling: ✅ Active")
+        self.logger.info(f"Trend Reversal Detection: ✅ Active")
+        self.logger.info(f"Multi-timeframe Analysis: ✅ Active")
+        # Your existing banner content...
+        self._display_startup_banner()  # Call your existing banner method
+
+# Add these enhancements to your existing main.py TradingBot class
+
+class TradingBot:
+    def __init__(self):
+        # Your existing initialization...
+        
+        # ADD: Enhanced Market Intelligence
+        from core.enhanced_market_intelligence import EnhancedMarketIntelligence
+        self.market_intelligence = EnhancedMarketIntelligence(
+            self.data_handler, 
+            self.config
+        )
+        
+        # ADD: Enhanced Execution Manager
+        from core.enhanced_execution_manager import EnhancedExecutionManager
+        self.execution_manager = EnhancedExecutionManager(
+            self.config,
+            self.market_intelligence,
+            self.risk_manager,
+            self.data_handler
+        )
+        
+        # ADD: Dynamic Position Manager
+        from core.complete_dynamic_position_manager import CompleteDynamicPositionManager
+        self.position_manager = CompleteDynamicPositionManager(
+            self.execution_manager,
+            self.market_intelligence,
+            self.risk_manager,
+            {
+                'analysis_interval_seconds': 5,
+                'emergency_exit_threshold': -5.0
+            }
+        )
+        
+        # Connect position manager to execution manager
+        self.execution_manager.set_position_manager(self.position_manager)
+    
+    def run(self):
+        """Enhanced main trading loop"""
+        self.logger.info("🚀 Starting Enhanced Trading Bot with Dynamic Features")
+        
+        try:
+            # START: Dynamic monitoring
+            self.execution_manager.start_dynamic_monitoring()
+            
+            # Your existing main loop with enhancements
+            while not self.stop_event.is_set():
+                loop_start = time.time()
+                
+                # Enhanced status
+                self.status = f"Active - RL: {'On' if self.rl_model_manager.is_available() else 'Off'} - Dynamic: On"
+                
+                symbols = self.config.get('trading.symbols', ['EURUSD'])
+                
+                for symbol in symbols:
+                    try:
+                        # ENHANCED: Market analysis with dynamic features
+                        signal = self.analyze_market_enhanced(symbol)
+                        
+                        if signal:
+                            # ENHANCED: Process with dynamic features
+                            self.process_signal_enhanced(signal)
+                        
+                        self.last_analysis_time[symbol] = time.time()
+                        
+                    except Exception as e:
+                        self.logger.error(f"Error processing {symbol}: {e}")
+                
+                # ENHANCED: Position management (now includes dynamic features)
+                self.execution_manager.manage_positions()
+                
+                # Your existing performance monitoring
+                self.performance_monitor.update()
+                
+                # Sleep
+                loop_duration = time.time() - loop_start
+                sleep_time = max(0, self.config.get('trading.loop_interval', 10) - loop_duration)
+                time.sleep(sleep_time)
+                
+        except KeyboardInterrupt:
+            self.logger.info("⏹️ Shutdown signal received")
+        finally:
+            self.shutdown_enhanced()
+    
+    def analyze_market_enhanced(self, symbol: str):
+        """Enhanced market analysis with technical analysis"""
+        try:
+            # Get multi-timeframe data using your existing method
+            data_dict = self.data_handler.get_multi_timeframe_data(symbol)
+            if not data_dict:
+                return None
+            
+            # Use enhanced market intelligence
+            regime = self.market_intelligence.identify_regime(data_dict.get('BIAS'))
+            enhanced_signal = self.market_intelligence.generate_enhanced_signal(
+                symbol, data_dict, regime
+            )
+            
+            if enhanced_signal:
+                # Multi-timeframe confirmation
+                if self.market_intelligence.check_multi_timeframe_confirmation(
+                    symbol, data_dict, enhanced_signal
+                ):
+                    self.logger.info(f"📊 Enhanced signal with confirmation: {symbol} {enhanced_signal['direction']}")
+                    return enhanced_signal
+            
+            # Fallback to your existing analysis
+            return self.analyze_market(symbol)
+            
+        except Exception as e:
+            self.logger.error(f"Error in enhanced analysis: {e}")
+            return self.analyze_market(symbol)
+    
+    def process_signal_enhanced(self, signal):
+        """Enhanced signal processing with dynamic features"""
+        try:
+            # Your existing risk calculation
+            risk_params = self.risk_manager.calculate_position_size(signal)
+            if not risk_params:
+                return False
+            
+            # Execute with dynamic features
+            result = self.execution_manager.execute_trade_with_dynamic_features(
+                signal, risk_params
+            )
+            
+            if result and result.get('success'):
+                self.successful_signals += 1
+                self.logger.info(f"✅ Enhanced trade executed: {signal['symbol']} {signal['direction']}")
+                return True
+            
+            return False
+            
+        except Exception as e:
+            self.logger.error(f"Error in enhanced signal processing: {e}")
+            return False
+    
+    def shutdown_enhanced(self):
+        """Enhanced shutdown with dynamic features cleanup"""
+        self.logger.info("⏹️ Shutting down Enhanced Trading Bot...")
+        
+        try:
+            # Stop dynamic monitoring
+            self.execution_manager.stop_dynamic_monitoring()
+            
+            # Get final performance
+            final_performance = self.execution_manager.get_position_performance()
+            self.logger.info(f"📊 Final Performance: {final_performance}")
+            
+            # Your existing shutdown
+            self.shutdown()
+            
+        except Exception as e:
+            self.logger.error(f"Error during enhanced shutdown: {e}")

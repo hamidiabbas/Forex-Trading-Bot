@@ -1,0 +1,66 @@
+# config/trading_config.yaml
+trading_mode: paper  # live, paper, backtest, analysis_only
+initial_balance: 100000.0
+max_daily_loss: 5000.0
+max_total_positions: 10
+max_positions_per_symbol: 5
+analysis_interval_seconds: 5
+database_path: data/trading_system.db
+
+broker_config:
+  broker_type: mt5  # mt5, mt4, oanda, interactive_brokers
+  MT5_SERVER_NAME: "MetaQuotes-Demo"
+  MT5_ACCOUNT_NUMBER: "5038274604"
+  MT5_PASSWORD: "G@5iMvHm"
+  timeout: 10000
+  slippage: 3
+
+risk_management:
+  max_risk_per_trade: 0.02        # 2% per trade
+  max_portfolio_risk: 0.06        # 6% total portfolio risk
+  correlation_limit: 0.7          # Max correlation between positions
+  news_risk_filter: true
+  emergency_exit_threshold: -0.05  # -5% emergency exit
+  max_drawdown_threshold: -0.15   # -15% max drawdown
+
+symbols:
+  active_pairs: ['EURUSD', 'GBPUSD', 'USDJPY', 'USDCHF', 'AUDUSD']
+  major_pairs: ['EURUSD', 'GBPUSD', 'USDJPY', 'USDCHF', 'AUDUSD', 'USDCAD', 'NZDUSD']
+  minor_pairs: ['EURJPY', 'EURGBP', 'EURCHF', 'GBPJPY', 'GBPCHF', 'AUDJPY']
+  exotic_pairs: ['EURTRY', 'USDTRY', 'USDZAR', 'USDMXN']
+
+timeframes:
+  analysis: ['M15', 'H1', 'H4', 'D1']
+  primery: D1
+  primary: H4           # Primary analysis timeframe
+  confirmation: H1      # Confirmation timeframe
+  execution: M15        # Order execution timeframe
+
+technical_analysis:
+  min_confidence: 0.6
+  trend_strength_threshold: 3
+  reversal_probability_threshold: 0.7
+  volume_confirmation_required: false
+  multi_timeframe_confirmation: true
+
+position_management:
+  scaling_enabled: true
+  max_scale_ins: 2
+  profit_taking_levels: [1.5, 3.0, 5.0, 8.0]  # Percentage levels
+  trailing_stop_enabled: true
+  breakeven_threshold: 1.0
+  dynamic_sl_adjustment: true
+
+news_integration:
+  enabled: true
+  api_provider: forexfactory  # forexfactory, fxstreet, investing
+  high_impact_filter: true
+  news_buffer_minutes: 30
+  sentiment_analysis: false
+
+logging:
+  level: INFO
+  file_path: logs/trading_system.log
+  max_file_size: 10MB
+  backup_count: 5
+  separate_trade_log: true

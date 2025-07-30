@@ -44,11 +44,10 @@ class EnhancedExecutionManager:
     """
     Enhanced execution manager with advanced order management and monitoring
     """
-    
-    def __init__(self, config, market_intelligence):
+    def __init__(self, data_handler, risk_manager, config, market_intelligence):
+        self.logger = logging.getLogger(__name__)
         self.config = config
         self.market_intelligence = market_intelligence
-        self.logger = logging.getLogger(__name__)
         
         # MT5 connection parameters
         self.connected = False
@@ -252,6 +251,47 @@ class EnhancedExecutionManager:
             self.logger.error(f"Enhanced trade execution error: {e}")
             self.failed_trades += 1
             return None
+
+    def execute_trade(self, symbol: str, direction: str, volume: float, 
+                     entry_price: float, stop_loss: float, take_profit: float, 
+                     strategy: str = "", confidence: float = 0.0) -> bool:
+        """
+        Execute trade - Bridge method for the main trading system
+        """
+        try:
+            self.logger.info(f"🔄 Executing {direction.upper()} trade for {symbol}")
+            self.logger.info(f"   Volume: {volume} lots")
+            self.logger.info(f"   Entry: {entry_price}")
+            self.logger.info(f"   Stop Loss: {stop_loss}")
+            self.logger.info(f"   Take Profit: {take_profit}")
+            self.logger.info(f"   Strategy: {strategy}")
+            
+            # Map direction to order type
+            order_type = 'buy' if direction.lower() == 'long' else 'sell'
+            
+            # Execute using your existing execute_order method
+            result = self.execute_order(
+                symbol=symbol,
+                order_type=order_type,
+                volume=volume,
+                price=entry_price,
+                stop_loss=stop_loss,
+                take_profit=take_profit,
+                comment=f"{strategy} (Conf: {confidence:.2f})"
+            )
+            
+            if result.success:
+                self.logger.info(f"✅ Trade executed successfully for {symbol}")
+                self.logger.info(f"   Order ID: {result.order_id}")
+                self.logger.info(f"   Execution Price: {result.price}")
+                return True
+            else:
+                self.logger.error(f"❌ Trade execution failed for {symbol}: {result.message}")
+                return False
+                
+        except Exception as e:
+            self.logger.error(f"Error in execute_trade for {symbol}: {e}")
+            return False        
 
     def _validate_execution_parameters(self, symbol: str, direction: str, position_size: float,
                                      entry_price: float, stop_loss: float, 
@@ -1430,3 +1470,89 @@ def get_market_volatility(self, symbol: str) -> float:
         return 0.01
     except:
         return 0.01
+
+# core/execution_manager.py - Enhancement  
+class EnhancedExecutionManager:
+    def __init__(self, config, market_intelligence):
+        # Your existing initialization...
+        
+        # ADD: Dynamic Position Manager
+        from .dynamic_position_manager import CompleteDynamicPositionManager
+        self.position_manager = CompleteDynamicPositionManager(
+            trading_engine=self,
+            technical_analyzer=market_intelligence.technical_analyzer,
+            risk_manager=None,  # Will be set later
+            config={
+                'analysis_interval_seconds': 5,
+                'max_positions': 10,
+                'emergency_exit_threshold': -5.0
+            }
+        )
+        
+        # ADD: Dynamic monitoring flag
+        self.dynamic_monitoring_active = False
+    
+    # ENHANCE: Your existing manage_positions method
+    def manage_positions(self):
+        """Enhanced position management with dynamic features"""
+        try:
+            # Your existing position management...
+            existing_positions = self._your_existing_position_logic()
+            
+            # ADD: Dynamic position management
+            if self.dynamic_monitoring_active and hasattr(self, 'position_manager'):
+                # Analyze and manage positions dynamically
+                actions_taken = self.position_manager.analyze_and_manage_positions()
+                
+                if actions_taken:
+                    self.logger.info(f"Dynamic actions executed: {len(actions_taken)}")
+                    
+                    # Update your existing position tracking
+                    for action in actions_taken:
+                        self._update_existing_position_tracking(action)
+            
+        except Exception as e:
+            self.logger.error(f"Error in enhanced position management: {e}")
+    
+    # ADD: New methods for dynamic features
+    def start_dynamic_monitoring(self):
+        """Start dynamic position monitoring"""
+        if hasattr(self, 'position_manager'):
+            self.position_manager.start_dynamic_monitoring()
+            self.dynamic_monitoring_active = True
+            self.logger.info("🚀 Dynamic position monitoring started")
+    
+    def stop_dynamic_monitoring(self):
+        """Stop dynamic position monitoring"""
+        if hasattr(self, 'position_manager'):
+            self.position_manager.stop_dynamic_monitoring()
+            self.dynamic_monitoring_active = False
+            self.logger.info("⏹️ Dynamic position monitoring stopped")
+    
+    def execute_trade_with_dynamic_features(self, signal, risk_params):
+        """Execute trade with dynamic position management"""
+        try:
+            # Your existing trade execution...
+            result = self._your_existing_execute_trade(signal, risk_params)
+            
+            # ADD: Add to dynamic management
+            if result and result.get('success') and hasattr(self, 'position_manager'):
+                position_data = {
+                    'position_id': result.get('position_id'),
+                    'symbol': signal['symbol'],
+                    'direction': signal['direction'],
+                    'size': risk_params.get('position_size', 0.1),
+                    'entry_price': signal['entry_price'],
+                    'stop_loss': signal['stop_loss'],
+                    'take_profit': signal['take_profit']
+                }
+                
+                self.position_manager.add_position(position_data)
+                self.logger.info(f"Position added to dynamic management: {position_data['position_id']}")
+            
+            return result
+            
+        except Exception as e:
+            self.logger.error(f"Error in enhanced trade execution: {e}")
+            return None
+        
