@@ -920,3 +920,65 @@ class EnhancedRiskManager:
                 'suggested_action': 'Normal position sizing'
             }
     
+"""
+Gold-Specific Risk Management
+Add this to your risk_manager.py
+"""
+
+def calculate_gold_risk_parameters(self, symbol: str, entry_price: float, 
+                                 stop_loss: float, take_profit: float, 
+                                 confidence: float) -> Dict[str, Any]:
+    """Calculate gold-specific risk parameters"""
+    
+    if symbol != 'XAUUSD':
+        return self.calculate_enhanced_risk(symbol, 'BUY', entry_price, stop_loss, take_profit, confidence, 'standard')
+    
+    # Gold-specific calculations
+    min_stop_distance = 5.00  # $5 minimum stop distance
+    min_tp_distance = 10.00   # $10 minimum take profit distance
+    max_position_size = 0.10  # Maximum 0.1 lot for gold
+    
+    # Adjust stop loss if too close
+    if stop_loss and abs(entry_price - stop_loss) < min_stop_distance:
+        if entry_price > stop_loss:  # Short position
+            stop_loss = entry_price - min_stop_distance
+        else:  # Long position  
+            stop_loss = entry_price + min_stop_distance
+        
+        logger.info(f"XAUUSD stop loss adjusted to minimum distance: {stop_loss}")
+    
+    # Adjust take profit if too close
+    if take_profit and abs(take_profit - entry_price) < min_tp_distance:
+        if take_profit > entry_price:  # Long position
+            take_profit = entry_price + min_tp_distance
+        else:  # Short position
+            take_profit = entry_price - min_tp_distance
+            
+        logger.info(f"XAUUSD take profit adjusted to minimum distance: {take_profit}")
+    
+    # Calculate position size based on dollar risk
+    account_balance = 100000  # Your account balance
+    risk_percentage = 0.01    # 1% risk
+    risk_amount = account_balance * risk_percentage
+    
+    if stop_loss:
+        stop_distance = abs(entry_price - stop_loss)
+        # Gold: $1 move = $100 per lot, so position size = risk_amount / (stop_distance * 100)
+        position_size = risk_amount / (stop_distance * 100)
+        position_size = min(position_size, max_position_size)  # Cap at max size
+        position_size = max(position_size, 0.01)  # Minimum 0.01 lot
+    else:
+        position_size = 0.01  # Default minimum
+    
+    return {
+        'symbol': symbol,
+        'entry_price': entry_price,
+        'stop_loss': stop_loss,
+        'take_profit': take_profit,
+        'position_size': round(position_size, 2),
+        'risk_amount': risk_amount,
+        'max_loss': stop_distance * position_size * 100 if stop_loss else 0,
+        'potential_profit': abs(take_profit - entry_price) * position_size * 100 if take_profit else 0,
+        'confidence': confidence,
+        'optimized_for_gold': True
+    }
