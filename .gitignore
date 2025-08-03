@@ -8,3 +8,9 @@ __pycache__/
 # Generated log and result files
 error_log.txt
 *.csv
+evaluations.npz
+debug.log
+backtest_results.csv
+error_log.txt
+performance_data.json
+trading_bot.log

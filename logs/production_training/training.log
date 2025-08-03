@@ -1,0 +1,43 @@
+2025-08-03 14:42:00,639 | INFO     | __main__        | Creating the required modules...
+2025-08-03 14:42:00,670 | INFO     | __main__        | Run the setup script to create missing modules
+2025-08-03 15:08:30,278 | INFO     | __main__        | Creating the required modules...
+2025-08-03 15:08:30,292 | INFO     | __main__        | Run the setup script to create missing modules
+2025-08-03 15:24:06,454 | INFO     | __main__        | Creating the required modules...
+2025-08-03 15:24:06,463 | INFO     | __main__        | Run the setup script to create missing modules
+2025-08-03 15:33:46,627 | INFO     | __main__        | Creating the required modules...
+2025-08-03 15:33:46,631 | INFO     | __main__        | Run the setup script to create missing modules
+2025-08-03 15:44:25,370 | INFO | __main__ | SUCCESS: RL libraries loaded successfully
+2025-08-03 15:44:26,790 | INFO | __main__ | Core modules missing: No module named 'marketintelligence'
+2025-08-03 15:44:26,790 | INFO | __main__ | Creating missing core modules...
+2025-08-03 15:44:26,791 | INFO | __main__ | Created config.py
+2025-08-03 15:44:26,792 | INFO | __main__ | Created datahandler.py
+2025-08-03 15:44:26,796 | INFO | __main__ | Created marketintelligence.py
+2025-08-03 15:44:26,798 | INFO | __main__ | Created tradingenvironment.py
+2025-08-03 15:44:26,799 | INFO | __main__ | All core modules created successfully
+2025-08-03 15:44:26,990 | INFO | __main__ | SUCCESS: Core modules created and imported
+2025-08-03 15:44:26,990 | INFO | __main__ | Starting Production RL Training System...
+2025-08-03 15:44:27,019 | INFO | __main__ | Initializing Production RL Training System...
+2025-08-03 15:44:27,022 | INFO | __main__ | Configuration loaded with symbols: ['EURUSD', 'GBPUSD']
+2025-08-03 15:44:27,032 | INFO | __main__ | Production RL Training System initialized successfully
+2025-08-03 15:44:27,033 | INFO | __main__ | Starting Complete Production Training Pipeline...
+2025-08-03 15:44:27,033 | INFO | __main__ | Initializing system components...
+2025-08-03 15:44:27,034 | INFO | datahandler | DataHandler initialized
+2025-08-03 15:44:27,034 | INFO | datahandler | ✅ DataHandler connected successfully
+2025-08-03 15:44:27,035 | INFO | __main__ | SUCCESS: Data handler initialized
+2025-08-03 15:44:27,036 | INFO | marketintelligence | MarketIntelligence initialized
+2025-08-03 15:44:27,036 | INFO | __main__ | SUCCESS: Market intelligence initialized
+2025-08-03 15:44:27,037 | INFO | __main__ | Preparing training data...
+2025-08-03 15:44:27,051 | INFO | __main__ | Processing data for EURUSD...
+2025-08-03 15:44:27,112 | INFO | datahandler | Fetching data for EURUSD (EURUSD=X) from 2022-01-01 to 2024-01-01
+2025-08-03 15:44:54,195 | ERROR | yfinance | $EURUSD=X: possibly delisted; no price data found  (1h 2022-01-01 -> 2024-01-01) (Yahoo error = "1h data not available for startTime=1640995200 and endTime=1704067200. The requested range must be within the last 730 days.")
+2025-08-03 15:44:54,196 | WARNING | datahandler | No data received for EURUSD
+2025-08-03 15:44:54,196 | WARNING | __main__ | No data available for EURUSD
+2025-08-03 15:44:54,196 | INFO | __main__ | Processing data for GBPUSD...
+2025-08-03 15:44:54,198 | INFO | datahandler | Fetching data for GBPUSD (GBPUSD=X) from 2022-01-01 to 2024-01-01
+2025-08-03 15:45:01,801 | ERROR | yfinance | $GBPUSD=X: possibly delisted; no price data found  (1h 2022-01-01 -> 2024-01-01) (Yahoo error = "1h data not available for startTime=1640995200 and endTime=1704067200. The requested range must be within the last 730 days.")
+2025-08-03 15:45:01,802 | WARNING | datahandler | No data received for GBPUSD
+2025-08-03 15:45:01,802 | WARNING | __main__ | No data available for GBPUSD
+2025-08-03 15:45:01,803 | ERROR | __main__ | No training data prepared
+2025-08-03 15:45:01,803 | ERROR | __main__ | Data preparation failed
+2025-08-03 15:45:01,803 | INFO | datahandler | DataHandler disconnected
+2025-08-03 15:45:01,804 | ERROR | __main__ | TRAINING FAILED

@@ -270,4 +270,3 @@ class TradingEnvironment(gym.Env):
             'consecutive_holds': self.consecutive_holds,
             'max_consecutive_holds': getattr(self, 'max_consecutive_holds', 0)
         }
-س

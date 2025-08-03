@@ -27,24 +27,24 @@ class TradingConfig:
                 'enable_traditional_signals': True,
                 'enable_rl_signals': True,
                 'min_confidence_threshold': 0.6,  # Minimum confidence for signal execution
-                'risk_reward_ratio': 1.5,  # Target 1:1.5 risk/reward
+                'risk_reward_ratio': 3,  # Target 1:1.5 risk/reward
                 'max_spread_pips': {  # Maximum spread limits per symbol
-                    'EURUSD': 3,
-                    'GBPUSD': 4,
-                    'XAUUSD': 5  # ✅ Gold-specific spread limit
+                    'EURUSD': 10,
+                    'GBPUSD': 10,
+                    'XAUUSD': 50  # ✅ Gold-specific spread limit
                 }
             },
             
             # ✅ UPDATED: MetaTrader 5 Configuration with XAUUSD optimization
             'mt5': {
                 'magic_number': 123456789,
-                'max_slippage': 3,  # Default slippage in points
-                'max_connection_attempts': 3,
+                'max_slippage': 30,  # Default slippage in points
+                'max_connection_attempts': 10,
                 'connection_timeout': 30,
                 'symbol_specific_slippage': {  # ✅ Symbol-specific slippage settings
-                    'EURUSD': 3,
-                    'GBPUSD': 3,
-                    'XAUUSD': 4,  # ✅ Optimized for Gold
+                    'EURUSD': 10,
+                    'GBPUSD': 10,
+                    'XAUUSD': 30,  # ✅ Optimized for Gold
                     'USDJPY': 5,  # Legacy (not used)
                     'GBPJPY': 4,
                     'EURJPY': 4,
@@ -85,7 +85,7 @@ class TradingConfig:
             # Execution Configuration
             'execution': {
                 'enable_partial_fills': True,
-                'max_retry_attempts': 3,
+                'max_retry_attempts': 10,
                 'retry_delay_seconds': 1,
                 'execution_timeout': 30,
                 'enable_slippage_protection': True,
@@ -271,3 +271,34 @@ else:
 
 # Export for easy importing
 __all__ = ['config', 'TradingConfig']
+
+# config.py - Complete MT5 Configuration
+"""
+Complete MT5 Configuration for Forex Trading System
+"""
+
+class Config:
+    def __init__(self):
+        # MetaTrader 5 Configuration
+        self.MT5_LOGIN = 5038274604  # Replace with your MT5 login
+        self.MT5_PASSWORD = 'G@5iMvHm'  # Replace with your MT5 password
+        self.MT5_SERVER = 'MetaQuotes-Demo'  # Replace with your broker's server
+        self.MT5_PATH = r'C:\Program Files\MetaTrader 5\terminal64.exe'
+        
+        # Data Handler Settings
+        self.MAX_BARS_PER_REQUEST = 10000
+        self.DATA_TIMEOUT = 30
+        
+        # Trading Configuration
+        self.SYMBOLS_TO_TRADE = ['EURUSD', 'GBPUSD', 'XAUUSD']
+        self.RISK_PER_TRADE = 0.01  # 1% risk per trade
+        self.MAX_POSITION_SIZE = 0.10  # Maximum 10% of account per position
+        
+        # Strategy Settings
+        self.TREND_EMA_FAST_PERIOD = 20
+        self.TREND_EMA_SLOW_PERIOD = 50
+        self.RSI_PERIOD = 14
+        self.RSI_OVERBOUGHT = 70
+        self.RSI_OVERSOLD = 30
+
+config = Config()

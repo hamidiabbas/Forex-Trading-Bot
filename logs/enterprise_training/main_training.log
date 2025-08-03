@@ -1,0 +1,89 @@
+2025-08-03 16:52:27,517 | INFO | __main__ | 🚀 Starting Enterprise Forex Trading Bot Training
+2025-08-03 16:52:36,033 | INFO | __main__ | SUCCESS: RL libraries available
+2025-08-03 16:52:36,034 | INFO | __main__ | SUCCESS: PyTorch 2.7.1+cpu available
+2025-08-03 16:52:36,280 | INFO | __main__ | SUCCESS: MetaTrader5 available
+2025-08-03 16:52:36,362 | INFO | __main__ | SUCCESS: All core modules imported
+2025-08-03 16:52:36,462 | INFO | __main__ | Production Training System initialized
+2025-08-03 16:52:36,462 | INFO | __main__ | Starting complete training pipeline...
+2025-08-03 16:52:36,463 | INFO | datahandler | MT5 DataHandler initialized
+2025-08-03 16:52:36,465 | INFO | datahandler | MT5 connection attempt 1...
+2025-08-03 16:52:59,735 | ERROR | datahandler | MT5 login failed: (-6, 'Terminal: Authorization failed')
+2025-08-03 16:52:59,735 | ERROR | __main__ | Failed to connect to MT5
+2025-08-03 16:55:30,939 | INFO | __main__ | 🚀 Starting Enterprise Forex Trading Bot Training
+2025-08-03 16:55:32,882 | INFO | __main__ | SUCCESS: RL libraries available
+2025-08-03 16:55:32,883 | INFO | __main__ | SUCCESS: PyTorch 2.7.1+cpu available
+2025-08-03 16:55:32,887 | INFO | __main__ | SUCCESS: MetaTrader5 available
+2025-08-03 16:55:32,892 | INFO | __main__ | SUCCESS: All core modules imported
+2025-08-03 16:55:32,895 | INFO | __main__ | Production Training System initialized
+2025-08-03 16:55:32,895 | INFO | __main__ | Starting complete training pipeline...
+2025-08-03 16:55:32,896 | INFO | datahandler | MT5 DataHandler initialized
+2025-08-03 16:55:32,896 | INFO | datahandler | MT5 connection attempt 1...
+2025-08-03 16:55:32,898 | ERROR | datahandler | MT5 initialization failed: (-6, 'Terminal: Authorization failed')
+2025-08-03 16:55:32,898 | ERROR | __main__ | Failed to connect to MT5
+2025-08-03 16:58:27,501 | INFO | __main__ | 🚀 Starting Enterprise Forex Trading Bot Training
+2025-08-03 16:58:29,115 | INFO | __main__ | SUCCESS: RL libraries available
+2025-08-03 16:58:29,115 | INFO | __main__ | SUCCESS: PyTorch 2.7.1+cpu available
+2025-08-03 16:58:29,120 | INFO | __main__ | SUCCESS: MetaTrader5 available
+2025-08-03 16:58:29,144 | INFO | __main__ | SUCCESS: All core modules imported
+2025-08-03 16:58:29,150 | INFO | __main__ | Production Training System initialized
+2025-08-03 16:58:29,151 | INFO | __main__ | Starting complete training pipeline...
+2025-08-03 16:58:29,151 | INFO | datahandler | MT5 DataHandler initialized
+2025-08-03 16:58:29,152 | INFO | datahandler | MT5 connection attempt 1...
+2025-08-03 16:58:29,154 | ERROR | datahandler | MT5 initialization failed: (-6, 'Terminal: Authorization failed')
+2025-08-03 16:58:29,155 | ERROR | __main__ | Failed to connect to MT5
+2025-08-03 16:58:55,050 | INFO | __main__ | 🚀 Starting Enterprise Forex Trading Bot Training
+2025-08-03 16:58:56,610 | INFO | __main__ | SUCCESS: RL libraries available
+2025-08-03 16:58:56,610 | INFO | __main__ | SUCCESS: PyTorch 2.7.1+cpu available
+2025-08-03 16:58:56,614 | INFO | __main__ | SUCCESS: MetaTrader5 available
+2025-08-03 16:58:56,625 | INFO | __main__ | SUCCESS: All core modules imported
+2025-08-03 16:58:56,627 | INFO | __main__ | Production Training System initialized
+2025-08-03 16:58:56,628 | INFO | __main__ | Starting complete training pipeline...
+2025-08-03 16:58:56,628 | INFO | datahandler | MT5 DataHandler initialized
+2025-08-03 16:58:56,629 | INFO | datahandler | MT5 connection attempt 1...
+2025-08-03 16:58:56,631 | ERROR | datahandler | MT5 initialization failed: (-6, 'Terminal: Authorization failed')
+2025-08-03 16:58:56,631 | ERROR | __main__ | Failed to connect to MT5
+2025-08-03 16:59:20,886 | INFO | __main__ | 🚀 Starting Enterprise Forex Trading Bot Training
+2025-08-03 16:59:22,453 | INFO | __main__ | SUCCESS: RL libraries available
+2025-08-03 16:59:22,453 | INFO | __main__ | SUCCESS: PyTorch 2.7.1+cpu available
+2025-08-03 16:59:22,456 | INFO | __main__ | SUCCESS: MetaTrader5 available
+2025-08-03 16:59:22,464 | INFO | __main__ | SUCCESS: All core modules imported
+2025-08-03 16:59:22,467 | INFO | __main__ | Production Training System initialized
+2025-08-03 16:59:22,468 | INFO | __main__ | Starting complete training pipeline...
+2025-08-03 16:59:22,469 | INFO | datahandler | MT5 DataHandler initialized
+2025-08-03 16:59:22,469 | INFO | datahandler | MT5 connection attempt 1...
+2025-08-03 16:59:31,514 | ERROR | datahandler | MT5 initialization failed: (-6, 'Terminal: Authorization failed')
+2025-08-03 16:59:31,515 | ERROR | __main__ | Failed to connect to MT5
+2025-08-03 17:04:11,256 | INFO | __main__ | 🚀 Starting Enterprise Forex Trading Bot Training
+2025-08-03 17:04:18,509 | INFO | __main__ | SUCCESS: RL libraries available
+2025-08-03 17:04:18,510 | INFO | __main__ | SUCCESS: PyTorch 2.7.1+cpu available
+2025-08-03 17:04:18,527 | INFO | __main__ | SUCCESS: MetaTrader5 available
+2025-08-03 17:04:18,549 | INFO | __main__ | SUCCESS: All core modules imported
+2025-08-03 17:04:18,593 | INFO | __main__ | Production Training System initialized
+2025-08-03 17:04:18,594 | INFO | __main__ | Starting complete training pipeline...
+2025-08-03 17:04:18,594 | INFO | datahandler | MT5 DataHandler initialized
+2025-08-03 17:04:18,595 | INFO | datahandler | MT5 connection attempt 1...
+2025-08-03 17:04:18,598 | ERROR | datahandler | MT5 initialization failed: (-6, 'Terminal: Authorization failed')
+2025-08-03 17:04:18,598 | ERROR | __main__ | Failed to connect to MT5
+2025-08-03 17:16:13,474 | INFO | __main__ | 🚀 Starting RL Training with Existing Config
+2025-08-03 17:16:18,325 | INFO | __main__ | ✅ RL libraries available
+2025-08-03 17:16:18,325 | INFO | __main__ | ✅ PyTorch 2.7.1+cpu available
+2025-08-03 17:16:18,342 | INFO | __main__ | ✅ MetaTrader5 available
+2025-08-03 17:16:18,343 | ERROR | __main__ | config.py file not found!
+2025-08-03 17:16:18,343 | ERROR | __main__ | Please make sure config.py exists in your project directory
+2025-08-03 17:34:40,149 | INFO | __main__ | 🚀 Starting Enhanced RL Training System
+2025-08-03 17:34:40,157 | INFO | __main__ | 📁 Using config from configs folder
+2025-08-03 17:34:44,844 | INFO | __main__ | ✅ RL libraries available
+2025-08-03 17:34:44,845 | INFO | __main__ | ✅ PyTorch 2.7.1+cpu available
+2025-08-03 17:34:44,862 | INFO | __main__ | ✅ MetaTrader5 available
+2025-08-03 17:34:44,863 | INFO | __main__ | ✅ Found config file at: configs/config.py
+2025-08-03 17:34:44,956 | ERROR | __main__ | Failed to import from configs folder: cannot import name 'config' from partially initialized module 'config' (most likely due to a circular import) (C:\Users\hamidiabbas\.vscode\ForexBot\configs\config.py)
+2025-08-03 17:34:44,959 | ERROR | __main__ | Alternative import also failed: cannot import name 'config' from partially initialized module 'config' (most likely due to a circular import) (C:\Users\hamidiabbas\.vscode\ForexBot\configs\config.py)
+2025-08-03 17:34:44,960 | ERROR | __main__ | ❌ Config import failed
+2025-08-03 18:03:28,095 | INFO | __main__ | 🚀 Starting Fixed RL Training System
+2025-08-03 18:03:39,425 | INFO | __main__ | ✅ RL libraries available
+2025-08-03 18:03:39,436 | INFO | __main__ | ✅ PyTorch 2.7.1+cpu available
+2025-08-03 18:03:39,757 | INFO | __main__ | ✅ MetaTrader5 available
+2025-08-03 18:03:39,758 | INFO | __main__ | ✅ Found config file at: configs\config.py
+2025-08-03 18:03:39,770 | ERROR | __main__ | ❌ Failed to load config: cannot import name 'config' from 'config' (unknown location)
+2025-08-03 18:03:39,770 | INFO | __main__ | Trying fallback method...
+2025-08-03 18:03:39,795 | ERROR | __main__ | ❌ Fallback method also failed: cannot import name 'config' from 'config' (unknown location)
