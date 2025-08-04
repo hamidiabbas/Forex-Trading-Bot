@@ -1,0 +1,12 @@
+2025-08-03 18:29:59,370 | ERROR    | __main__             | load_user_config_advanced:153 | All config loading methods failed: cannot import name 'config' from 'config' (unknown location)
+2025-08-03 19:55:32,784 | ERROR    | __main__             | load_user_config_advanced:153 | All config loading methods failed: cannot import name 'config' from 'config' (unknown location)
+2025-08-03 20:14:42,497 | ERROR    | __main__             | _validate_and_enhance_config:176 | ❌ Config missing required attributes: ['MT5_LOGIN', 'MT5_SERVER', 'SYMBOLS_TO_TRADE']
+2025-08-03 21:38:11,773 | ERROR    | __main__             | _validate_and_enhance_config:176 | ❌ Config missing required attributes: ['MT5_LOGIN', 'MT5_SERVER', 'SYMBOLS_TO_TRADE']
+2025-08-03 21:49:06,454 | ERROR    | __main__             | create_comprehensive_modules:1266 | Error creating comprehensive modules: name 'self' is not defined
+2025-08-03 21:57:43,217 | ERROR    | __main__             | create_comprehensive_modules:1266 | Error creating comprehensive modules: name 'self' is not defined
+2025-08-03 22:10:59,297 | ERROR    | enhanced_datahandler | connect        :83  | MT5 initialization failed: (-6, 'Terminal: Authorization failed')
+2025-08-03 22:10:59,298 | ERROR    | __main__             | initialize_components:1088 | ❌ Failed to connect data handler
+2025-08-03 22:16:04,970 | ERROR    | enhanced_datahandler | connect        :83  | MT5 initialization failed: (-6, 'Terminal: Authorization failed')
+2025-08-03 22:16:04,974 | ERROR    | __main__             | initialize_components:1088 | ❌ Failed to connect data handler
+2025-08-04 11:54:22,887 | ERROR    | __main__             | create_comprehensive_modules:1266 | Error creating comprehensive modules: name 'self' is not defined
+2025-08-04 11:57:42,568 | ERROR    | __main__             | create_comprehensive_modules:1266 | Error creating comprehensive modules: name 'self' is not defined

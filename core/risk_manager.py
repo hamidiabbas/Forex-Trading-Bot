@@ -919,38 +919,4 @@ class EnhancedRiskManager:
                 'warnings': [],
                 'suggested_action': 'Normal position sizing'
             }
- 
-
-class EnhancedRiskManager:
-    def __init__(self, config):
-        
-        
-        self.kelly_sizer = create_kelly_position_sizer({
-            'kelly_lookback_trades': config.get('kelly_lookback_trades', 100),
-            'kelly_safety_factor': config.get('kelly_safety_factor', 0.25),
-            'base_risk_per_trade': config.get('risk_per_trade', 0.01),
-            'max_risk_per_trade': config.get('max_risk_per_trade', 0.05)
-        })
     
-    def calculate_position_size(self, signal, account_balance, market_data=None):
-        """محاسبه position size با Kelly Criterion"""
-        
-        
-        sizing_result = self.kelly_sizer.calculate_optimal_position_size(
-            signal=signal,
-            account_balance=account_balance,
-            market_data=market_data
-        )
-        
-        return {
-            'position_size': sizing_result.recommended_size,
-            'risk_percentage': sizing_result.final_risk_percentage,
-            'kelly_fraction': sizing_result.kelly_fraction,
-            'reasoning': sizing_result.reasoning,
-            'risk_metrics': sizing_result.risk_metrics
-        }
-    
-    def update_trade_result(self, trade_result):
-        """به‌روزرسانی نتایج trade برای Kelly"""
-        self.kelly_sizer.add_trade_result(trade_result)
-

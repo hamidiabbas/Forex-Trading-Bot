@@ -1,885 +1,535 @@
-# main.py - Complete Enterprise Production Version
-"""
-Professional Enterprise Trading Bot
-Complete Integration of All AI Systems
-Production-Ready Implementation
-"""
-
 import os
 import sys
 import logging
 import time
 import threading
-import asyncio
-from datetime import datetime, timedelta
-from pathlib import Path
-from typing import Dict, List, Tuple, Optional, Any
-import traceback
-import json
-import numpy as np
 import pandas as pd
-import warnings
+import numpy as np
+from datetime import datetime, timedelta
+import pytz
+from dotenv import load_dotenv
+from collections import Counter
+import traceback
+import codecs
 
-warnings.filterwarnings('ignore')
+# Configure logging - FIXED Unicode-safe logging
+if sys.platform.startswith('win'):
+    sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer, 'strict')
+    sys.stderr = codecs.getwriter('utf-8')(sys.stderr.buffer, 'strict')
 
-# Enhanced logging setup
-def initialize_enterprise_logging():
-    """Initialize comprehensive enterprise logging"""
-    log_dir = Path('logs/enterprise_bot')
-    log_dir.mkdir(parents=True, exist_ok=True)
-    
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s | %(name)-20s | %(levelname)-8s | %(funcName)-15s | %(message)s',
-        handlers=[
-            logging.FileHandler(log_dir / 'enterprise_bot.log'),
-            logging.StreamHandler(sys.stdout)
-        ]
-    )
-    
-    # Suppress third-party loggers
-    for logger_name in ['urllib3', 'requests', 'asyncio']:
-        logging.getLogger(logger_name).setLevel(logging.WARNING)
-    
-    return logging.getLogger(__name__)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('tradingbot.log', encoding='utf-8'),
+        logging.StreamHandler(),
+    ],
+    force=True
+)
 
-logger = initialize_enterprise_logging()
-
-# System imports with comprehensive error handling
+# RL Integration imports
 try:
-    # Core trading modules
-    import config
-    from datahandler import DataHandler
-    from marketintelligence import MarketIntelligence
-    from riskmanager import RiskManager
-    from executionmanager import ExecutionManager
-    from notificationmanager import NotificationManager
-    CORE_MODULES = True
-    logger.info("✅ Core trading modules loaded")
-except ImportError as e:
-    logger.error(f"❌ Core modules import error: {e}")
-    CORE_MODULES = False
-    sys.exit(1)
-
-try:
-    # Enhanced AI modules
-    from enhanced_sentiment_integration import ProductionSentimentAnalyzer, SentimentDataManager
-    from dynamic_kelly_position_sizing import ProfessionalKellyPositionSizer
-    AI_MODULES = True
-    logger.info("✅ Enhanced AI modules loaded")
-except ImportError as e:
-    logger.warning(f"⚠️ AI modules not fully available: {e}")
-    AI_MODULES = False
-
-try:
-    # RL modules
-    from stable_baselines3 import SAC, PPO, A2C
+    from stable_baselines3 import SAC, A2C
     import torch
-    RL_MODULES = True
-    logger.info("✅ RL modules loaded")
-except ImportError as e:
-    logger.warning(f"⚠️ RL modules not available: {e}")
-    RL_MODULES = False
+    RL_AVAILABLE = True
+except ImportError:
+    print("Warning: stable-baselines3 not available. RL features disabled.")
+    RL_AVAILABLE = False
 
-class EnterpriseTradingBot:
-    """
-    Complete Enterprise Trading Bot with Full AI Integration
-    Production-Ready Implementation
-    """
-    
-    def __init__(self, config_file: str = "configs/enterprise_config.json"):
-        logger.info("🚀 Initializing Enterprise Trading Bot...")
-        
-        # Load configuration
-        self.config = self._load_configuration(config_file)
-        
-        # System state
-        self.is_running = False
-        self.stop_event = threading.Event()
-        self.start_time = time.time()
+# Your existing imports
+import config
+from datahandler import DataHandler
+from marketintelligence import MarketIntelligence
+from strategymanager import StrategyManager
+from riskmanager import RiskManager
+from executionmanager import ExecutionManager
+from notificationmanager import NotificationManager
+
+# Load environment variables
+load_dotenv()
+
+class TradingBot:
+    def __init__(self):
+        """Initialize the trading bot with SAC/A2C RL integration"""
+        logging.info("Initializing Trading Bot with RL Integration...")
         
         # Core components
-        self.data_handler = None
-        self.market_intel = None
-        self.risk_manager = None
-        self.execution_manager = None
-        self.notification_manager = None
+        self.datahandler = DataHandler(config)
+        self.marketintelligence = MarketIntelligence(self.datahandler, config)
+        self.strategymanager = StrategyManager(config, self.marketintelligence)
+        self.riskmanager = RiskManager(config)
+        self.executionmanager = ExecutionManager(config, self.marketintelligence)
+        self.notificationmanager = NotificationManager(config)
         
-        # AI components
-        self.sentiment_analyzer = None
-        self.sentiment_data_manager = None
-        self.kelly_sizer = None
-        self.rl_models = {}
+        # RL Integration components
+        self.rl_model = None
+        self.rl_model_type = None
+        self.rl_enabled = RL_AVAILABLE
+        self.rl_signal_count = 0
+        self.rl_successful_trades = 0
+        self.rl_failed_trades = 0
+        
+        # RL Model paths (SAC gets priority)
+        self.sac_model_path = "model/sac_EURUSD_final.zip"
+        self.a2c_model_path = "model/rl_EURUSD_final_fixed.zip"
+        self.best_sac_path = "./best/sac_model_EURUSD_best_model.zip"
+        self.best_a2c_path = "./best/model_EURUSD_best_model.zip"
+        
+        # Control variables
+        self.stop_event = threading.Event()
+        self.status = "Initializing"
+        self.last_analysis_time = {}
         
         # Performance tracking
-        self.performance_stats = {
-            'total_signals': 0,
-            'successful_trades': 0,
-            'ai_signals': 0,
-            'rl_signals': 0,
-            'traditional_signals': 0,
-            'sentiment_enhanced': 0,
-            'kelly_sized': 0
-        }
+        self.total_trades = 0
+        self.winning_trades = 0
+        self.current_positions = {}
         
-        # Trading state
-        self.active_positions = {}
-        self.last_analysis = {}
+        # RL Performance tracking
+        self.rl_performance_history = []
+        self.traditional_performance_history = []
         
-        logger.info("✅ Enterprise Trading Bot initialized")
-    
-    def _load_configuration(self, config_file: str) -> Dict[str, Any]:
-        """Load comprehensive configuration"""
-        default_config = {
-            "trading": {
-                "symbols": ["EURUSD", "GBPUSD", "XAUUSD"],
-                "risk_per_trade": 0.01,
-                "max_positions": 5,
-                "min_confidence": 0.6,
-                "analysis_interval": 30,
-                "loop_interval": 10
-            },
-            "ai_systems": {
-                "enable_sentiment": AI_MODULES,
-                "enable_kelly_sizing": AI_MODULES,
-                "enable_rl": RL_MODULES,
-                "sentiment_weight": 0.3,
-                "rl_weight": 0.4,
-                "traditional_weight": 0.3
-            },
-            "models": {
-                "rl_model_path": "./models/best_SAC_EURUSD/best_model.zip",
-                "sentiment_model_path": "./models/sentiment_analyzer.pth",
-                "fallback_to_traditional": True
-            },
-            "risk_management": {
-                "max_daily_risk": 0.05,
-                "max_drawdown": 0.10,
-                "correlation_limit": 0.8,
-                "dynamic_sizing": True
-            },
-            "notifications": {
-                "console": True,
-                "email": False,
-                "telegram": False
-            }
-        }
+        # Initialize RL model
+        self.load_rl_model()
         
-        if Path(config_file).exists():
-            try:
-                with open(config_file, 'r') as f:
-                    user_config = json.load(f)
-                    default_config.update(user_config)
-                logger.info(f"✅ Configuration loaded from {config_file}")
-            except Exception as e:
-                logger.warning(f"⚠️ Config load error: {e}")
+        logging.info("Trading Bot initialization completed successfully")
+        logging.info(f"RL Status: {'Enabled' if self.rl_enabled else 'Disabled'}")
+        logging.info(f"RL Model Type: {self.rl_model_type if self.rl_model_type else 'None'}")
+
+    def load_rl_model(self):
+        """Load the trained SAC or A2C model with priority to SAC"""
+        if not RL_AVAILABLE:
+            logging.warning("stable-baselines3 not available. RL features disabled.")
+            self.rl_enabled = False
+            return
+            
+        model_loaded = False
         
-        return default_config
-    
-    def initialize_core_systems(self) -> bool:
-        """Initialize core trading systems"""
-        logger.info("🔧 Initializing core trading systems...")
+        # Try to load SAC model first (priority)
+        for model_path, model_name in [
+            (self.best_sac_path, "Best SAC"),
+            (self.sac_model_path, "Final SAC"),
+            (self.best_a2c_path, "Best A2C"),
+            (self.a2c_model_path, "Final A2C")
+        ]:
+            if os.path.exists(model_path):
+                try:
+                    if "sac" in model_path.lower():
+                        self.rl_model = SAC.load(model_path)
+                        self.rl_model_type = "SAC"
+                    else:
+                        self.rl_model = A2C.load(model_path)
+                        self.rl_model_type = "A2C"
+                    
+                    logging.info(f"{model_name} model loaded successfully from {model_path}")
+                    model_loaded = True
+                    break
+                except Exception as e:
+                    logging.warning(f"Failed to load {model_name} from {model_path}: {e}")
+                    continue
         
+        if not model_loaded:
+            logging.warning("No RL model could be loaded. Available models:")
+            for path in [self.sac_model_path, self.a2c_model_path, self.best_sac_path, self.best_a2c_path]:
+                exists = "✓" if os.path.exists(path) else "✗"
+                logging.warning(f"{exists} {path}")
+            self.rl_enabled = False
+        else:
+            self.rl_enabled = True
+            # Test model inference
+            self.test_rl_model()
+
+    def test_rl_model(self):
+        """Test RL model inference"""
+        if self.rl_model is None:
+            return
+            
         try:
-            # Data handler
-            self.data_handler = DataHandler(config)
-            if not self.data_handler.connect():
-                logger.error("❌ Data handler connection failed")
-                return False
-            logger.info("✅ Data handler connected")
+            # Create a dummy observation for testing
+            dummy_obs = np.random.random(30).astype(np.float32)  # Adjust size as needed
+            action, _ = self.rl_model.predict(dummy_obs, deterministic=True)
+            logging.info(f"RL model test successful. Sample action: {action}")
+        except Exception as e:
+            logging.error(f"RL model test failed: {e}")
+            self.rl_enabled = False
+
+    def get_rl_signal(self, symbol, datadict):
+        """Get trading signal from RL model (SAC or A2C)"""
+        if not self.rl_enabled or self.rl_model is None:
+            return None
             
-            # Market intelligence
-            self.market_intel = MarketIntelligence(self.data_handler, config)
-            logger.info("✅ Market intelligence initialized")
+        try:
+            df = datadict.get("EXECUTION")
+            if df is None or len(df) < 20:
+                return None
+                
+            # Prepare observation (same as training)
+            obs = self.prepare_rl_observation(df)
+            if obs is None:
+                return None
+                
+            # Get prediction from RL model
+            start_time = time.time()
+            action, _ = self.rl_model.predict(obs, deterministic=True)
+            inference_time = time.time() - start_time
             
-            # Risk manager
-            self.risk_manager = RiskManager(config)
-            logger.info("✅ Risk manager initialized")
+            # Convert action to trading signal
+            current_price = df["Close"].iloc[-1]
+            atr_value = df.get("ATRr_14", pd.Series([0.001])).iloc[-1]
             
-            # Execution manager
-            self.execution_manager = ExecutionManager(config)
-            logger.info("✅ Execution manager initialized")
+            # Calculate confidence based on model type and recent performance
+            confidence = self.calculate_signal_confidence(action, obs)
             
-            # Notification manager
-            self.notification_manager = NotificationManager(config)
-            logger.info("✅ Notification manager initialized")
-            
-            return True
+            signal = None
+            if action == 1:  # Buy
+                self.rl_signal_count += 1
+                signal = {
+                    "symbol": symbol,
+                    "direction": "BUY",
+                    "strategy": f"RL-{self.rl_model_type}",
+                    "entry_price": current_price,
+                    "atr_at_signal": atr_value,
+                    "confidence": confidence,
+                    "timestamp": datetime.now(),
+                    "inference_time": inference_time,
+                    "model_type": self.rl_model_type
+                }
+            elif action == 2:  # Sell
+                self.rl_signal_count += 1
+                signal = {
+                    "symbol": symbol,
+                    "direction": "SELL",
+                    "strategy": f"RL-{self.rl_model_type}",
+                    "entry_price": current_price,
+                    "atr_at_signal": atr_value,
+                    "confidence": confidence,
+                    "timestamp": datetime.now(),
+                    "inference_time": inference_time,
+                    "model_type": self.rl_model_type
+                }
+                
+            if signal:
+                logging.info(f"{self.rl_model_type} Signal: {signal['direction']} {symbol} (Confidence: {confidence:.2f})")
+                
+            return signal
             
         except Exception as e:
-            logger.error(f"❌ Core systems initialization failed: {e}")
-            return False
-    
-    def initialize_ai_systems(self) -> bool:
-        """Initialize AI systems with fallback handling"""
-        logger.info("🤖 Initializing AI systems...")
-        
-        ai_systems_count = 0
-        
-        # Sentiment Analysis System
-        if AI_MODULES and self.config["ai_systems"]["enable_sentiment"]:
-            try:
-                sentiment_config = {
-                    'hidden_dim': 768,
-                    'num_heads': 8,
-                    'dropout': 0.1
-                }
-                self.sentiment_analyzer = ProductionSentimentAnalyzer(sentiment_config)
-                self.sentiment_data_manager = SentimentDataManager(self.config)
-                logger.info("✅ Sentiment analysis system initialized")
-                ai_systems_count += 1
-            except Exception as e:
-                logger.warning(f"⚠️ Sentiment system initialization failed: {e}")
-                self.config["ai_systems"]["enable_sentiment"] = False
-        
-        # Kelly Position Sizing System
-        if AI_MODULES and self.config["ai_systems"]["enable_kelly_sizing"]:
-            try:
-                kelly_config = {
-                    'kelly_lookback_trades': 100,
-                    'kelly_safety_factor': 0.25,
-                    'base_risk_per_trade': self.config["trading"]["risk_per_trade"],
-                    'max_risk_per_trade': 0.05
-                }
-                self.kelly_sizer = ProfessionalKellyPositionSizer(kelly_config)
-                logger.info("✅ Kelly position sizing system initialized")
-                ai_systems_count += 1
-            except Exception as e:
-                logger.warning(f"⚠️ Kelly sizing system initialization failed: {e}")
-                self.config["ai_systems"]["enable_kelly_sizing"] = False
-        
-        # RL System
-        if RL_MODULES and self.config["ai_systems"]["enable_rl"]:
-            try:
-                self._load_rl_models()
-                if self.rl_models:
-                    logger.info(f"✅ RL system initialized with {len(self.rl_models)} models")
-                    ai_systems_count += 1
-                else:
-                    logger.warning("⚠️ No RL models loaded")
-                    self.config["ai_systems"]["enable_rl"] = False
-            except Exception as e:
-                logger.warning(f"⚠️ RL system initialization failed: {e}")
-                self.config["ai_systems"]["enable_rl"] = False
-        
-        logger.info(f"🤖 AI Systems Status: {ai_systems_count}/3 systems active")
-        return ai_systems_count > 0 or self.config["models"]["fallback_to_traditional"]
-    
-    def _load_rl_models(self):
-        """Load trained RL models"""
-        model_base_path = Path("./models")
-        
-        # Load different model types
-        for model_type in ['SAC', 'PPO', 'A2C']:
-            for symbol in self.config["trading"]["symbols"]:
-                model_paths = [
-                    model_base_path / f"best_{model_type}_{symbol}" / "best_model.zip",
-                    model_base_path / f"{model_type}_{symbol}_final.zip",
-                    model_base_path / f"enhanced_{model_type}_{symbol}_final.zip"
-                ]
-                
-                for model_path in model_paths:
-                    if model_path.exists():
-                        try:
-                            if model_type == 'SAC':
-                                model = SAC.load(str(model_path))
-                            elif model_type == 'PPO':
-                                model = PPO.load(str(model_path))
-                            elif model_type == 'A2C':
-                                model = A2C.load(str(model_path))
-                            
-                            model_key = f"{model_type}_{symbol}"
-                            self.rl_models[model_key] = {
-                                'model': model,
-                                'type': model_type,
-                                'symbol': symbol,
-                                'path': str(model_path)
-                            }
-                            logger.info(f"✅ Loaded {model_key} from {model_path.name}")
-                            break
-                            
-                        except Exception as e:
-                            logger.warning(f"⚠️ Failed to load {model_path}: {e}")
-                            continue
-    
-    async def analyze_market_comprehensive(self, symbol: str) -> Optional[Dict[str, Any]]:
-        """Comprehensive market analysis with all AI systems"""
+            logging.error(f"Error getting RL signal for {symbol}: {e}")
+            return None
+
+    def prepare_rl_observation(self, df):
+        """Prepare observation for RL model (same as training)"""
         try:
-            # Get market data
-            data_dict = self.data_handler.get_multi_timeframe_data(symbol)
-            if not data_dict or 'EXECUTION' not in data_dict:
-                logger.warning(f"No market data for {symbol}")
+            # Use last 30 technical indicators as observation
+            features = ["Close", "RSI_14", "MACD_12_26_9", "ATRr_14", "EMA_20", "EMA_50"]
+            
+            if not all(col in df.columns for col in features):
+                logging.warning("Missing required features for RL observation")
                 return None
+                
+            obs = []
+            for feature in features:
+                values = df[feature].tail(5).values  # Last 5 values per feature
+                obs.extend(values)
+                
+            return np.array(obs, dtype=np.float32)
             
-            execution_df = data_dict['EXECUTION']
+        except Exception as e:
+            logging.error(f"Error preparing RL observation: {e}")
+            return None
+
+    def calculate_signal_confidence(self, action, obs):
+        """Calculate signal confidence based on model type and recent performance"""
+        try:
+            base_confidence = 0.75  # Base confidence level
             
-            # Basic market analysis
-            market_regime = self.market_intel.identify_regime(execution_df)
+            # Adjust based on recent RL performance
+            if len(self.rl_performance_history) > 0:
+                recent_performance = np.mean(self.rl_performance_history[-10:])
+                performance_adjustment = (recent_performance - 0.5) * 0.2
+                base_confidence += performance_adjustment
+                
+            # Ensure confidence is within reasonable bounds
+            return max(0.5, min(0.60, base_confidence))
             
-            # Generate signals from different systems
-            signals = []
+        except Exception as e:
+            logging.error(f"Error calculating signal confidence: {e}")
+            return 0.75
+
+    def analyze_market(self, symbol):
+        """Comprehensive market analysis including RL signals"""
+        try:
+            # Get multi-timeframe data
+            datadict = self.datahandler.get_multitimeframe_data(symbol)
+            if not datadict:
+                logging.warning(f"No data available for {symbol}")
+                return None
+                
+            # Get market regime
+            regime = self.marketintelligence.identify_regime(datadict["BIAS"])
             
-            # 1. RL Signal (if available)
-            if self.config["ai_systems"]["enable_rl"]:
-                rl_signal = await self._generate_rl_signal(symbol, execution_df)
-                if rl_signal:
-                    signals.append(rl_signal)
-                    self.performance_stats['rl_signals'] += 1
+            # Get RL signal (highest priority)
+            rl_signal = self.get_rl_signal(symbol, datadict)
             
-            # 2. Traditional Signal (always available)
-            traditional_signal = self.market_intel.generate_enhanced_signal(
-                symbol, data_dict, market_regime
+            # Get traditional signals as backup
+            traditional_signal = self.strategymanager.evaluate_signals(
+                symbol, datadict, len(datadict["EXECUTION"]) - 1, regime
             )
-            if traditional_signal:
-                signals.append(traditional_signal)
-                self.performance_stats['traditional_signals'] += 1
             
-            # 3. Sentiment Enhancement (if available)
-            if self.config["ai_systems"]["enable_sentiment"]:
-                try:
-                    sentiment_data = await self.sentiment_data_manager.collect_sentiment_data([symbol])
-                    if symbol in sentiment_data:
-                        signals = self._enhance_signals_with_sentiment(signals, sentiment_data[symbol])
-                        self.performance_stats['sentiment_enhanced'] += 1
-                except Exception as e:
-                    logger.warning(f"Sentiment enhancement failed: {e}")
-            
-            # Select best signal
-            final_signal = self._select_optimal_signal(signals, market_regime)
+            # Signal prioritization: RL first, then traditional
+            final_signal = rl_signal if rl_signal else traditional_signal
             
             if final_signal:
+                # Add market context to signal
                 final_signal.update({
-                    'symbol': symbol,
-                    'market_regime': market_regime,
-                    'analysis_timestamp': datetime.now(),
-                    'ai_systems_used': self._get_active_ai_systems(),
-                    'data_quality': len(execution_df) / 1000.0
+                    "regime": regime,
+                    "current_price": datadict["EXECUTION"]["Close"].iloc[-1],
+                    "volume": datadict["EXECUTION"].get("Volume", pd.Series([370])).iloc[-1],
+                    "analysis_time": datetime.now(),
+                    "data_quality": len(datadict["EXECUTION"]),
+                    "signal_source": "RL" if rl_signal else "Traditional"
                 })
                 
-                self.performance_stats['total_signals'] += 1
-                logger.info(f"📊 Signal generated: {symbol} | {final_signal['strategy']} | {final_signal['direction']}")
-            
+                logging.info(f"{final_signal['signal_source']} signal for {symbol}: {final_signal['strategy']} - {final_signal['direction']} (Regime: {regime})")
+                
             return final_signal
             
         except Exception as e:
-            logger.error(f"Market analysis error for {symbol}: {e}")
+            logging.error(f"Error analyzing market for {symbol}: {e}")
+            logging.error(traceback.format_exc())
             return None
-    
-    async def _generate_rl_signal(self, symbol: str, market_data: pd.DataFrame) -> Optional[Dict[str, Any]]:
-        """Generate signal using RL models"""
+
+    def process_signal(self, signal):
+        """Process trading signal through risk management and execution"""
+        if not signal:
+            return False
+            
         try:
-            # Find best RL model for symbol
-            rl_model_info = None
-            for model_key, info in self.rl_models.items():
-                if symbol in model_key:
-                    rl_model_info = info
-                    break
+            symbol = signal["symbol"]
+            signal_source = "RL" if "RL-" in signal.get("strategy", "") else "Traditional"
             
-            if not rl_model_info:
-                logger.debug(f"No RL model found for {symbol}")
-                return None
-            
-            # Prepare observation
-            observation = self._prepare_rl_observation(market_data)
-            if observation is None:
-                return None
-            
-            # Get prediction
-            model = rl_model_info['model']
-            action, _states = model.predict(observation, deterministic=True)
-            
-            # Convert to trading signal
-            if isinstance(action, np.ndarray):
-                action = action[0]
-            
-            if action == 1:
-                direction = 'BUY'
-            elif action == 2:
-                direction = 'SELL'
-            else:
-                return None  # HOLD
-            
-            current_price = market_data['Close'].iloc[-1]
-            
-            return {
-                'symbol': symbol,
-                'direction': direction,
-                'strategy': f'RL-{rl_model_info["type"]}',
-                'confidence': 0.75,  # RL models typically have good confidence
-                'entry_price': current_price,
-                'model_type': rl_model_info['type'],
-                'timestamp': datetime.now()
-            }
-            
-        except Exception as e:
-            logger.error(f"RL signal generation error: {e}")
-            return None
-    
-    def _prepare_rl_observation(self, market_data: pd.DataFrame) -> Optional[np.ndarray]:
-        """Prepare observation for RL model"""
-        try:
-            if len(market_data) < 50:
-                return None
-            
-            # Get latest data
-            recent_data = market_data.tail(50)
-            
-            features = []
-            
-            # Price features
-            features.extend([
-                recent_data['Close'].iloc[-1],
-                recent_data['Open'].iloc[-1],
-                recent_data['High'].iloc[-1],
-                recent_data['Low'].iloc[-1]
-            ])
-            
-            # Technical indicators (with fallback)
-            rsi = recent_data.get('RSI_14', pd.Series([50] * len(recent_data))).iloc[-1]
-            features.append(rsi)
-            
-            macd = recent_data.get('MACD_12_26_9', pd.Series([0] * len(recent_data))).iloc[-1]
-            features.append(macd)
-            
-            # Add more features up to expected input size (typically 32-64 features)
-            while len(features) < 32:
-                features.append(0.0)
-            
-            return np.array(features[:32], dtype=np.float32).reshape(1, -1)
-            
-        except Exception as e:
-            logger.error(f"RL observation preparation error: {e}")
-            return None
-    
-    def _enhance_signals_with_sentiment(self, signals: List[Dict], sentiment_data: Dict) -> List[Dict]:
-        """Enhance signals with sentiment analysis"""
-        try:
-            sentiment_score = sentiment_data.get('overall_sentiment', 0.0)
-            sentiment_confidence = sentiment_data.get('confidence', 0.5)
-            
-            enhanced_signals = []
-            
-            for signal in signals:
-                enhanced_signal = signal.copy()
-                
-                # Adjust confidence based on sentiment alignment
-                signal_direction = 1 if signal['direction'] == 'BUY' else -1
-                sentiment_alignment = sentiment_score * signal_direction
-                
-                if sentiment_alignment > 0:
-                    # Sentiment supports signal
-                    boost = min(0.2, sentiment_confidence * 0.3)
-                    enhanced_signal['confidence'] = min(1.0, signal.get('confidence', 0.5) + boost)
-                    enhanced_signal['sentiment_boost'] = boost
-                else:
-                    # Sentiment opposes signal
-                    penalty = min(0.15, sentiment_confidence * 0.2)
-                    enhanced_signal['confidence'] = max(0.1, signal.get('confidence', 0.5) - penalty)
-                    enhanced_signal['sentiment_penalty'] = penalty
-                
-                enhanced_signal['sentiment_score'] = sentiment_score
-                enhanced_signal['sentiment_confidence'] = sentiment_confidence
-                
-                enhanced_signals.append(enhanced_signal)
-            
-            return enhanced_signals
-            
-        except Exception as e:
-            logger.error(f"Sentiment enhancement error: {e}")
-            return signals
-    
-    def _select_optimal_signal(self, signals: List[Dict], market_regime: str) -> Optional[Dict[str, Any]]:
-        """Select optimal signal using weighted scoring"""
-        if not signals:
-            return None
-        
-        if len(signals) == 1:
-            return signals[0]
-        
-        try:
-            # Score signals
-            scored_signals = []
-            
-            for signal in signals:
-                score = signal.get('confidence', 0.5)
-                
-                # Strategy type weights
-                strategy = signal.get('strategy', '').upper()
-                if 'RL-' in strategy:
-                    score *= self.config["ai_systems"]["rl_weight"] + 1.0
-                elif 'TRADITIONAL' in strategy or 'ENHANCED' in strategy:
-                    score *= self.config["ai_systems"]["traditional_weight"] + 0.8
-                
-                # Sentiment boost
-                if 'sentiment_boost' in signal:
-                    score *= (1.0 + signal['sentiment_boost'])
-                elif 'sentiment_penalty' in signal:
-                    score *= (1.0 - signal['sentiment_penalty'])
-                
-                # Market regime compatibility
-                if market_regime == 'trending':
-                    if 'TREND' in strategy or 'RL-' in strategy:
-                        score *= 1.1
-                elif market_regime == 'ranging':
-                    if 'MEAN_REVERSION' in strategy:
-                        score *= 1.1
-                
-                scored_signals.append((score, signal))
-            
-            # Select best signal
-            scored_signals.sort(key=lambda x: x[0], reverse=True)
-            best_signal = scored_signals[0][1].copy()
-            best_signal['selection_score'] = scored_signals[0][0]
-            best_signal['alternatives_considered'] = len(signals)
-            
-            return best_signal
-            
-        except Exception as e:
-            logger.error(f"Signal selection error: {e}")
-            return signals[0]
-    
-    async def process_trading_signal(self, signal: Dict[str, Any]) -> bool:
-        """Process trading signal with advanced risk management"""
-        try:
-            symbol = signal['symbol']
-            
-            # Enhanced position sizing
-            if self.config["ai_systems"]["enable_kelly_sizing"] and self.kelly_sizer:
-                try:
-                    account_balance = 10000  # This should come from your broker
-                    sizing_result = self.kelly_sizer.calculate_optimal_position_size(
-                        signal=signal,
-                        account_balance=account_balance
-                    )
-                    
-                    signal['position_size'] = sizing_result.recommended_size
-                    signal['kelly_sizing'] = True
-                    signal['kelly_info'] = {
-                        'kelly_fraction': sizing_result.kelly_fraction,
-                        'final_risk_pct': sizing_result.final_risk_percentage
-                    }
-                    self.performance_stats['kelly_sized'] += 1
-                    
-                except Exception as e:
-                    logger.warning(f"Kelly sizing failed: {e}")
-                    # Fall back to traditional sizing
-                    signal['position_size'] = self.config["trading"]["risk_per_trade"]
-            else:
-                # Traditional position sizing
-                signal['position_size'] = self.config["trading"]["risk_per_trade"]
-            
-            # Risk management validation
-            risk_approved = self.risk_manager.validate_signal(signal)
-            if not risk_approved:
-                logger.warning(f"Signal rejected by risk manager: {symbol}")
+            # Calculate position size and risk parameters
+            risk_params = self.riskmanager.calculate_position_size(signal)
+            if not risk_params:
+                logging.warning(f"Risk management rejected {signal_source} signal for {symbol}")
+                if signal_source == "RL":
+                    self.rl_failed_trades += 1
                 return False
+                
+            # Execute the trade
+            execution_result = self.executionmanager.execute_trade(signal, risk_params)
             
-            # Execute trade
-            execution_result = self.execution_manager.execute_trade(signal)
-            
-            if execution_result and execution_result.get('success', False):
-                self.performance_stats['successful_trades'] += 1
+            if execution_result:
+                self.total_trades += 1
                 
-                # Update Kelly sizer with trade result (if applicable)
-                if self.kelly_sizer:
-                    # This would be called when the trade closes with actual results
-                    pass
-                
-                # Store position
-                self.active_positions[symbol] = {
-                    'signal': signal,
-                    'execution': execution_result,
-                    'entry_time': datetime.now()
-                }
-                
+                # Track RL vs Traditional performance separately
+                if signal_source == "RL":
+                    logging.info(f"{signal.get('model_type', 'RL')} trade executed for {symbol}")
+                else:
+                    logging.info(f"Traditional trade executed for {symbol}")
+                    
                 # Send notification
-                await self._send_trade_notification(signal, execution_result)
-                
-                logger.info(f"✅ Trade executed: {symbol} {signal['direction']}")
+                self.notificationmanager.send_trade_notification(signal, risk_params, execution_result)
                 return True
             else:
-                logger.warning(f"❌ Trade execution failed: {symbol}")
+                logging.warning(f"Trade execution failed for {symbol}")
+                if signal_source == "RL":
+                    self.rl_failed_trades += 1
                 return False
                 
         except Exception as e:
-            logger.error(f"Signal processing error: {e}")
+            logging.error(f"Error processing signal: {e}")
             return False
-    
-    def _get_active_ai_systems(self) -> Dict[str, bool]:
-        """Get status of active AI systems"""
-        return {
-            'sentiment_analysis': self.config["ai_systems"]["enable_sentiment"],
-            'rl_models': self.config["ai_systems"]["enable_rl"],
-            'kelly_sizing': self.config["ai_systems"]["enable_kelly_sizing"],
-            'total_rl_models': len(self.rl_models)
-        }
-    
-    async def _send_trade_notification(self, signal: Dict[str, Any], execution_result: Dict[str, Any]):
-        """Send comprehensive trade notification"""
-        try:
-            ai_systems = self._get_active_ai_systems()
-            active_systems = [k for k, v in ai_systems.items() if v and k != 'total_rl_models']
-            
-            message = (
-                f"🤖 AI-Enhanced Trade Executed\n"
-                f"Symbol: {signal['symbol']}\n"
-                f"Direction: {signal['direction']}\n"
-                f"Strategy: {signal['strategy']}\n"
-                f"Confidence: {signal.get('confidence', 0):.2f}\n"
-                f"Position Size: {signal.get('position_size', 0):.4f}\n"
-                f"AI Systems: {', '.join(active_systems)}\n"
-                f"Market Regime: {signal.get('market_regime', 'Unknown')}"
-            )
-            
-            # Add Kelly info if available
-            if signal.get('kelly_sizing'):
-                kelly_info = signal.get('kelly_info', {})
-                message += f"\nKelly Fraction: {kelly_info.get('kelly_fraction', 0):.3f}"
-                message += f"\nRisk %: {kelly_info.get('final_risk_pct', 0):.2%}"
-            
-            # Add sentiment info if available
-            if 'sentiment_score' in signal:
-                message += f"\nSentiment: {signal['sentiment_score']:.2f}"
-            
-            if self.notification_manager:
-                self.notification_manager.send_notification("AI Trade Alert", message)
-            
-            logger.info(f"📢 Trade notification sent for {signal['symbol']}")
-            
-        except Exception as e:
-            logger.warning(f"Notification failed: {e}")
-    
-    async def run_trading_loop(self):
-        """Main enterprise trading loop"""
-        logger.info("🚀 Starting Enterprise Trading Loop...")
+
+    def run(self):
+        """Main trading loop with SAC/A2C RL integration"""
+        logging.info("Starting Trading Bot main loop with RL integration...")
         
-        self._display_startup_banner()
+        # Connect to data sources
+        if not self.datahandler.connect():
+            logging.error("Failed to connect to data handler")
+            return
+            
+        # Display startup summary
+        logging.info("=" * 60)
+        logging.info("FOREX TRADING BOT - LIVE TRADING SESSION")
+        logging.info("=" * 60)
+        logging.info(f"RL Integration: {'Enabled' if self.rl_enabled else 'Disabled'}")
+        logging.info(f"RL Model: {self.rl_model_type if self.rl_model_type else 'None'}")
+        logging.info(f"Symbols: {config.SYMBOLS_TO_TRADE}")
+        logging.info(f"Risk per Trade: {getattr(config, 'RISK_PER_TRADE', 1.0)}%")
+        logging.info("=" * 60)
+        
+        # Main trading loop
+        last_performance_update = time.time()
+        loop_count = 0
         
         try:
-            self.is_running = True
-            
             while not self.stop_event.is_set():
-                loop_start = time.time()
+                loop_start_time = time.time()
+                loop_count += 1
+                self.status = f"Active - Loop {loop_count} - RL {'On' if self.rl_enabled else 'Off'}"
                 
-                # Process each symbol
-                symbols = self.config["trading"]["symbols"]
-                
-                for symbol in symbols:
-                    try:
-                        # Check analysis interval
-                        if symbol in self.last_analysis:
-                            time_since_last = time.time() - self.last_analysis[symbol]
-                            if time_since_last < self.config["trading"]["analysis_interval"]:
-                                continue
+                try:
+                    # Analyze each symbol
+                    for symbol in config.SYMBOLS_TO_TRADE:
+                        try:
+                            # Check if enough time has passed since last analysis
+                            if symbol in self.last_analysis_time:
+                                time_since_last = time.time() - self.last_analysis_time[symbol]
+                                if time_since_last < getattr(config, 'MIN_ANALYSIS_INTERVAL', 30):
+                                    continue
+                                    
+                            # Perform market analysis
+                            signal = self.analyze_market(symbol)
+                            
+                            # Process signal if generated
+                            if signal:
+                                success = self.process_signal(signal)
+                                
+                                # Track RL performance
+                                if "RL-" in signal.get("strategy", "") and success:
+                                    # Will update actual performance when trade closes
+                                    pass
+                                    
+                            # Update last analysis time
+                            self.last_analysis_time[symbol] = time.time()
+                            
+                        except Exception as symbol_error:
+                            logging.error(f"Error processing {symbol}: {symbol_error}")
+                            continue
+                            
+                    # Update performance metrics every 5 minutes
+                    if time.time() - last_performance_update > 300:
+                        self.update_performance_metrics()
+                        last_performance_update = time.time()
                         
-                        # Comprehensive market analysis
-                        signal = await self.analyze_market_comprehensive(symbol)
-                        
-                        if signal and signal.get('confidence', 0) >= self.config["trading"]["min_confidence"]:
-                            await self.process_trading_signal(signal)
-                        
-                        self.last_analysis[symbol] = time.time()
-                        
-                    except Exception as e:
-                        logger.error(f"Error processing {symbol}: {e}")
-                        continue
-                
-                # Manage existing positions
-                await self._manage_positions()
-                
-                # Update performance metrics
-                self._update_performance_metrics()
-                
-                # Sleep until next cycle
-                loop_duration = time.time() - loop_start
-                sleep_time = max(0, self.config["trading"]["loop_interval"] - loop_duration)
-                await asyncio.sleep(sleep_time)
-                
-        except KeyboardInterrupt:
-            logger.info("⏹️ Trading loop interrupted by user")
-        except Exception as e:
-            logger.error(f"Trading loop error: {e}")
-            logger.error(traceback.format_exc())
-        finally:
-            await self.shutdown()
-    
-    async def _manage_positions(self):
-        """Manage existing positions"""
-        try:
-            for symbol, position_info in list(self.active_positions.items()):
-                # Position management logic
-                entry_time = position_info['entry_time']
-                hold_duration = (datetime.now() - entry_time).total_seconds() / 3600
-                
-                # Example: Close positions after 24 hours
-                if hold_duration > 24:
-                    logger.info(f"Closing position {symbol} after {hold_duration:.1f}h")
-                    # Implement position closing logic
-                    del self.active_positions[symbol]
+                    # Manage existing positions
+                    self.executionmanager.manage_positions()
                     
+                    # Update status
+                    active_positions = len(self.current_positions)
+                    self.status = f"Running - RL {self.rl_model_type if self.rl_enabled else 'Off'} - Positions: {active_positions}"
+                    
+                    # Sleep to control loop frequency
+                    loop_duration = time.time() - loop_start_time
+                    sleep_time = max(0, getattr(config, 'MAIN_LOOP_INTERVAL', 10) - loop_duration)
+                    time.sleep(sleep_time)
+                    
+                except Exception as loop_error:
+                    logging.error(f"Error in main loop iteration: {loop_error}")
+                    logging.error(traceback.format_exc())
+                    time.sleep(60)  # Wait before retrying
+                    
+        except KeyboardInterrupt:
+            logging.info("Received interrupt signal, shutting down...")
         except Exception as e:
-            logger.error(f"Position management error: {e}")
-    
-    def _update_performance_metrics(self):
-        """Update performance metrics and log periodically"""
-        current_time = time.time()
-        uptime_hours = (current_time - self.start_time) / 3600
-        
-        # Log performance every 5 minutes
-        if not hasattr(self, '_last_perf_log'):
-            self._last_perf_log = current_time
-        
-        if current_time - self._last_perf_log > 300:  # 5 minutes
-            total_signals = self.performance_stats['total_signals']
-            success_rate = (self.performance_stats['successful_trades'] / max(total_signals, 1)) * 100
+            logging.error(f"Critical error in main loop: {e}")
+            logging.error(traceback.format_exc())
+        finally:
+            self.shutdown()
+
+    def update_performance_metrics(self):
+        """Update and log comprehensive performance metrics"""
+        try:
+            # Get current positions and P&L
+            current_equity = self.executionmanager.get_account_equity()
+            current_balance = self.executionmanager.get_account_balance()
             
-            logger.info("📊 PERFORMANCE UPDATE")
-            logger.info(f"⏱️ Uptime: {uptime_hours:.1f} hours")
-            logger.info(f"📈 Total Signals: {total_signals}")
-            logger.info(f"✅ Success Rate: {success_rate:.1f}%")
-            logger.info(f"🤖 AI Systems: RL={self.performance_stats['rl_signals']}, "
-                       f"Sentiment={self.performance_stats['sentiment_enhanced']}, "
-                       f"Kelly={self.performance_stats['kelly_sized']}")
-            logger.info(f"💼 Active Positions: {len(self.active_positions)}")
+            # Calculate overall win rate
+            win_rate = (self.winning_trades / max(1, self.total_trades)) * 100
             
-            self._last_perf_log = current_time
-    
-    def _display_startup_banner(self):
-        """Display comprehensive startup banner"""
-        ai_systems = self._get_active_ai_systems()
-        active_count = sum(1 for v in ai_systems.values() if isinstance(v, bool) and v)
-        
-        logger.info("=" * 80)
-        logger.info("🚀 ENTERPRISE AI TRADING BOT - PRODUCTION VERSION")
-        logger.info("=" * 80)
-        logger.info("🤖 AI SYSTEMS STATUS:")
-        logger.info(f"   ✅ Sentiment Analysis: {ai_systems['sentiment_analysis']}")
-        logger.info(f"   ✅ RL Models: {ai_systems['rl_models']} ({ai_systems['total_rl_models']} loaded)")
-        logger.info(f"   ✅ Kelly Position Sizing: {ai_systems['kelly_sizing']}")
-        logger.info(f"   🎯 Total Active: {active_count}/3 AI Systems")
-        logger.info("")
-        logger.info(f"📈 Trading Symbols: {self.config['trading']['symbols']}")
-        logger.info(f"🛡️ Risk per Trade: {self.config['trading']['risk_per_trade']:.1%}")
-        logger.info(f"🎯 Min Confidence: {self.config['trading']['min_confidence']:.1%}")
-        logger.info(f"🐍 Python: {sys.version.split()[0]}")
-        
-        if torch.cuda.is_available():
-            logger.info(f"🚀 GPU: {torch.cuda.get_device_name()}")
-        else:
-            logger.info("💻 CPU Mode")
-        
-        logger.info("=" * 80)
-    
-    async def shutdown(self):
-        """Graceful shutdown with comprehensive reporting"""
-        logger.info("⏹️ Shutting down Enterprise Trading Bot...")
+            # RL specific metrics
+            rl_win_rate = 0
+            rl_success_rate = 0
+            if self.rl_signal_count > 0:
+                rl_win_rate = (self.rl_successful_trades / self.rl_signal_count) * 100
+                rl_success_rate = ((self.rl_signal_count - self.rl_failed_trades) / self.rl_signal_count) * 100
+                
+            # Log comprehensive performance
+            logging.info("=" * 50)
+            logging.info("PERFORMANCE UPDATE")
+            logging.info("=" * 50)
+            logging.info(f"Account Status:")
+            logging.info(f"  Current Equity: ${current_equity:,.2f}")
+            logging.info(f"  Current Balance: ${current_balance:,.2f}")
+            logging.info(f"  Total Trades: {self.total_trades}")
+            logging.info(f"  Overall Win Rate: {win_rate:.1f}%")
+            logging.info(f"RL Performance:")
+            logging.info(f"  Model Type: {self.rl_model_type if self.rl_model_type else 'None'}")
+            logging.info(f"  RL Status: {'Active' if self.rl_enabled else 'Inactive'}")
+            logging.info(f"  Signals Generated: {self.rl_signal_count}")
+            logging.info(f"  Signal Success Rate: {rl_success_rate:.1f}%")
+            logging.info(f"  RL Win Rate: {rl_win_rate:.1f}%")
+            logging.info(f"  Failed Executions: {self.rl_failed_trades}")
+            
+            # Recent performance trend
+            if len(self.rl_performance_history) > 0:
+                recent_rl_perf = np.mean(self.rl_performance_history[-5:])
+                logging.info(f"  Recent RL Performance: {recent_rl_perf:.3f}")
+            
+            logging.info("=" * 50)
+            
+        except Exception as e:
+            logging.error(f"Error updating performance metrics: {e}")
+
+    def shutdown(self):
+        """Graceful shutdown of the trading bot"""
+        logging.info("Shutting down Trading Bot...")
         
         try:
-            self.is_running = False
+            # Set stop event
             self.stop_event.set()
             
-            # Close positions if configured
-            if self.config.get("risk_management", {}).get("close_on_shutdown", False):
-                logger.info("Closing all positions...")
-                for symbol in list(self.active_positions.keys()):
-                    # Implement position closing logic
-                    del self.active_positions[symbol]
+            # Close all positions if configured to do so
+            if hasattr(config, 'CLOSE_POSITIONS_ON_SHUTDOWN') and config.CLOSE_POSITIONS_ON_SHUTDOWN:
+                logging.info("Closing all positions before shutdown...")
+                self.executionmanager.close_all_positions()
+                
+            # Disconnect from data sources
+            self.datahandler.disconnect()
             
             # Final performance report
-            uptime = (time.time() - self.start_time) / 3600
-            total_signals = self.performance_stats['total_signals']
-            success_rate = (self.performance_stats['successful_trades'] / max(total_signals, 1)) * 100
-            
-            logger.info("=" * 60)
-            logger.info("📊 FINAL PERFORMANCE REPORT")
-            logger.info("=" * 60)
-            logger.info(f"⏱️ Total Uptime: {uptime:.2f} hours")
-            logger.info(f"📈 Total Signals: {total_signals}")
-            logger.info(f"✅ Successful Trades: {self.performance_stats['successful_trades']}")
-            logger.info(f"📊 Success Rate: {success_rate:.1f}%")
-            logger.info("")
-            logger.info("🤖 AI SYSTEM USAGE:")
-            logger.info(f"   🧠 RL Signals: {self.performance_stats['rl_signals']}")
-            logger.info(f"   💭 Sentiment Enhanced: {self.performance_stats['sentiment_enhanced']}")
-            logger.info(f"   📐 Kelly Sized: {self.performance_stats['kelly_sized']}")
-            logger.info(f"   🔧 Traditional: {self.performance_stats['traditional_signals']}")
-            logger.info("=" * 60)
-            
-            # Disconnect data handler
-            if self.data_handler:
-                self.data_handler.disconnect()
+            self.update_performance_metrics()
             
             # Send shutdown notification
-            if self.notification_manager:
-                shutdown_message = (
-                    f"🏁 Enterprise AI Trading Bot Shutdown\n"
-                    f"Uptime: {uptime:.1f} hours\n"
-                    f"Signals: {total_signals}, Success: {success_rate:.1f}%\n"
-                    f"AI Systems Active: {sum(1 for v in self._get_active_ai_systems().values() if isinstance(v, bool) and v)}/3"
-                )
-                self.notification_manager.send_notification("Bot Shutdown", shutdown_message)
+            shutdown_message = f"Trading Bot stopped successfully\n"
+            shutdown_message += f"Total Trades: {self.total_trades}\n"
+            shutdown_message += f"RL Signals: {self.rl_signal_count}\n"
+            shutdown_message += f"RL Model: {self.rl_model_type if self.rl_model_type else 'None'}"
             
-            logger.info("✅ Enterprise Trading Bot shutdown completed")
+            self.notificationmanager.send_system_notification("Trading Bot Shutdown", shutdown_message)
+            
+            logging.info("Trading Bot shutdown completed successfully")
             
         except Exception as e:
-            logger.error(f"Shutdown error: {e}")
-    
-    def start(self):
-        """Start the enterprise trading bot"""
-        logger.info("🚀 Starting Enterprise Trading Bot...")
-        
-        try:
-            # Initialize core systems
-            if not self.initialize_core_systems():
-                logger.error("❌ Core systems initialization failed")
-                return False
-            
-            # Initialize AI systems
-            if not self.initialize_ai_systems():
-                logger.error("❌ AI systems initialization failed")
-                return False
-            
-            # Send startup notification
-            if self.notification_manager:
-                ai_count = sum(1 for v in self._get_active_ai_systems().values() if isinstance(v, bool) and v)
-                startup_message = (
-                    f"🚀 Enterprise AI Trading Bot Started\n"
-                    f"AI Systems: {ai_count}/3 Active\n"
-                    f"Symbols: {', '.join(self.config['trading']['symbols'])}\n"
-                    f"Ready for AI-enhanced trading!"
-                )
-                self.notification_manager.send_notification("Bot Started", startup_message)
-            
-            # Run trading loop
-            asyncio.run(self.run_trading_loop())
-            
-            return True
-            
-        except Exception as e:
-            logger.error(f"❌ Startup failed: {e}")
-            logger.error(traceback.format_exc())
-            return False
+            logging.error(f"Error during shutdown: {e}")
 
 def main():
     """Main entry point"""
-    logger.info("🚀 Starting Enterprise AI Trading Bot...")
-    
     try:
-        # Create and start bot
-        bot = EnterpriseTradingBot()
-        success = bot.start()
+        # Initialize and start the trading bot
+        bot = TradingBot()
+        bot.start_time = time.time()
         
-        if success:
-            logger.info("✅ Enterprise Trading Bot completed successfully")
-        else:
-            logger.error("❌ Enterprise Trading Bot failed")
-            sys.exit(1)
-            
-    except KeyboardInterrupt:
-        logger.info("⏹️ Bot interrupted by user")
+        # Log startup information
+        logging.info("=" * 60)
+        logging.info("FOREX TRADING BOT WITH SAC/A2C RL INTEGRATION")
+        logging.info("=" * 60)
+        logging.info(f"RL Status: {'Enabled' if bot.rl_enabled else 'Disabled'}")
+        logging.info(f"RL Model: {bot.rl_model_type if bot.rl_model_type else 'None'}")
+        logging.info(f"Symbols: {config.SYMBOLS_TO_TRADE}")
+        logging.info(f"Risk per Trade: {getattr(config, 'RISK_PER_TRADE', 1.0)}%")
+        logging.info(f"Python Version: {sys.version}")
+        logging.info(f"RL Libraries Available: {'Yes' if RL_AVAILABLE else 'No'}")
+        logging.info("=" * 60)
+        
+        # Start the main trading loop
+        bot.run()
+        
     except Exception as e:
-        logger.error(f"❌ Critical error: {e}")
-        logger.error(traceback.format_exc())
+        logging.error(f"Critical error in main: {e}")
+        logging.error(traceback.format_exc())
         sys.exit(1)
 
 if __name__ == "__main__":

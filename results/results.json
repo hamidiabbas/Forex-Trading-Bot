@@ -1,0 +1,110 @@
+{
+  "PPO_EURUSD_enhanced": {
+    "symbol": "EURUSD",
+    "metrics": {
+      "total_return": 0.0,
+      "final_equity": 10000.0,
+      "total_trades": 0,
+      "winning_trades": 0,
+      "win_rate": 0,
+      "max_drawdown": 0.0,
+      "volatility": 0.0,
+      "sharpe_ratio": 0,
+      "total_costs": 0.0,
+      "cost_ratio": 0.0,
+      "avg_trade_pnl": 0
+    },
+    "total_predictions": 22252,
+    "total_trades": 0
+  },
+  "PPO_GBPUSD_enhanced": {
+    "symbol": "EURUSD",
+    "metrics": {
+      "total_return": 7.83221496974819,
+      "final_equity": 88322.1496974819,
+      "total_trades": 23,
+      "winning_trades": 8,
+      "win_rate": 0.34782608695652173,
+      "max_drawdown": 0.019530510567890076,
+      "volatility": 0.05100978916104207,
+      "sharpe_ratio": 0.5076042151760181,
+      "total_costs": 51.47468396124001,
+      "cost_ratio": 0.005147468396124001,
+      "avg_trade_pnl": -41.42696667642599
+    },
+    "total_predictions": 22252,
+    "total_trades": 23
+  },
+  "PPO_XAUUSD_enhanced": {
+    "symbol": "EURUSD",
+    "metrics": {
+      "total_return": 0.0,
+      "final_equity": 10000.0,
+      "total_trades": 0,
+      "winning_trades": 0,
+      "win_rate": 0,
+      "max_drawdown": 0.0,
+      "volatility": 0.0,
+      "sharpe_ratio": 0,
+      "total_costs": 0.0,
+      "cost_ratio": 0.0,
+      "avg_trade_pnl": 0
+    },
+    "total_predictions": 22252,
+    "total_trades": 0
+  },
+  "SAC_EURUSD_enhanced": {
+    "symbol": "EURUSD",
+    "metrics": {
+      "total_return": 18.15580001399287,
+      "final_equity": 191558.00013992868,
+      "total_trades": 31,
+      "winning_trades": 12,
+      "win_rate": 0.3870967741935484,
+      "max_drawdown": 0.00042818612866712323,
+      "volatility": 0.05822970948689276,
+      "sharpe_ratio": 0.5830788832251672,
+      "total_costs": 125.03071029093279,
+      "cost_ratio": 0.01250307102909328,
+      "avg_trade_pnl": -1.0616562214824685
+    },
+    "total_predictions": 22252,
+    "total_trades": 31
+  },
+  "SAC_GBPUSD_enhanced": {
+    "symbol": "EURUSD",
+    "metrics": {
+      "total_return": 12.217432718724364,
+      "final_equity": 132174.32718724365,
+      "total_trades": 27,
+      "winning_trades": 10,
+      "win_rate": 0.37037037037037035,
+      "max_drawdown": 0.0151838702172827,
+      "volatility": 0.05526280735236508,
+      "sharpe_ratio": 0.5550002089950977,
+      "total_costs": 81.41309260369702,
+      "cost_ratio": 0.008141309260369703,
+      "avg_trade_pnl": 31.423783711674954
+    },
+    "total_predictions": 22252,
+    "total_trades": 27
+  },
+  "SAC_XAUUSD_enhanced": {
+    "symbol": "EURUSD",
+    "metrics": {
+      "total_return": 58.701749471994674,
+      "final_equity": 597017.4947199468,
+      "total_trades": 43,
+      "winning_trades": 21,
+      "win_rate": 0.4883720930232558,
+      "max_drawdown": 0.01595585152834529,
+      "volatility": 0.06970572954561562,
+      "sharpe_ratio": 0.6971682703039117,
+      "total_costs": 390.10229489458686,
+      "cost_ratio": 0.03901022948945869,
+      "avg_trade_pnl": -77.24364405956462
+    },
+    "total_predictions": 22252,
+    "total_trades": 43
+  }
+}

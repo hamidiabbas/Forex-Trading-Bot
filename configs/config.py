@@ -1,304 +1,290 @@
+# configs/config.py - Complete MT5 Trading Bot Configuration
 """
-Enhanced Trading Bot Configuration with XAUUSD Integration
-Complete configuration for professional trading system
-"""
-
-import os
-from datetime import datetime
-from config import config  # ✅ Import the new configuration
-
-# Use the config throughout your main file
-symbols = config.get('trading.symbols')  # ['EURUSD', 'GBPUSD', 'XAUUSD']
-
-class TradingConfig:
-    """
-    Comprehensive trading configuration with XAUUSD optimization
-    """
-    
-    def __init__(self):
-        self.config = {
-            # ✅ UPDATED: Core Trading Configuration with XAUUSD
-            'trading': {
-                'symbols': ['EURUSD', 'GBPUSD', 'XAUUSD'],  # ✅ REPLACED USDJPY with XAUUSD
-                'risk_per_trade': 0.01,  # 1% risk per trade
-                'max_daily_risk': 0.05,  # 5% maximum daily risk
-                'max_positions_per_symbol': 1,  # One position per symbol
-                'max_total_positions': 3,  # Maximum total open positions
-                'enable_traditional_signals': True,
-                'enable_rl_signals': True,
-                'min_confidence_threshold': 0.6,  # Minimum confidence for signal execution
-                'risk_reward_ratio': 3,  # Target 1:1.5 risk/reward
-                'max_spread_pips': {  # Maximum spread limits per symbol
-                    'EURUSD': 10,
-                    'GBPUSD': 10,
-                    'XAUUSD': 50  # ✅ Gold-specific spread limit
-                }
-            },
-            
-            # ✅ UPDATED: MetaTrader 5 Configuration with XAUUSD optimization
-            'mt5': {
-                'magic_number': 123456789,
-                'max_slippage': 30,  # Default slippage in points
-                'max_connection_attempts': 10,
-                'connection_timeout': 30,
-                'symbol_specific_slippage': {  # ✅ Symbol-specific slippage settings
-                    'EURUSD': 10,
-                    'GBPUSD': 10,
-                    'XAUUSD': 30,  # ✅ Optimized for Gold
-                    'USDJPY': 5,  # Legacy (not used)
-                    'GBPJPY': 4,
-                    'EURJPY': 4,
-                    'AUDJPY': 4
-                }
-            },
-            
-            # ✅ ENHANCED: Symbol-Specific Parameters
-            'symbol_params': {
-                'EURUSD': {
-                    'min_volume': 0.01,
-                    'max_volume': 10.0,
-                    'volume_step': 0.01,
-                    'typical_spread': 1.5,
-                    'trading_sessions': ['london', 'newyork'],
-                    'volatility_adjustment': 1.0
-                },
-                'GBPUSD': {
-                    'min_volume': 0.01,
-                    'max_volume': 10.0,
-                    'volume_step': 0.01,
-                    'typical_spread': 2.0,
-                    'trading_sessions': ['london', 'newyork'],
-                    'volatility_adjustment': 1.1
-                },
-                'XAUUSD': {  # ✅ NEW: Gold-specific parameters
-                    'min_volume': 0.01,
-                    'max_volume': 5.0,  # Lower max volume for Gold
-                    'volume_step': 0.01,
-                    'typical_spread': 3.0,
-                    'trading_sessions': ['london', 'newyork', 'asian'],  # Gold trades 24/5
-                    'volatility_adjustment': 1.2,  # Higher volatility adjustment
-                    'point_value': 100,  # Gold point value
-                    'contract_size': 100  # Gold contract size
-                }
-            },
-            
-            # Execution Configuration
-            'execution': {
-                'enable_partial_fills': True,
-                'max_retry_attempts': 10,
-                'retry_delay_seconds': 1,
-                'execution_timeout': 30,
-                'enable_slippage_protection': True,
-                'max_execution_delay': 5.0  # Maximum execution delay in seconds
-            },
-            
-            # ✅ ENHANCED: Risk Management with XAUUSD considerations
-            'risk_management': {
-                'use_dynamic_position_sizing': True,
-                'max_risk_per_trade': 0.01,  # 1%
-                'max_daily_risk': 0.05,  # 5%
-                'max_weekly_risk': 0.15,  # 15%
-                'stop_loss_multiplier': 2.0,
-                'take_profit_multiplier': 3.0,
-                'trailing_stop_enabled': False,
-                'correlation_limit': 0.7,  # Maximum correlation between positions
-                'symbol_risk_weights': {  # Risk weighting per symbol
-                    'EURUSD': 1.0,
-                    'GBPUSD': 1.1,
-                    'XAUUSD': 1.3  # ✅ Higher risk weight for Gold (more volatile)
-                }
-            },
-            
-            # RL Model Configuration
-            'rl_model': {
-                'model_type': 'A2C',
-                'model_path': './best_model_EURUSD/best_model.zip',
-                'observation_size': 32,
-                'enable_model_validation': True,
-                'prediction_confidence_threshold': 0.6,
-                'model_update_interval': 24  # Hours
-            },
-            
-            # Market Intelligence Configuration
-            'market_intelligence': {
-                'trend_threshold': 0.7,
-                'volatility_threshold': 0.02,
-                'momentum_threshold': 0.5,
-                'trend_analysis_period': 50,
-                'volatility_analysis_period': 20,
-                'momentum_analysis_period': 14,
-                'enable_regime_detection': True,
-                'regime_smoothing_factor': 3
-            },
-            
-            # Strategy Configuration
-            'strategy': {
-                'rsi_overbought': 70,
-                'rsi_oversold': 30,
-                'bb_threshold': 0.95,
-                'macd_signal_threshold': 0.001,
-                'adx_trend_threshold': 25,
-                'enable_confluence_trading': True,
-                'min_signal_confluence': 2  # Minimum number of confirming indicators
-            },
-            
-            # Data Handling Configuration
-            'data_handler': {
-                'enable_data_caching': True,
-                'cache_size_limit': 1000,
-                'data_validation_enabled': True,
-                'missing_data_tolerance': 0.05,  # 5% missing data tolerance
-                'timeframe_priorities': ['M1', 'M5', 'M15', 'H1']
-            },
-            
-            # Notification Configuration
-            'notifications': {
-                'enable_console_notifications': True,
-                'enable_email_notifications': False,
-                'enable_telegram_notifications': False,
-                'notification_levels': ['ERROR', 'WARNING', 'INFO'],
-                'trade_notification_enabled': True,
-                'performance_notification_interval': 3600  # Seconds
-            },
-            
-            # Performance Monitoring
-            'performance_monitor': {
-                'enable_monitoring': True,
-                'update_interval_seconds': 300,
-                'retention_days': 30,
-                'enable_trade_analytics': True,
-                'enable_drawdown_monitoring': True,
-                'max_drawdown_threshold': 0.1  # 10%
-            },
-            
-            # Logging Configuration
-            'logging': {
-                'log_level': 'INFO',
-                'enable_file_logging': True,
-                'log_file_path': 'logs/trading_bot.log',
-                'max_log_file_size': 10485760,  # 10MB
-                'backup_count': 5,
-                'enable_trade_logging': True,
-                'enable_performance_logging': True
-            },
-            
-            # ✅ NEW: Session-Based Trading Configuration
-            'trading_sessions': {
-                'asian': {
-                    'start_hour': 0,
-                    'end_hour': 9,
-                    'timezone': 'Asia/Tokyo',
-                    'enabled_symbols': ['XAUUSD'], #'USDJPY']  # Gold and JPY pairs active
-                },
-                'london': {
-                    'start_hour': 8,
-                    'end_hour': 17,
-                    'timezone': 'Europe/London',
-                    'enabled_symbols': ['EURUSD', 'GBPUSD', 'XAUUSD']  # All symbols active
-                },
-                'newyork': {
-                    'start_hour': 13,
-                    'end_hour': 22,
-                    'timezone': 'America/New_York',
-                    'enabled_symbols': ['EURUSD', 'GBPUSD', 'XAUUSD']  # All symbols active
-                }
-            },
-            
-            # Emergency and Safety Configuration
-            'emergency': {
-                'enable_emergency_stop': True,
-                'max_consecutive_losses': 5,
-                'emergency_close_threshold': 0.05,  # 5% account loss
-                'enable_weekend_close': True,
-                'market_hours_check': True
-            }
-        }
-    
-    def get(self, key: str, default=None):
-        """Get configuration value using dot notation (e.g., 'trading.symbols')"""
-        keys = key.split('.')
-        value = self.config
-        
-        try:
-            for k in keys:
-                value = value[k]
-            return value
-        except (KeyError, TypeError):
-            return default
-    
-    def update(self, key: str, value):
-        """Update configuration value using dot notation"""
-        keys = key.split('.')
-        config_section = self.config
-        
-        for k in keys[:-1]:
-            if k not in config_section:
-                config_section[k] = {}
-            config_section = config_section[k]
-        
-        config_section[keys[-1]] = value
-    
-    def get_symbol_config(self, symbol: str) -> dict:
-        """Get symbol-specific configuration"""
-        return self.config.get('symbol_params', {}).get(symbol, {})
-    
-    def get_slippage_for_symbol(self, symbol: str) -> int:
-        """Get symbol-specific slippage setting"""
-        return self.config.get('mt5', {}).get('symbol_specific_slippage', {}).get(
-            symbol, self.config.get('mt5', {}).get('max_slippage', 3)
-        )
-    
-    def is_symbol_tradeable(self, symbol: str, session: str = None) -> bool:
-        """Check if symbol is tradeable in current/specified session"""
-        if symbol not in self.config.get('trading', {}).get('symbols', []):
-            return False
-        
-        if session:
-            session_config = self.config.get('trading_sessions', {}).get(session, {})
-            enabled_symbols = session_config.get('enabled_symbols', [])
-            return symbol in enabled_symbols
-        
-        return True
-
-# Create global configuration instance
-config = TradingConfig()
-
-# ✅ VALIDATION: Ensure XAUUSD is properly configured
-if 'XAUUSD' not in config.get('trading.symbols', []):
-    print("WARNING: XAUUSD not found in trading symbols!")
-else:
-    print("✅ XAUUSD successfully configured in trading symbols")
-
-# Export for easy importing
-__all__ = ['config', 'TradingConfig']
-
-# config.py - Complete MT5 Configuration
-"""
-Complete MT5 Configuration for Forex Trading System
+Complete configuration file for Enhanced Forex Trading Bot
+All required parameters for MT5 connection and RL training
 """
 
-class Config:
-    def __init__(self):
-        # MetaTrader 5 Configuration
-        self.MT5_LOGIN = 5038274604  # Replace with your MT5 login
-        self.MT5_PASSWORD = 'G@5iMvHm'  # Replace with your MT5 password
-        self.MT5_SERVER = 'MetaQuotes-Demo'  # Replace with your broker's server
-        self.MT5_PATH = r'C:\Program Files\MetaTrader 5\terminal64.exe'
-        
-        # Data Handler Settings
-        self.MAX_BARS_PER_REQUEST = 10000
-        self.DATA_TIMEOUT = 30
-        
-        # Trading Configuration
-        self.SYMBOLS_TO_TRADE = ['EURUSD', 'GBPUSD', 'XAUUSD']
-        self.RISK_PER_TRADE = 0.01  # 1% risk per trade
-        self.MAX_POSITION_SIZE = 0.10  # Maximum 10% of account per position
-        
-        # Strategy Settings
-        self.TREND_EMA_FAST_PERIOD = 20
-        self.TREND_EMA_SLOW_PERIOD = 50
-        self.RSI_PERIOD = 14
-        self.RSI_OVERBOUGHT = 70
-        self.RSI_OVERSOLD = 30
+# ===== REQUIRED MT5 CONNECTION PARAMETERS =====
+# These are MANDATORY for the system to work
 
-config = Config()
+# MetaTrader 5 Account Credentials
+MT5_LOGIN = 5038800515  # Replace with your actual MT5 account number
+MT5_PASSWORD = "@6JhQaZo"  # Replace with your actual MT5 password
+MT5_SERVER = "MetaQuotes-Demo"  # Replace with your actual MT5 server name
+
+# MetaTrader 5 Installation Path
+MT5_PATH = r"C:\Program Files\MetaTrader 5\terminal64.exe"  # Standard installation path
+MT5_TIMEOUT = 10000  # Connection timeout in milliseconds
+
+# ===== TRADING SYMBOLS CONFIGURATION =====
+# Primary symbols for trading and analysis
+SYMBOLS_TO_TRADE = [
+    'EURUSD',    # Euro vs US Dollar
+    'GBPUSD',    # British Pound vs US Dollar  
+    'USDJPY',    # US Dollar vs Japanese Yen
+    'AUDUSD',    # Australian Dollar vs US Dollar
+    'USDCAD',    # US Dollar vs Canadian Dollar
+    'USDCHF',    # US Dollar vs Swiss Franc
+    'XAUUSD',    # Gold vs US Dollar
+    'XAGUSD',    # Silver vs US Dollar
+]
+
+# ===== TRADING PARAMETERS =====
+PRIMARY_TIMEFRAME = 'H1'  # Primary timeframe for analysis
+RISK_PERCENTAGE = 0.02    # Risk 2% per trade
+MAX_SPREAD = 3           # Maximum spread in pips
+SLIPPAGE_PIPS = 1        # Allowed slippage in pips
+MAGIC_NUMBER = 123456789 # Unique identifier for bot trades
+
+# ===== REINFORCEMENT LEARNING CONFIGURATION =====
+# RL Training Parameters
+RL_TRAINING_ENABLED = True
+RL_SYMBOLS = ['EURUSD', 'GBPUSD', 'XAUUSD']  # Symbols for RL training
+RL_TIMEFRAME = 'H1'
+RL_LOOKBACK_PERIOD = 1000  # Number of historical bars for training
+
+# RL Model Configuration
+RL_MODEL_CONFIG = {
+    'algorithm': 'SAC',  # SAC, PPO, or A2C
+    'learning_rate': 3e-4,
+    'batch_size': 256,
+    'buffer_size': 50000,
+    'training_steps': 100000,
+    'evaluation_frequency': 5000,
+    'save_frequency': 10000
+}
+
+# RL Environment Settings
+RL_ENV_CONFIG = {
+    'initial_balance': 100000.0,
+    'transaction_cost': 0.0001,  # 0.01%
+    'max_position_size': 1.0,
+    'leverage': 1.0,
+    'max_drawdown_limit': 0.3,  # 30%
+    'reward_scaling': 1.0
+}
+
+# ===== ADVANCED FEATURES CONFIGURATION =====
+# Alternative Data Settings
+ENABLE_SENTIMENT_ANALYSIS = True
+ENABLE_NEWS_MONITORING = True  
+ENABLE_ECONOMIC_CALENDAR = True
+
+# NewsAPI Configuration (optional - get free key from newsapi.org)
+NEWSAPI_KEY = '30d51dc0e59e4264b8baddf4173e2d06'  # Add your NewsAPI key here if available
+
+# News Sources for Sentiment Analysis
+NEWS_SOURCES = [
+    'bloomberg', 'reuters', 'cnbc', 'financial-times',
+    'wall-street-journal', 'marketwatch'
+]
+
+# Sentiment Analysis Thresholds
+SENTIMENT_THRESHOLD_HIGH = 0.3
+SENTIMENT_THRESHOLD_LOW = -0.3
+
+# ===== TECHNICAL ANALYSIS CONFIGURATION =====
+# Moving Average Periods
+MA_PERIODS = [5, 10, 20, 50, 100, 200]
+EMA_PERIODS = [8, 12, 21, 26, 50]
+
+# Oscillator Settings
+RSI_PERIODS = [7, 14, 21]
+STOCH_PERIODS = [(14, 3, 3), (5, 3, 3)]
+MACD_SETTINGS = [(12, 26, 9), (5, 35, 5)]
+
+# Bollinger Bands Settings
+BB_PERIODS = [20, 50]
+BB_DEVIATIONS = [2.0, 2.5]
+
+# ===== RISK MANAGEMENT CONFIGURATION =====
+# Position Sizing
+MAX_CONCURRENT_TRADES = 5
+MAX_DAILY_TRADES = 20
+MAX_WEEKLY_TRADES = 50
+
+# Risk Controls
+MAX_DAILY_LOSS = 0.05      # 5% max daily loss
+MAX_WEEKLY_LOSS = 0.15     # 15% max weekly loss
+MAX_MONTHLY_LOSS = 0.25    # 25% max monthly loss
+
+# Stop Loss and Take Profit
+DEFAULT_STOP_LOSS = 50     # pips
+DEFAULT_TAKE_PROFIT = 100  # pips
+TRAILING_STOP = True
+TRAILING_STOP_DISTANCE = 30  # pips
+
+# ===== TRADING HOURS CONFIGURATION =====
+# Trading session control
+ENABLE_NEWS_FILTER = True
+TRADING_HOURS = {
+    'start': 0,    # 00:00 UTC
+    'end': 24      # 24:00 UTC (always on)
+}
+
+# Session-specific settings
+ASIAN_SESSION = {'start': 0, 'end': 9}      # 00:00-09:00 UTC
+EUROPEAN_SESSION = {'start': 8, 'end': 17}  # 08:00-17:00 UTC  
+AMERICAN_SESSION = {'start': 13, 'end': 22} # 13:00-22:00 UTC
+
+# ===== DATA AND CACHING CONFIGURATION =====
+# Data Management
+DATA_CACHE_HOURS = 24      # Cache data for 24 hours
+MAX_CACHE_ITEMS = 1000     # Maximum cached items
+AUTO_CLEANUP_CACHE = True  # Automatic cache cleanup
+
+# Historical Data Settings
+HISTORICAL_DATA_DAYS = 365  # Days of historical data to fetch
+MIN_DATA_POINTS = 1000      # Minimum data points for analysis
+
+# ===== LOGGING AND MONITORING =====
+# Logging Configuration
+LOG_LEVEL = 'INFO'         # DEBUG, INFO, WARNING, ERROR
+LOG_TO_FILE = True
+LOG_TO_CONSOLE = True
+LOG_ROTATION = True
+MAX_LOG_SIZE_MB = 50
+
+# Performance Monitoring  
+ENABLE_PERFORMANCE_MONITORING = True
+PERFORMANCE_LOG_INTERVAL = 3600  # seconds
+MEMORY_THRESHOLD_MB = 1000
+
+# ===== NOTIFICATION CONFIGURATION =====
+# Alert Settings
+ENABLE_ALERTS = True
+ENABLE_EMAIL_ALERTS = False
+ENABLE_TELEGRAM_ALERTS = False
+
+# Email Configuration (if enabled)
+EMAIL_SMTP_SERVER = "smtp.gmail.com"
+EMAIL_SMTP_PORT = 587
+EMAIL_USERNAME = ""        # Your email
+EMAIL_PASSWORD = ""        # Your email password
+EMAIL_RECIPIENTS = []      # List of recipient emails
+
+# Telegram Configuration (if enabled)
+TELEGRAM_BOT_TOKEN = ""    # Your Telegram bot token
+TELEGRAM_CHAT_ID = ""      # Your Telegram chat ID
+
+# ===== PATTERN RECOGNITION CONFIGURATION =====
+# Chart Pattern Settings
+ENABLE_PATTERN_RECOGNITION = True
+PATTERN_SENSITIVITY = 0.7   # Pattern matching sensitivity
+MIN_PATTERN_BARS = 10      # Minimum bars for pattern recognition
+
+# Market Regime Detection
+REGIME_WINDOW = 50         # Window for regime detection
+VOLATILITY_THRESHOLD = 0.02 # Volatility threshold for regime classification
+
+# ===== MACHINE LEARNING FEATURES =====
+# Feature Engineering
+ENABLE_ADVANCED_FEATURES = True
+ENABLE_ML_FEATURES = True
+ENABLE_STATISTICAL_FEATURES = True
+
+# Feature Selection
+MAX_FEATURES = 200         # Maximum number of features
+FEATURE_SELECTION_METHOD = 'variance'  # variance, correlation, mutual_info
+
+# ===== BACKTESTING CONFIGURATION =====
+# Backtesting Settings
+BACKTEST_START_DATE = '2021-01-01'
+BACKTEST_END_DATE = '2024-01-01'
+BACKTEST_INITIAL_BALANCE = 10000.0
+BACKTEST_COMMISSION = 0.0001  # 0.01%
+
+# Walk-Forward Analysis
+ENABLE_WALK_FORWARD = True
+WALK_FORWARD_PERIODS = 12   # Number of periods
+WALK_FORWARD_STEP = 30      # Days per step
+
+# ===== OPTIMIZATION CONFIGURATION =====
+# Hyperparameter Optimization
+ENABLE_OPTIMIZATION = True
+OPTIMIZATION_TRIALS = 100   # Number of optimization trials
+OPTIMIZATION_TIMEOUT = 7200 # Optimization timeout in seconds
+
+# Optuna Settings
+OPTUNA_STORAGE = None      # Database URL for distributed optimization
+OPTUNA_STUDY_NAME = "forex_bot_optimization"
+
+# ===== DEVELOPMENT AND TESTING =====
+# Development Mode
+DEVELOPMENT_MODE = True    # Enable development features
+PAPER_TRADING = True       # Use paper trading for testing
+SAVE_DEBUG_DATA = True     # Save debug information
+
+# Testing Configuration
+RUN_UNIT_TESTS = True
+RUN_INTEGRATION_TESTS = True
+TEST_DATA_PATH = "data/test/"
+
+# ===== SYSTEM CONFIGURATION =====
+# Performance Settings
+MAX_CPU_CORES = 4          # Maximum CPU cores to use
+MAX_MEMORY_GB = 8          # Maximum memory usage in GB
+ENABLE_GPU = False         # Enable GPU acceleration if available
+
+# File Paths
+DATA_PATH = "data/"
+MODELS_PATH = "models/"
+LOGS_PATH = "logs/"
+RESULTS_PATH = "results/"
+CACHE_PATH = "cache/"
+
+# ===== VALIDATION AND SAFETY =====
+# Input Validation
+VALIDATE_INPUTS = True
+STRICT_VALIDATION = True
+
+# Safety Checks
+ENABLE_SAFETY_CHECKS = True
+MAX_POSITION_VALUE = 50000  # Maximum position value in account currency
+EMERGENCY_STOP_LOSS = 0.10  # 10% emergency stop loss
+
+# ===== EXPORT CONFIGURATION FOR VERIFICATION =====
+def get_config_summary():
+    """Return configuration summary for verification"""
+    return {
+        'mt5_login': MT5_LOGIN,
+        'mt5_server': MT5_SERVER,
+        'symbols_count': len(SYMBOLS_TO_TRADE),
+        'symbols': SYMBOLS_TO_TRADE,
+        'rl_enabled': RL_TRAINING_ENABLED,
+        'sentiment_enabled': ENABLE_SENTIMENT_ANALYSIS,
+        'risk_percentage': RISK_PERCENTAGE,
+        'max_concurrent_trades': MAX_CONCURRENT_TRADES
+    }
+
+def validate_config():
+    """Validate configuration parameters"""
+    errors = []
+    
+    # Check required MT5 parameters
+    if not MT5_LOGIN or MT5_LOGIN == 5038274604:
+        errors.append("MT5_LOGIN needs to be set to your actual account number")
+    
+    if not MT5_PASSWORD or MT5_PASSWORD == "yourpassword":
+        errors.append("MT5_PASSWORD needs to be set to your actual password")
+    
+    if not MT5_SERVER or MT5_SERVER == "MetaQuotes-Demo":
+        errors.append("MT5_SERVER should be set to your actual server name")
+    
+    if not SYMBOLS_TO_TRADE:
+        errors.append("SYMBOLS_TO_TRADE cannot be empty")
+    
+    return errors
+
+# Print configuration status when imported
+if __name__ == "__main__":
+    print("✅ Forex Trading Bot Configuration Loaded")
+    print(f"📊 Configuration Summary: {get_config_summary()}")
+    
+    validation_errors = validate_config()
+    if validation_errors:
+        print("⚠️ Configuration Warnings:")
+        for error in validation_errors:
+            print(f"   - {error}")
+    else:
+        print("✅ Configuration validation passed")
