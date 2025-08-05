@@ -22,10 +22,10 @@ import pytz
 import random
 import MetaTrader5 as mt5
 
-import configs.config as config
+import config.configmanager as configmanager
 from core.data_handler import DataHandler
-from core.market_intelligence import MarketIntelligence
-from core.risk_manager import RiskManager
+from core.marketintelligence import MarketIntelligence
+from core.riskmanager import RiskManager
 from core.strategy_manager import StrategyManager
 from utils.performance_analyzer import PerformanceAnalyzer
 
@@ -194,7 +194,7 @@ if __name__ == '__main__':
     # To generate signals for the AI, comment this out and uncomment the section below.
     
     print("--- Running in Standard Backtest Mode ---")
-    backtester = Backtester(config)
+    backtester = Backtester(configmanager)
     backtester.run(symbol='EURUSD', start_date_str='2023-01-01', end_date_str='2024-01-01')
 
     # --- To generate signals for the AI model ---

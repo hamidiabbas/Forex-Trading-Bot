@@ -19,12 +19,12 @@
 import itertools
 import pandas as pd
 from types import SimpleNamespace
-import configs.config as config
+import config.configmanager as configmanager
 from backtester import Backtester
 
 def run_optimization():
     # ... (the main optimization loop is unchanged) ...
-    param_grid = config.OPTIMIZATION_PARAMS
+    param_grid = configmanager.OPTIMIZATION_PARAMS
     keys, values = zip(*param_grid.items())
     param_combinations = [dict(zip(keys, v)) for v in itertools.product(*values)]
     
@@ -37,9 +37,9 @@ def run_optimization():
         print(f"\nRunning combination {i+1}/{len(param_combinations)}: {params}")
         
         temp_config = SimpleNamespace()
-        for setting in dir(config):
+        for setting in dir(configmanager):
             if not setting.startswith('__'):
-                setattr(temp_config, setting, getattr(config, setting))
+                setattr(temp_config, setting, getattr(configmanager, setting))
         for key, value in params.items():
             setattr(temp_config, key, value)
             

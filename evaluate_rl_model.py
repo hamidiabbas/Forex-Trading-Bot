@@ -22,9 +22,9 @@ from datetime import datetime
 import pytz
 from stable_baselines3 import PPO
 
-import configs.config as config
+import config.configmanager as configmanager
 from core.data_handler import DataHandler
-from core.market_intelligence import MarketIntelligence
+from core.marketintelligence import MarketIntelligence
 from trading_environment import TradingEnvironment
 from utils.performance_analyzer import PerformanceAnalyzer
 
@@ -40,8 +40,8 @@ MODEL_PATH = f"model_rl_{SYMBOL}_final.zip"
 def prepare_data():
     """ Fetches and prepares the market data for the evaluation environment. """
     print("--- Preparing Evaluation Data ---")
-    data_handler = DataHandler(config)
-    market_intel = MarketIntelligence(data_handler, config)
+    data_handler = DataHandler(configmanager)
+    market_intel = MarketIntelligence(data_handler, configmanager)
     
     data_handler.connect()
     timezone = pytz.timezone("Etc/UTC")

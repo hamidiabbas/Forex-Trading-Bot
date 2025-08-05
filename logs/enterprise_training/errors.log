@@ -10,3 +10,13 @@
 2025-08-03 22:16:04,974 | ERROR    | __main__             | initialize_components:1088 | ❌ Failed to connect data handler
 2025-08-04 11:54:22,887 | ERROR    | __main__             | create_comprehensive_modules:1266 | Error creating comprehensive modules: name 'self' is not defined
 2025-08-04 11:57:42,568 | ERROR    | __main__             | create_comprehensive_modules:1266 | Error creating comprehensive modules: name 'self' is not defined
+2025-08-04 14:51:27,207 | ERROR    | __main__             | load_user_config_advanced:117 | ❌ Config file not found in any location:
+2025-08-04 14:51:27,210 | ERROR    | __main__             | load_user_config_advanced:119 |    - configs/config.py
+2025-08-04 14:51:27,211 | ERROR    | __main__             | load_user_config_advanced:119 |    - config.py
+2025-08-04 14:51:27,211 | ERROR    | __main__             | load_user_config_advanced:119 |    - configs/Config.py
+2025-08-04 14:51:27,212 | ERROR    | __main__             | load_user_config_advanced:119 |    - Config.py
+2025-08-04 15:06:49,544 | ERROR    | __main__             | load_user_config_advanced:117 | ❌ Config file not found in any location:
+2025-08-04 15:06:49,548 | ERROR    | __main__             | load_user_config_advanced:119 |    - configs/config.py
+2025-08-04 15:06:49,549 | ERROR    | __main__             | load_user_config_advanced:119 |    - config.py
+2025-08-04 15:06:49,549 | ERROR    | __main__             | load_user_config_advanced:119 |    - configs/Config.py
+2025-08-04 15:06:49,550 | ERROR    | __main__             | load_user_config_advanced:119 |    - Config.py
