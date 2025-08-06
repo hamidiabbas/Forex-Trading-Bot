@@ -1,0 +1,48 @@
+{
+  "training_completed": "2025-08-04T21:17:15.117587",
+  "total_time_minutes": 318.2040326674779,
+  "models_trained": 6,
+  "model_performances": {
+    "SAC_EURUSD": {
+      "mean_reward": -558.910065,
+      "std_reward": 0.0,
+      "training_time": 4158.688790798187,
+      "training_steps": 50000
+    },
+    "PPO_EURUSD": {
+      "mean_reward": 3.621294,
+      "std_reward": 0.0,
+      "training_time": 223.72909259796143,
+      "training_steps": 40000
+    },
+    "SAC_GBPUSD": {
+      "mean_reward": -433.525855,
+      "std_reward": 0.0,
+      "training_time": 3909.97971367836,
+      "training_steps": 50000
+    },
+    "PPO_GBPUSD": {
+      "mean_reward": 3.595317,
+      "std_reward": 0.0,
+      "training_time": 227.04677605628967,
+      "training_steps": 40000
+    },
+    "SAC_XAUUSD": {
+      "mean_reward": -929.157056,
+      "std_reward": 0.0,
+      "training_time": 9553.441061973572,
+      "training_steps": 50000
+    },
+    "PPO_XAUUSD": {
+      "mean_reward": 3.252084,
+      "std_reward": 0.0,
+      "training_time": 460.2167191505432,
+      "training_steps": 40000
+    }
+  },
+  "symbols_used": [
+    "EURUSD",
+    "GBPUSD",
+    "XAUUSD"
+  ]
+}

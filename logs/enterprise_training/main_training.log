@@ -87,3 +87,695 @@
 2025-08-03 18:03:39,770 | ERROR | __main__ | ❌ Failed to load config: cannot import name 'config' from 'config' (unknown location)
 2025-08-03 18:03:39,770 | INFO | __main__ | Trying fallback method...
 2025-08-03 18:03:39,795 | ERROR | __main__ | ❌ Fallback method also failed: cannot import name 'config' from 'config' (unknown location)
+2025-08-03 18:29:19,169 | INFO     | __main__             | main           :1279 | 🚀 Starting Complete Enterprise RL Training System
+2025-08-03 18:29:59,349 | INFO     | __main__             | check_comprehensive_requirements:300 | 📦 PACKAGE AVAILABILITY CHECK:
+2025-08-03 18:29:59,350 | INFO     | __main__             | check_comprehensive_requirements:302 |    stable_baselines3 ✅
+2025-08-03 18:29:59,350 | INFO     | __main__             | check_comprehensive_requirements:302 |    torch           ✅ 2.7.1+cpu
+2025-08-03 18:29:59,351 | INFO     | __main__             | check_comprehensive_requirements:302 |    sklearn         ✅ 1.3.0
+2025-08-03 18:29:59,351 | INFO     | __main__             | check_comprehensive_requirements:302 |    pandas          ✅ 2.0.3
+2025-08-03 18:29:59,351 | INFO     | __main__             | check_comprehensive_requirements:302 |    numpy           ✅ 1.26.4
+2025-08-03 18:29:59,352 | INFO     | __main__             | check_comprehensive_requirements:302 |    matplotlib      ✅ 3.10.3
+2025-08-03 18:29:59,352 | INFO     | __main__             | check_comprehensive_requirements:302 |    seaborn         ✅ 0.13.2
+2025-08-03 18:29:59,353 | INFO     | __main__             | check_comprehensive_requirements:302 |    MetaTrader5     ✅
+2025-08-03 18:29:59,354 | INFO     | __main__             | check_comprehensive_requirements:302 |    yfinance        ✅
+2025-08-03 18:29:59,354 | INFO     | __main__             | check_comprehensive_requirements:302 |    optuna          ⚠️ Optional
+2025-08-03 18:29:59,355 | INFO     | __main__             | check_comprehensive_requirements:302 |    xgboost         ⚠️ Optional
+2025-08-03 18:29:59,355 | INFO     | __main__             | check_comprehensive_requirements:302 |    lightgbm        ⚠️ Optional
+2025-08-03 18:29:59,355 | INFO     | __main__             | check_comprehensive_requirements:302 |    networkx        ✅
+2025-08-03 18:29:59,356 | INFO     | __main__             | check_comprehensive_requirements:302 |    scipy           ✅
+2025-08-03 18:29:59,356 | INFO     | __main__             | check_comprehensive_requirements:302 |    statsmodels     ⚠️ Optional
+2025-08-03 18:29:59,356 | INFO     | __main__             | check_comprehensive_requirements:309 | ✅ All critical requirements satisfied
+2025-08-03 18:29:59,357 | INFO     | __main__             | load_user_config_advanced:113 | ✅ Found config file at: configs/config.py
+2025-08-03 18:29:59,366 | WARNING  | __main__             | load_user_config_advanced:132 | importlib method failed: cannot import name 'config' from 'config' (unknown location)
+2025-08-03 18:29:59,370 | ERROR    | __main__             | load_user_config_advanced:153 | All config loading methods failed: cannot import name 'config' from 'config' (unknown location)
+2025-08-03 19:55:12,469 | INFO     | __main__             | main           :1279 | 🚀 Starting Complete Enterprise RL Training System
+2025-08-03 19:55:32,722 | INFO     | __main__             | check_comprehensive_requirements:300 | 📦 PACKAGE AVAILABILITY CHECK:
+2025-08-03 19:55:32,722 | INFO     | __main__             | check_comprehensive_requirements:302 |    stable_baselines3 ✅
+2025-08-03 19:55:32,722 | INFO     | __main__             | check_comprehensive_requirements:302 |    torch           ✅ 2.7.1+cpu
+2025-08-03 19:55:32,722 | INFO     | __main__             | check_comprehensive_requirements:302 |    sklearn         ✅ 1.3.0
+2025-08-03 19:55:32,722 | INFO     | __main__             | check_comprehensive_requirements:302 |    pandas          ✅ 2.0.3
+2025-08-03 19:55:32,722 | INFO     | __main__             | check_comprehensive_requirements:302 |    numpy           ✅ 1.26.4
+2025-08-03 19:55:32,738 | INFO     | __main__             | check_comprehensive_requirements:302 |    matplotlib      ✅ 3.10.3
+2025-08-03 19:55:32,738 | INFO     | __main__             | check_comprehensive_requirements:302 |    seaborn         ✅ 0.13.2
+2025-08-03 19:55:32,738 | INFO     | __main__             | check_comprehensive_requirements:302 |    MetaTrader5     ✅
+2025-08-03 19:55:32,738 | INFO     | __main__             | check_comprehensive_requirements:302 |    yfinance        ✅
+2025-08-03 19:55:32,738 | INFO     | __main__             | check_comprehensive_requirements:302 |    optuna          ⚠️ Optional
+2025-08-03 19:55:32,740 | INFO     | __main__             | check_comprehensive_requirements:302 |    xgboost         ⚠️ Optional
+2025-08-03 19:55:32,740 | INFO     | __main__             | check_comprehensive_requirements:302 |    lightgbm        ⚠️ Optional
+2025-08-03 19:55:32,741 | INFO     | __main__             | check_comprehensive_requirements:302 |    networkx        ✅
+2025-08-03 19:55:32,741 | INFO     | __main__             | check_comprehensive_requirements:302 |    scipy           ✅
+2025-08-03 19:55:32,742 | INFO     | __main__             | check_comprehensive_requirements:302 |    statsmodels     ⚠️ Optional
+2025-08-03 19:55:32,742 | INFO     | __main__             | check_comprehensive_requirements:309 | ✅ All critical requirements satisfied
+2025-08-03 19:55:32,743 | INFO     | __main__             | load_user_config_advanced:113 | ✅ Found config file at: configs/config.py
+2025-08-03 19:55:32,751 | WARNING  | __main__             | load_user_config_advanced:132 | importlib method failed: cannot import name 'config' from 'config' (unknown location)
+2025-08-03 19:55:32,784 | ERROR    | __main__             | load_user_config_advanced:153 | All config loading methods failed: cannot import name 'config' from 'config' (unknown location)
+2025-08-03 20:14:32,393 | INFO     | __main__             | main           :1279 | 🚀 Starting Complete Enterprise RL Training System
+2025-08-03 20:14:42,403 | INFO     | __main__             | check_comprehensive_requirements:300 | 📦 PACKAGE AVAILABILITY CHECK:
+2025-08-03 20:14:42,403 | INFO     | __main__             | check_comprehensive_requirements:302 |    stable_baselines3 ✅
+2025-08-03 20:14:42,403 | INFO     | __main__             | check_comprehensive_requirements:302 |    torch           ✅ 2.7.1+cpu
+2025-08-03 20:14:42,403 | INFO     | __main__             | check_comprehensive_requirements:302 |    sklearn         ✅ 1.3.0
+2025-08-03 20:14:42,403 | INFO     | __main__             | check_comprehensive_requirements:302 |    pandas          ✅ 2.0.3
+2025-08-03 20:14:42,403 | INFO     | __main__             | check_comprehensive_requirements:302 |    numpy           ✅ 1.26.4
+2025-08-03 20:14:42,403 | INFO     | __main__             | check_comprehensive_requirements:302 |    matplotlib      ✅ 3.10.3
+2025-08-03 20:14:42,403 | INFO     | __main__             | check_comprehensive_requirements:302 |    seaborn         ✅ 0.13.2
+2025-08-03 20:14:42,403 | INFO     | __main__             | check_comprehensive_requirements:302 |    MetaTrader5     ✅
+2025-08-03 20:14:42,403 | INFO     | __main__             | check_comprehensive_requirements:302 |    yfinance        ✅
+2025-08-03 20:14:42,403 | INFO     | __main__             | check_comprehensive_requirements:302 |    optuna          ⚠️ Optional
+2025-08-03 20:14:42,403 | INFO     | __main__             | check_comprehensive_requirements:302 |    xgboost         ⚠️ Optional
+2025-08-03 20:14:42,403 | INFO     | __main__             | check_comprehensive_requirements:302 |    lightgbm        ⚠️ Optional
+2025-08-03 20:14:42,403 | INFO     | __main__             | check_comprehensive_requirements:302 |    networkx        ✅
+2025-08-03 20:14:42,403 | INFO     | __main__             | check_comprehensive_requirements:302 |    scipy           ✅
+2025-08-03 20:14:42,419 | INFO     | __main__             | check_comprehensive_requirements:302 |    statsmodels     ⚠️ Optional
+2025-08-03 20:14:42,419 | INFO     | __main__             | check_comprehensive_requirements:309 | ✅ All critical requirements satisfied
+2025-08-03 20:14:42,419 | INFO     | __main__             | load_user_config_advanced:113 | ✅ Found config file at: configs/config.py
+2025-08-03 20:14:42,497 | INFO     | __main__             | load_user_config_advanced:129 | ✅ Config loaded using importlib.util
+2025-08-03 20:14:42,497 | ERROR    | __main__             | _validate_and_enhance_config:176 | ❌ Config missing required attributes: ['MT5_LOGIN', 'MT5_SERVER', 'SYMBOLS_TO_TRADE']
+2025-08-03 21:38:00,605 | INFO     | __main__             | main           :1279 | 🚀 Starting Complete Enterprise RL Training System
+2025-08-03 21:38:11,418 | INFO     | __main__             | check_comprehensive_requirements:300 | 📦 PACKAGE AVAILABILITY CHECK:
+2025-08-03 21:38:11,419 | INFO     | __main__             | check_comprehensive_requirements:302 |    stable_baselines3 ✅
+2025-08-03 21:38:11,422 | INFO     | __main__             | check_comprehensive_requirements:302 |    torch           ✅ 2.7.1+cpu
+2025-08-03 21:38:11,424 | INFO     | __main__             | check_comprehensive_requirements:302 |    sklearn         ✅ 1.3.0
+2025-08-03 21:38:11,426 | INFO     | __main__             | check_comprehensive_requirements:302 |    pandas          ✅ 2.0.3
+2025-08-03 21:38:11,428 | INFO     | __main__             | check_comprehensive_requirements:302 |    numpy           ✅ 1.26.4
+2025-08-03 21:38:11,432 | INFO     | __main__             | check_comprehensive_requirements:302 |    matplotlib      ✅ 3.10.3
+2025-08-03 21:38:11,434 | INFO     | __main__             | check_comprehensive_requirements:302 |    seaborn         ✅ 0.13.2
+2025-08-03 21:38:11,437 | INFO     | __main__             | check_comprehensive_requirements:302 |    MetaTrader5     ✅
+2025-08-03 21:38:11,438 | INFO     | __main__             | check_comprehensive_requirements:302 |    yfinance        ✅
+2025-08-03 21:38:11,440 | INFO     | __main__             | check_comprehensive_requirements:302 |    optuna          ✅
+2025-08-03 21:38:11,442 | INFO     | __main__             | check_comprehensive_requirements:302 |    xgboost         ⚠️ Optional
+2025-08-03 21:38:11,445 | INFO     | __main__             | check_comprehensive_requirements:302 |    lightgbm        ⚠️ Optional
+2025-08-03 21:38:11,447 | INFO     | __main__             | check_comprehensive_requirements:302 |    networkx        ✅
+2025-08-03 21:38:11,450 | INFO     | __main__             | check_comprehensive_requirements:302 |    scipy           ✅
+2025-08-03 21:38:11,454 | INFO     | __main__             | check_comprehensive_requirements:302 |    statsmodels     ⚠️ Optional
+2025-08-03 21:38:11,455 | INFO     | __main__             | check_comprehensive_requirements:309 | ✅ All critical requirements satisfied
+2025-08-03 21:38:11,459 | INFO     | __main__             | load_user_config_advanced:113 | ✅ Found config file at: configs/config.py
+2025-08-03 21:38:11,770 | INFO     | __main__             | load_user_config_advanced:129 | ✅ Config loaded using importlib.util
+2025-08-03 21:38:11,773 | ERROR    | __main__             | _validate_and_enhance_config:176 | ❌ Config missing required attributes: ['MT5_LOGIN', 'MT5_SERVER', 'SYMBOLS_TO_TRADE']
+2025-08-03 21:49:00,001 | INFO     | __main__             | main           :1279 | 🚀 Starting Complete Enterprise RL Training System
+2025-08-03 21:49:06,371 | INFO     | __main__             | check_comprehensive_requirements:300 | 📦 PACKAGE AVAILABILITY CHECK:
+2025-08-03 21:49:06,372 | INFO     | __main__             | check_comprehensive_requirements:302 |    stable_baselines3 ✅
+2025-08-03 21:49:06,373 | INFO     | __main__             | check_comprehensive_requirements:302 |    torch           ✅ 2.7.1+cpu
+2025-08-03 21:49:06,374 | INFO     | __main__             | check_comprehensive_requirements:302 |    sklearn         ✅ 1.3.0
+2025-08-03 21:49:06,374 | INFO     | __main__             | check_comprehensive_requirements:302 |    pandas          ✅ 2.0.3
+2025-08-03 21:49:06,375 | INFO     | __main__             | check_comprehensive_requirements:302 |    numpy           ✅ 1.26.4
+2025-08-03 21:49:06,376 | INFO     | __main__             | check_comprehensive_requirements:302 |    matplotlib      ✅ 3.10.3
+2025-08-03 21:49:06,377 | INFO     | __main__             | check_comprehensive_requirements:302 |    seaborn         ✅ 0.13.2
+2025-08-03 21:49:06,377 | INFO     | __main__             | check_comprehensive_requirements:302 |    MetaTrader5     ✅
+2025-08-03 21:49:06,378 | INFO     | __main__             | check_comprehensive_requirements:302 |    yfinance        ✅
+2025-08-03 21:49:06,379 | INFO     | __main__             | check_comprehensive_requirements:302 |    optuna          ✅
+2025-08-03 21:49:06,380 | INFO     | __main__             | check_comprehensive_requirements:302 |    xgboost         ⚠️ Optional
+2025-08-03 21:49:06,381 | INFO     | __main__             | check_comprehensive_requirements:302 |    lightgbm        ⚠️ Optional
+2025-08-03 21:49:06,382 | INFO     | __main__             | check_comprehensive_requirements:302 |    networkx        ✅
+2025-08-03 21:49:06,382 | INFO     | __main__             | check_comprehensive_requirements:302 |    scipy           ✅
+2025-08-03 21:49:06,383 | INFO     | __main__             | check_comprehensive_requirements:302 |    statsmodels     ⚠️ Optional
+2025-08-03 21:49:06,384 | INFO     | __main__             | check_comprehensive_requirements:309 | ✅ All critical requirements satisfied
+2025-08-03 21:49:06,387 | INFO     | __main__             | load_user_config_advanced:113 | ✅ Found config file at: configs/config.py
+2025-08-03 21:49:06,439 | INFO     | __main__             | load_user_config_advanced:129 | ✅ Config loaded using importlib.util
+2025-08-03 21:49:06,442 | INFO     | __main__             | _validate_and_enhance_config:202 | 📋 ENHANCED CONFIG LOADED:
+2025-08-03 21:49:06,444 | INFO     | __main__             | _validate_and_enhance_config:203 |    MT5 Login: 5038274604
+2025-08-03 21:49:06,445 | INFO     | __main__             | _validate_and_enhance_config:204 |    MT5 Server: MetaQuotes-Demo
+2025-08-03 21:49:06,445 | INFO     | __main__             | _validate_and_enhance_config:205 |    Symbols: ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD', 'USDCHF', 'XAUUSD', 'XAGUSD']
+2025-08-03 21:49:06,446 | INFO     | __main__             | _validate_and_enhance_config:206 |    Primary Timeframe: H1
+2025-08-03 21:49:06,448 | INFO     | __main__             | _validate_and_enhance_config:207 |    Risk %: 0.02
+2025-08-03 21:49:06,450 | WARNING  | __main__             | check_and_import_advanced_libraries:41  | ⚠️ Advanced ML libraries not available (optuna, xgboost, lightgbm, networkx)
+2025-08-03 21:49:06,451 | INFO     | __main__             | create_comprehensive_modules:362 | 🏗️ Creating comprehensive modules with advanced features...
+2025-08-03 21:49:06,452 | INFO     | __main__             | create_comprehensive_modules:1260 | ✅ Created advanced DataHandler
+2025-08-03 21:49:06,454 | ERROR    | __main__             | create_comprehensive_modules:1266 | Error creating comprehensive modules: name 'self' is not defined
+2025-08-03 21:57:05,028 | INFO     | __main__             | main           :1279 | 🚀 Starting Complete Enterprise RL Training System
+2025-08-03 21:57:43,075 | INFO     | __main__             | check_comprehensive_requirements:300 | 📦 PACKAGE AVAILABILITY CHECK:
+2025-08-03 21:57:43,077 | INFO     | __main__             | check_comprehensive_requirements:302 |    stable_baselines3 ✅
+2025-08-03 21:57:43,079 | INFO     | __main__             | check_comprehensive_requirements:302 |    torch           ✅ 2.7.1+cpu
+2025-08-03 21:57:43,081 | INFO     | __main__             | check_comprehensive_requirements:302 |    sklearn         ✅ 1.3.0
+2025-08-03 21:57:43,082 | INFO     | __main__             | check_comprehensive_requirements:302 |    pandas          ✅ 2.0.3
+2025-08-03 21:57:43,084 | INFO     | __main__             | check_comprehensive_requirements:302 |    numpy           ✅ 1.26.4
+2025-08-03 21:57:43,085 | INFO     | __main__             | check_comprehensive_requirements:302 |    matplotlib      ✅ 3.10.3
+2025-08-03 21:57:43,144 | INFO     | __main__             | check_comprehensive_requirements:302 |    seaborn         ✅ 0.13.2
+2025-08-03 21:57:43,179 | INFO     | __main__             | check_comprehensive_requirements:302 |    MetaTrader5     ✅
+2025-08-03 21:57:43,181 | INFO     | __main__             | check_comprehensive_requirements:302 |    yfinance        ✅
+2025-08-03 21:57:43,183 | INFO     | __main__             | check_comprehensive_requirements:302 |    optuna          ✅
+2025-08-03 21:57:43,185 | INFO     | __main__             | check_comprehensive_requirements:302 |    xgboost         ⚠️ Optional
+2025-08-03 21:57:43,189 | INFO     | __main__             | check_comprehensive_requirements:302 |    lightgbm        ⚠️ Optional
+2025-08-03 21:57:43,191 | INFO     | __main__             | check_comprehensive_requirements:302 |    networkx        ✅
+2025-08-03 21:57:43,192 | INFO     | __main__             | check_comprehensive_requirements:302 |    scipy           ✅
+2025-08-03 21:57:43,194 | INFO     | __main__             | check_comprehensive_requirements:302 |    statsmodels     ⚠️ Optional
+2025-08-03 21:57:43,196 | INFO     | __main__             | check_comprehensive_requirements:309 | ✅ All critical requirements satisfied
+2025-08-03 21:57:43,197 | INFO     | __main__             | load_user_config_advanced:113 | ✅ Found config file at: configs/config.py
+2025-08-03 21:57:43,208 | INFO     | __main__             | load_user_config_advanced:129 | ✅ Config loaded using importlib.util
+2025-08-03 21:57:43,209 | INFO     | __main__             | _validate_and_enhance_config:202 | 📋 ENHANCED CONFIG LOADED:
+2025-08-03 21:57:43,210 | INFO     | __main__             | _validate_and_enhance_config:203 |    MT5 Login: 5038274604
+2025-08-03 21:57:43,211 | INFO     | __main__             | _validate_and_enhance_config:204 |    MT5 Server: MetaQuotes-Demo
+2025-08-03 21:57:43,211 | INFO     | __main__             | _validate_and_enhance_config:205 |    Symbols: ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD', 'USDCHF', 'XAUUSD', 'XAGUSD']
+2025-08-03 21:57:43,212 | INFO     | __main__             | _validate_and_enhance_config:206 |    Primary Timeframe: H1
+2025-08-03 21:57:43,212 | INFO     | __main__             | _validate_and_enhance_config:207 |    Risk %: 0.02
+2025-08-03 21:57:43,216 | WARNING  | __main__             | check_and_import_advanced_libraries:41  | ⚠️ Advanced ML libraries not available (optuna, xgboost, lightgbm, networkx)
+2025-08-03 21:57:43,216 | INFO     | __main__             | create_comprehensive_modules:362 | 🏗️ Creating comprehensive modules with advanced features...
+2025-08-03 21:57:43,216 | INFO     | __main__             | create_comprehensive_modules:1260 | ✅ Created advanced DataHandler
+2025-08-03 21:57:43,217 | ERROR    | __main__             | create_comprehensive_modules:1266 | Error creating comprehensive modules: name 'self' is not defined
+2025-08-03 22:10:24,118 | INFO     | __main__             | main           :1366 | 🚀 Starting Complete Enterprise RL Training System
+2025-08-03 22:10:42,647 | INFO     | __main__             | check_comprehensive_requirements:281 | 📦 PACKAGE AVAILABILITY CHECK:
+2025-08-03 22:10:42,647 | INFO     | __main__             | check_comprehensive_requirements:283 |    stable_baselines3 ✅
+2025-08-03 22:10:42,648 | INFO     | __main__             | check_comprehensive_requirements:283 |    torch           ✅ 2.7.1+cpu
+2025-08-03 22:10:42,648 | INFO     | __main__             | check_comprehensive_requirements:283 |    sklearn         ✅ 1.3.0
+2025-08-03 22:10:42,649 | INFO     | __main__             | check_comprehensive_requirements:283 |    pandas          ✅ 2.0.3
+2025-08-03 22:10:42,649 | INFO     | __main__             | check_comprehensive_requirements:283 |    numpy           ✅ 1.26.4
+2025-08-03 22:10:42,650 | INFO     | __main__             | check_comprehensive_requirements:283 |    matplotlib      ✅ 3.10.3
+2025-08-03 22:10:42,650 | INFO     | __main__             | check_comprehensive_requirements:283 |    seaborn         ✅ 0.13.2
+2025-08-03 22:10:42,651 | INFO     | __main__             | check_comprehensive_requirements:283 |    MetaTrader5     ✅
+2025-08-03 22:10:42,651 | INFO     | __main__             | check_comprehensive_requirements:283 |    yfinance        ✅
+2025-08-03 22:10:42,652 | INFO     | __main__             | check_comprehensive_requirements:283 |    optuna          ✅
+2025-08-03 22:10:42,652 | INFO     | __main__             | check_comprehensive_requirements:283 |    xgboost         ⚠️ Optional
+2025-08-03 22:10:42,652 | INFO     | __main__             | check_comprehensive_requirements:283 |    lightgbm        ⚠️ Optional
+2025-08-03 22:10:42,653 | INFO     | __main__             | check_comprehensive_requirements:283 |    networkx        ✅
+2025-08-03 22:10:42,653 | INFO     | __main__             | check_comprehensive_requirements:283 |    scipy           ✅
+2025-08-03 22:10:42,654 | INFO     | __main__             | check_comprehensive_requirements:283 |    statsmodels     ⚠️ Optional
+2025-08-03 22:10:42,654 | INFO     | __main__             | check_comprehensive_requirements:290 | ✅ All critical requirements satisfied
+2025-08-03 22:10:42,654 | INFO     | __main__             | load_user_config_advanced:92  | ✅ Found config file at: configs/config.py
+2025-08-03 22:10:42,658 | INFO     | __main__             | load_user_config_advanced:108 | ✅ Config loaded using importlib.util
+2025-08-03 22:10:42,659 | INFO     | __main__             | validate_and_enhance_config:183 | 📋 ENHANCED CONFIG LOADED:
+2025-08-03 22:10:42,659 | INFO     | __main__             | validate_and_enhance_config:184 |    MT5 Login: 5038274604
+2025-08-03 22:10:42,660 | INFO     | __main__             | validate_and_enhance_config:185 |    MT5 Server: MetaQuotes-Demo
+2025-08-03 22:10:42,660 | INFO     | __main__             | validate_and_enhance_config:186 |    Symbols: ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD', 'USDCHF', 'XAUUSD', 'XAGUSD']
+2025-08-03 22:10:42,661 | INFO     | __main__             | validate_and_enhance_config:187 |    Primary Timeframe: H1
+2025-08-03 22:10:42,661 | INFO     | __main__             | validate_and_enhance_config:188 |    Risk %: 0.02
+2025-08-03 22:10:42,662 | WARNING  | __main__             | check_and_import_advanced_libraries:304 | ⚠️ Advanced ML libraries not available (optuna, xgboost, lightgbm, networkx)
+2025-08-03 22:10:42,662 | INFO     | __main__             | create_comprehensive_modules:312 | 🏗️ Creating comprehensive modules with advanced features...
+2025-08-03 22:10:42,664 | INFO     | __main__             | create_comprehensive_modules:1015 | ✅ Created enhanced_datahandler.py
+2025-08-03 22:10:42,666 | INFO     | __main__             | create_comprehensive_modules:1015 | ✅ Created enhanced_marketintelligence.py
+2025-08-03 22:10:42,671 | INFO     | __main__             | create_comprehensive_modules:1015 | ✅ Created enhanced_tradingenvironment.py
+2025-08-03 22:10:42,673 | INFO     | __main__             | create_comprehensive_modules:1017 | 🎯 All enhanced modules created successfully!
+2025-08-03 22:10:42,692 | INFO     | __main__             | __init__       :1043 | ✅ Enhanced Training System initialized
+2025-08-03 22:10:42,693 | INFO     | __main__             | __init__       :1044 |    Symbols: ['EURUSD', 'GBPUSD', 'XAUUSD']
+2025-08-03 22:10:42,694 | INFO     | __main__             | __init__       :1045 |    Models: ['SAC', 'PPO']
+2025-08-03 22:10:42,694 | INFO     | __main__             | run_complete_training:1337 | 🚀 Starting Enhanced Training Pipeline...
+2025-08-03 22:10:42,695 | INFO     | __main__             | initialize_components:1080 | 🔧 Initializing enhanced components...
+2025-08-03 22:10:42,841 | INFO     | enhanced_datahandler | __init__       :71  | Enhanced DataHandler initialized
+2025-08-03 22:10:42,842 | INFO     | enhanced_datahandler | __init__       :72  |    Available sources: MT5, YFINANCE
+2025-08-03 22:10:59,297 | ERROR    | enhanced_datahandler | connect        :83  | MT5 initialization failed: (-6, 'Terminal: Authorization failed')
+2025-08-03 22:10:59,298 | ERROR    | __main__             | initialize_components:1088 | ❌ Failed to connect data handler
+2025-08-03 22:16:00,549 | INFO     | __main__             | main           :1366 | 🚀 Starting Complete Enterprise RL Training System
+2025-08-03 22:16:04,857 | INFO     | __main__             | check_comprehensive_requirements:281 | 📦 PACKAGE AVAILABILITY CHECK:
+2025-08-03 22:16:04,857 | INFO     | __main__             | check_comprehensive_requirements:283 |    stable_baselines3 ✅
+2025-08-03 22:16:04,858 | INFO     | __main__             | check_comprehensive_requirements:283 |    torch           ✅ 2.7.1+cpu
+2025-08-03 22:16:04,858 | INFO     | __main__             | check_comprehensive_requirements:283 |    sklearn         ✅ 1.3.0
+2025-08-03 22:16:04,859 | INFO     | __main__             | check_comprehensive_requirements:283 |    pandas          ✅ 2.0.3
+2025-08-03 22:16:04,859 | INFO     | __main__             | check_comprehensive_requirements:283 |    numpy           ✅ 1.26.4
+2025-08-03 22:16:04,860 | INFO     | __main__             | check_comprehensive_requirements:283 |    matplotlib      ✅ 3.10.3
+2025-08-03 22:16:04,860 | INFO     | __main__             | check_comprehensive_requirements:283 |    seaborn         ✅ 0.13.2
+2025-08-03 22:16:04,860 | INFO     | __main__             | check_comprehensive_requirements:283 |    MetaTrader5     ✅
+2025-08-03 22:16:04,861 | INFO     | __main__             | check_comprehensive_requirements:283 |    yfinance        ✅
+2025-08-03 22:16:04,861 | INFO     | __main__             | check_comprehensive_requirements:283 |    optuna          ✅
+2025-08-03 22:16:04,862 | INFO     | __main__             | check_comprehensive_requirements:283 |    xgboost         ⚠️ Optional
+2025-08-03 22:16:04,862 | INFO     | __main__             | check_comprehensive_requirements:283 |    lightgbm        ⚠️ Optional
+2025-08-03 22:16:04,862 | INFO     | __main__             | check_comprehensive_requirements:283 |    networkx        ✅
+2025-08-03 22:16:04,863 | INFO     | __main__             | check_comprehensive_requirements:283 |    scipy           ✅
+2025-08-03 22:16:04,863 | INFO     | __main__             | check_comprehensive_requirements:283 |    statsmodels     ⚠️ Optional
+2025-08-03 22:16:04,864 | INFO     | __main__             | check_comprehensive_requirements:290 | ✅ All critical requirements satisfied
+2025-08-03 22:16:04,865 | INFO     | __main__             | load_user_config_advanced:92  | ✅ Found config file at: configs/config.py
+2025-08-03 22:16:04,918 | INFO     | __main__             | load_user_config_advanced:108 | ✅ Config loaded using importlib.util
+2025-08-03 22:16:04,919 | INFO     | __main__             | validate_and_enhance_config:183 | 📋 ENHANCED CONFIG LOADED:
+2025-08-03 22:16:04,919 | INFO     | __main__             | validate_and_enhance_config:184 |    MT5 Login: 5038800515
+2025-08-03 22:16:04,920 | INFO     | __main__             | validate_and_enhance_config:185 |    MT5 Server: MetaQuotes-Demo
+2025-08-03 22:16:04,920 | INFO     | __main__             | validate_and_enhance_config:186 |    Symbols: ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD', 'USDCHF', 'XAUUSD', 'XAGUSD']
+2025-08-03 22:16:04,924 | INFO     | __main__             | validate_and_enhance_config:187 |    Primary Timeframe: H1
+2025-08-03 22:16:04,925 | INFO     | __main__             | validate_and_enhance_config:188 |    Risk %: 0.02
+2025-08-03 22:16:04,927 | WARNING  | __main__             | check_and_import_advanced_libraries:304 | ⚠️ Advanced ML libraries not available (optuna, xgboost, lightgbm, networkx)
+2025-08-03 22:16:04,928 | INFO     | __main__             | create_comprehensive_modules:312 | 🏗️ Creating comprehensive modules with advanced features...
+2025-08-03 22:16:04,929 | INFO     | __main__             | create_comprehensive_modules:1015 | ✅ Created enhanced_datahandler.py
+2025-08-03 22:16:04,930 | INFO     | __main__             | create_comprehensive_modules:1015 | ✅ Created enhanced_marketintelligence.py
+2025-08-03 22:16:04,933 | INFO     | __main__             | create_comprehensive_modules:1015 | ✅ Created enhanced_tradingenvironment.py
+2025-08-03 22:16:04,934 | INFO     | __main__             | create_comprehensive_modules:1017 | 🎯 All enhanced modules created successfully!
+2025-08-03 22:16:04,939 | INFO     | __main__             | __init__       :1043 | ✅ Enhanced Training System initialized
+2025-08-03 22:16:04,939 | INFO     | __main__             | __init__       :1044 |    Symbols: ['EURUSD', 'GBPUSD', 'XAUUSD']
+2025-08-03 22:16:04,941 | INFO     | __main__             | __init__       :1045 |    Models: ['SAC', 'PPO']
+2025-08-03 22:16:04,942 | INFO     | __main__             | run_complete_training:1337 | 🚀 Starting Enhanced Training Pipeline...
+2025-08-03 22:16:04,943 | INFO     | __main__             | initialize_components:1080 | 🔧 Initializing enhanced components...
+2025-08-03 22:16:04,965 | INFO     | enhanced_datahandler | __init__       :71  | Enhanced DataHandler initialized
+2025-08-03 22:16:04,966 | INFO     | enhanced_datahandler | __init__       :72  |    Available sources: MT5, YFINANCE
+2025-08-03 22:16:04,970 | ERROR    | enhanced_datahandler | connect        :83  | MT5 initialization failed: (-6, 'Terminal: Authorization failed')
+2025-08-03 22:16:04,974 | ERROR    | __main__             | initialize_components:1088 | ❌ Failed to connect data handler
+2025-08-03 22:16:28,258 | INFO     | __main__             | main           :1366 | 🚀 Starting Complete Enterprise RL Training System
+2025-08-03 22:16:44,801 | INFO     | __main__             | check_comprehensive_requirements:281 | 📦 PACKAGE AVAILABILITY CHECK:
+2025-08-03 22:16:44,801 | INFO     | __main__             | check_comprehensive_requirements:283 |    stable_baselines3 ✅
+2025-08-03 22:16:44,803 | INFO     | __main__             | check_comprehensive_requirements:283 |    torch           ✅ 2.7.1+cpu
+2025-08-03 22:16:44,803 | INFO     | __main__             | check_comprehensive_requirements:283 |    sklearn         ✅ 1.3.0
+2025-08-03 22:16:44,804 | INFO     | __main__             | check_comprehensive_requirements:283 |    pandas          ✅ 2.0.3
+2025-08-03 22:16:44,804 | INFO     | __main__             | check_comprehensive_requirements:283 |    numpy           ✅ 1.26.4
+2025-08-03 22:16:44,804 | INFO     | __main__             | check_comprehensive_requirements:283 |    matplotlib      ✅ 3.10.3
+2025-08-03 22:16:44,805 | INFO     | __main__             | check_comprehensive_requirements:283 |    seaborn         ✅ 0.13.2
+2025-08-03 22:16:44,805 | INFO     | __main__             | check_comprehensive_requirements:283 |    MetaTrader5     ✅
+2025-08-03 22:16:44,805 | INFO     | __main__             | check_comprehensive_requirements:283 |    yfinance        ✅
+2025-08-03 22:16:44,806 | INFO     | __main__             | check_comprehensive_requirements:283 |    optuna          ✅
+2025-08-03 22:16:44,806 | INFO     | __main__             | check_comprehensive_requirements:283 |    xgboost         ⚠️ Optional
+2025-08-03 22:16:44,806 | INFO     | __main__             | check_comprehensive_requirements:283 |    lightgbm        ⚠️ Optional
+2025-08-03 22:16:44,806 | INFO     | __main__             | check_comprehensive_requirements:283 |    networkx        ✅
+2025-08-03 22:16:44,806 | INFO     | __main__             | check_comprehensive_requirements:283 |    scipy           ✅
+2025-08-03 22:16:44,807 | INFO     | __main__             | check_comprehensive_requirements:283 |    statsmodels     ⚠️ Optional
+2025-08-03 22:16:44,807 | INFO     | __main__             | check_comprehensive_requirements:290 | ✅ All critical requirements satisfied
+2025-08-03 22:16:44,808 | INFO     | __main__             | load_user_config_advanced:92  | ✅ Found config file at: configs/config.py
+2025-08-03 22:16:44,813 | INFO     | __main__             | load_user_config_advanced:108 | ✅ Config loaded using importlib.util
+2025-08-03 22:16:44,814 | INFO     | __main__             | validate_and_enhance_config:183 | 📋 ENHANCED CONFIG LOADED:
+2025-08-03 22:16:44,814 | INFO     | __main__             | validate_and_enhance_config:184 |    MT5 Login: 5038800515
+2025-08-03 22:16:44,814 | INFO     | __main__             | validate_and_enhance_config:185 |    MT5 Server: MetaQuotes-Demo
+2025-08-03 22:16:44,815 | INFO     | __main__             | validate_and_enhance_config:186 |    Symbols: ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD', 'USDCHF', 'XAUUSD', 'XAGUSD']
+2025-08-03 22:16:44,815 | INFO     | __main__             | validate_and_enhance_config:187 |    Primary Timeframe: H1
+2025-08-03 22:16:44,816 | INFO     | __main__             | validate_and_enhance_config:188 |    Risk %: 0.02
+2025-08-03 22:16:44,818 | WARNING  | __main__             | check_and_import_advanced_libraries:304 | ⚠️ Advanced ML libraries not available (optuna, xgboost, lightgbm, networkx)
+2025-08-03 22:16:44,818 | INFO     | __main__             | create_comprehensive_modules:312 | 🏗️ Creating comprehensive modules with advanced features...
+2025-08-03 22:16:44,819 | INFO     | __main__             | create_comprehensive_modules:1015 | ✅ Created enhanced_datahandler.py
+2025-08-03 22:16:44,821 | INFO     | __main__             | create_comprehensive_modules:1015 | ✅ Created enhanced_marketintelligence.py
+2025-08-03 22:16:44,823 | INFO     | __main__             | create_comprehensive_modules:1015 | ✅ Created enhanced_tradingenvironment.py
+2025-08-03 22:16:44,824 | INFO     | __main__             | create_comprehensive_modules:1017 | 🎯 All enhanced modules created successfully!
+2025-08-03 22:16:44,868 | INFO     | __main__             | __init__       :1043 | ✅ Enhanced Training System initialized
+2025-08-03 22:16:44,869 | INFO     | __main__             | __init__       :1044 |    Symbols: ['EURUSD', 'GBPUSD', 'XAUUSD']
+2025-08-03 22:16:44,870 | INFO     | __main__             | __init__       :1045 |    Models: ['SAC', 'PPO']
+2025-08-03 22:16:44,870 | INFO     | __main__             | run_complete_training:1337 | 🚀 Starting Enhanced Training Pipeline...
+2025-08-03 22:16:44,871 | INFO     | __main__             | initialize_components:1080 | 🔧 Initializing enhanced components...
+2025-08-03 22:16:44,891 | INFO     | enhanced_datahandler | __init__       :71  | Enhanced DataHandler initialized
+2025-08-03 22:16:44,891 | INFO     | enhanced_datahandler | __init__       :72  |    Available sources: MT5, YFINANCE
+2025-08-03 22:16:44,895 | INFO     | enhanced_datahandler | connect        :94  | ✅ Connected to MT5 - Account: 5038800515
+2025-08-03 22:16:44,896 | INFO     | __main__             | initialize_components:1090 | ✅ Enhanced DataHandler connected
+2025-08-03 22:16:44,896 | INFO     | enhanced_marketintelligence | __init__       :17  | Enhanced Market Intelligence initialized
+2025-08-03 22:16:44,897 | INFO     | __main__             | initialize_components:1094 | ✅ Enhanced Market Intelligence initialized
+2025-08-03 22:16:44,897 | INFO     | __main__             | prepare_data   :1105 | 📊 Preparing enhanced training data...
+2025-08-03 22:16:44,897 | INFO     | __main__             | prepare_data   :1108 | 🔄 Processing EURUSD...
+2025-08-03 22:16:45,346 | INFO     | enhanced_datahandler | get_historical_data:131 | ✅ Retrieved 18667 bars for EURUSD
+2025-08-03 22:16:45,549 | INFO     | enhanced_marketintelligence | analyze_comprehensive:42  | ✅ Analysis complete: 7 -> 51 features (+44)
+2025-08-03 22:16:45,552 | INFO     | __main__             | prepare_data   :1133 | ✅ EURUSD: Train=14933, Val=3734
+2025-08-03 22:16:45,553 | INFO     | __main__             | prepare_data   :1108 | 🔄 Processing GBPUSD...
+2025-08-03 22:16:45,646 | INFO     | enhanced_datahandler | get_historical_data:131 | ✅ Retrieved 18668 bars for GBPUSD
+2025-08-03 22:16:45,751 | INFO     | enhanced_marketintelligence | analyze_comprehensive:42  | ✅ Analysis complete: 7 -> 51 features (+44)
+2025-08-03 22:16:45,755 | INFO     | __main__             | prepare_data   :1133 | ✅ GBPUSD: Train=14934, Val=3734
+2025-08-03 22:16:45,755 | INFO     | __main__             | prepare_data   :1108 | 🔄 Processing XAUUSD...
+2025-08-03 22:16:45,852 | INFO     | enhanced_datahandler | get_historical_data:131 | ✅ Retrieved 17711 bars for XAUUSD
+2025-08-03 22:16:45,947 | INFO     | enhanced_marketintelligence | analyze_comprehensive:42  | ✅ Analysis complete: 7 -> 51 features (+44)
+2025-08-03 22:16:45,954 | INFO     | __main__             | prepare_data   :1133 | ✅ XAUUSD: Train=14168, Val=3543
+2025-08-03 22:16:45,954 | INFO     | __main__             | prepare_data   :1139 | 🎯 Data preparation complete for 3 symbols
+2025-08-03 22:16:46,101 | INFO     | __main__             | train_models   :1155 | 🤖 Starting enhanced model training...
+2025-08-03 22:16:46,102 | INFO     | __main__             | train_models   :1162 | 🎯 Training SAC_EURUSD...
+2025-08-03 22:16:46,129 | INFO     | enhanced_tradingenvironment | __init__       :54  | Enhanced Trading Environment initialized - 14933 data points
+2025-08-03 22:16:46,140 | INFO     | enhanced_tradingenvironment | __init__       :54  | Enhanced Trading Environment initialized - 3734 data points
+2025-08-03 22:17:06,027 | INFO     | __main__             | train_models   :1180 | 🚀 Training SAC_EURUSD for 50,000 steps...
+2025-08-04 15:57:35,468 | INFO     | __main__             | main           :1366 | 🚀 Starting Complete Enterprise RL Training System
+2025-08-04 15:59:02,653 | INFO     | __main__             | check_comprehensive_requirements:281 | 📦 PACKAGE AVAILABILITY CHECK:
+2025-08-04 15:59:02,653 | INFO     | __main__             | check_comprehensive_requirements:283 |    stable_baselines3 ✅
+2025-08-04 15:59:02,657 | INFO     | __main__             | check_comprehensive_requirements:283 |    torch           ✅ 2.7.1+cpu
+2025-08-04 15:59:02,657 | INFO     | __main__             | check_comprehensive_requirements:283 |    sklearn         ✅ 1.3.0
+2025-08-04 15:59:02,657 | INFO     | __main__             | check_comprehensive_requirements:283 |    pandas          ✅ 2.0.3
+2025-08-04 15:59:02,657 | INFO     | __main__             | check_comprehensive_requirements:283 |    numpy           ✅ 1.26.4
+2025-08-04 15:59:02,657 | INFO     | __main__             | check_comprehensive_requirements:283 |    matplotlib      ✅ 3.10.3
+2025-08-04 15:59:02,657 | INFO     | __main__             | check_comprehensive_requirements:283 |    seaborn         ✅ 0.13.2
+2025-08-04 15:59:02,659 | INFO     | __main__             | check_comprehensive_requirements:283 |    MetaTrader5     ✅
+2025-08-04 15:59:02,659 | INFO     | __main__             | check_comprehensive_requirements:283 |    yfinance        ✅
+2025-08-04 15:59:02,660 | INFO     | __main__             | check_comprehensive_requirements:283 |    optuna          ✅
+2025-08-04 15:59:02,660 | INFO     | __main__             | check_comprehensive_requirements:283 |    xgboost         ⚠️ Optional
+2025-08-04 15:59:02,660 | INFO     | __main__             | check_comprehensive_requirements:283 |    lightgbm        ⚠️ Optional
+2025-08-04 15:59:02,661 | INFO     | __main__             | check_comprehensive_requirements:283 |    networkx        ✅
+2025-08-04 15:59:02,661 | INFO     | __main__             | check_comprehensive_requirements:283 |    scipy           ✅
+2025-08-04 15:59:02,662 | INFO     | __main__             | check_comprehensive_requirements:283 |    statsmodels     ⚠️ Optional
+2025-08-04 15:59:02,662 | INFO     | __main__             | check_comprehensive_requirements:290 | ✅ All critical requirements satisfied
+2025-08-04 15:59:02,663 | INFO     | __main__             | load_user_config_advanced:92  | ✅ Found config file at: configs/config.py
+2025-08-04 15:59:02,817 | INFO     | __main__             | load_user_config_advanced:108 | ✅ Config loaded using importlib.util
+2025-08-04 15:59:02,817 | INFO     | __main__             | validate_and_enhance_config:183 | 📋 ENHANCED CONFIG LOADED:
+2025-08-04 15:59:02,818 | INFO     | __main__             | validate_and_enhance_config:184 |    MT5 Login: 5038800515
+2025-08-04 15:59:02,819 | INFO     | __main__             | validate_and_enhance_config:185 |    MT5 Server: MetaQuotes-Demo
+2025-08-04 15:59:02,819 | INFO     | __main__             | validate_and_enhance_config:186 |    Symbols: ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD', 'USDCHF', 'XAUUSD', 'XAGUSD']
+2025-08-04 15:59:02,820 | INFO     | __main__             | validate_and_enhance_config:187 |    Primary Timeframe: H1
+2025-08-04 15:59:02,823 | INFO     | __main__             | validate_and_enhance_config:188 |    Risk %: 0.02
+2025-08-04 15:59:02,825 | WARNING  | __main__             | check_and_import_advanced_libraries:304 | ⚠️ Advanced ML libraries not available (optuna, xgboost, lightgbm, networkx)
+2025-08-04 15:59:02,827 | INFO     | __main__             | create_comprehensive_modules:312 | 🏗️ Creating comprehensive modules with advanced features...
+2025-08-04 15:59:02,832 | INFO     | __main__             | create_comprehensive_modules:1015 | ✅ Created enhanced_datahandler.py
+2025-08-04 15:59:02,835 | INFO     | __main__             | create_comprehensive_modules:1015 | ✅ Created enhanced_marketintelligence.py
+2025-08-04 15:59:02,843 | INFO     | __main__             | create_comprehensive_modules:1015 | ✅ Created enhanced_tradingenvironment.py
+2025-08-04 15:59:02,847 | INFO     | __main__             | create_comprehensive_modules:1017 | 🎯 All enhanced modules created successfully!
+2025-08-04 15:59:02,875 | INFO     | __main__             | __init__       :1043 | ✅ Enhanced Training System initialized
+2025-08-04 15:59:02,883 | INFO     | __main__             | __init__       :1044 |    Symbols: ['EURUSD', 'GBPUSD', 'XAUUSD']
+2025-08-04 15:59:02,884 | INFO     | __main__             | __init__       :1045 |    Models: ['SAC', 'PPO']
+2025-08-04 15:59:02,886 | INFO     | __main__             | run_complete_training:1337 | 🚀 Starting Enhanced Training Pipeline...
+2025-08-04 15:59:02,887 | INFO     | __main__             | initialize_components:1080 | 🔧 Initializing enhanced components...
+2025-08-04 15:59:03,048 | INFO     | enhanced_datahandler | __init__       :71  | Enhanced DataHandler initialized
+2025-08-04 15:59:03,049 | INFO     | enhanced_datahandler | __init__       :72  |    Available sources: MT5, YFINANCE
+2025-08-04 15:59:56,046 | INFO     | enhanced_datahandler | connect        :94  | ✅ Connected to MT5 - Account: 5038800515
+2025-08-04 15:59:56,046 | INFO     | __main__             | initialize_components:1090 | ✅ Enhanced DataHandler connected
+2025-08-04 15:59:56,047 | INFO     | enhanced_marketintelligence | __init__       :17  | Enhanced Market Intelligence initialized
+2025-08-04 15:59:56,047 | INFO     | __main__             | initialize_components:1094 | ✅ Enhanced Market Intelligence initialized
+2025-08-04 15:59:56,047 | INFO     | __main__             | prepare_data   :1105 | 📊 Preparing enhanced training data...
+2025-08-04 15:59:56,048 | INFO     | __main__             | prepare_data   :1108 | 🔄 Processing EURUSD...
+2025-08-04 15:59:56,343 | INFO     | enhanced_datahandler | get_historical_data:131 | ✅ Retrieved 18667 bars for EURUSD
+2025-08-04 15:59:56,524 | INFO     | enhanced_marketintelligence | analyze_comprehensive:42  | ✅ Analysis complete: 7 -> 51 features (+44)
+2025-08-04 15:59:56,528 | INFO     | __main__             | prepare_data   :1133 | ✅ EURUSD: Train=14933, Val=3734
+2025-08-04 15:59:56,529 | INFO     | __main__             | prepare_data   :1108 | 🔄 Processing GBPUSD...
+2025-08-04 15:59:56,618 | INFO     | enhanced_datahandler | get_historical_data:131 | ✅ Retrieved 18668 bars for GBPUSD
+2025-08-04 15:59:56,749 | INFO     | enhanced_marketintelligence | analyze_comprehensive:42  | ✅ Analysis complete: 7 -> 51 features (+44)
+2025-08-04 15:59:56,755 | INFO     | __main__             | prepare_data   :1133 | ✅ GBPUSD: Train=14934, Val=3734
+2025-08-04 15:59:56,756 | INFO     | __main__             | prepare_data   :1108 | 🔄 Processing XAUUSD...
+2025-08-04 15:59:56,868 | INFO     | enhanced_datahandler | get_historical_data:131 | ✅ Retrieved 17711 bars for XAUUSD
+2025-08-04 15:59:56,990 | INFO     | enhanced_marketintelligence | analyze_comprehensive:42  | ✅ Analysis complete: 7 -> 51 features (+44)
+2025-08-04 15:59:56,994 | INFO     | __main__             | prepare_data   :1133 | ✅ XAUUSD: Train=14168, Val=3543
+2025-08-04 15:59:56,994 | INFO     | __main__             | prepare_data   :1139 | 🎯 Data preparation complete for 3 symbols
+2025-08-04 15:59:57,120 | INFO     | __main__             | train_models   :1155 | 🤖 Starting enhanced model training...
+2025-08-04 15:59:57,121 | INFO     | __main__             | train_models   :1162 | 🎯 Training SAC_EURUSD...
+2025-08-04 15:59:57,167 | INFO     | enhanced_tradingenvironment | __init__       :54  | Enhanced Trading Environment initialized - 14933 data points
+2025-08-04 15:59:57,175 | INFO     | enhanced_tradingenvironment | __init__       :54  | Enhanced Trading Environment initialized - 3734 data points
+2025-08-04 16:00:43,464 | INFO     | __main__             | train_models   :1180 | 🚀 Training SAC_EURUSD for 50,000 steps...
+2025-08-04 17:11:17,442 | INFO     | __main__             | train_models   :1213 | ✅ SAC_EURUSD completed!
+2025-08-04 17:11:17,442 | INFO     | __main__             | train_models   :1214 |    Reward: -558.91 ± 0.00
+2025-08-04 17:11:17,446 | INFO     | __main__             | train_models   :1162 | 🎯 Training PPO_EURUSD...
+2025-08-04 17:11:18,100 | INFO     | enhanced_tradingenvironment | __init__       :54  | Enhanced Trading Environment initialized - 14933 data points
+2025-08-04 17:11:18,119 | INFO     | enhanced_tradingenvironment | __init__       :54  | Enhanced Trading Environment initialized - 3734 data points
+2025-08-04 17:11:18,816 | INFO     | __main__             | train_models   :1180 | 🚀 Training PPO_EURUSD for 40,000 steps...
+2025-08-04 17:15:56,338 | INFO     | __main__             | train_models   :1213 | ✅ PPO_EURUSD completed!
+2025-08-04 17:15:56,341 | INFO     | __main__             | train_models   :1214 |    Reward: 3.62 ± 0.00
+2025-08-04 17:15:56,341 | INFO     | __main__             | train_models   :1162 | 🎯 Training SAC_GBPUSD...
+2025-08-04 17:15:56,480 | INFO     | enhanced_tradingenvironment | __init__       :54  | Enhanced Trading Environment initialized - 14934 data points
+2025-08-04 17:15:56,550 | INFO     | enhanced_tradingenvironment | __init__       :54  | Enhanced Trading Environment initialized - 3734 data points
+2025-08-04 17:15:56,595 | INFO     | __main__             | train_models   :1180 | 🚀 Training SAC_GBPUSD for 50,000 steps...
+2025-08-04 18:22:19,291 | INFO     | __main__             | train_models   :1213 | ✅ SAC_GBPUSD completed!
+2025-08-04 18:22:19,291 | INFO     | __main__             | train_models   :1214 |    Reward: -433.53 ± 0.00
+2025-08-04 18:22:19,291 | INFO     | __main__             | train_models   :1162 | 🎯 Training PPO_GBPUSD...
+2025-08-04 18:22:19,318 | INFO     | enhanced_tradingenvironment | __init__       :54  | Enhanced Trading Environment initialized - 14934 data points
+2025-08-04 18:22:19,322 | INFO     | enhanced_tradingenvironment | __init__       :54  | Enhanced Trading Environment initialized - 3734 data points
+2025-08-04 18:22:19,384 | INFO     | __main__             | train_models   :1180 | 🚀 Training PPO_GBPUSD for 40,000 steps...
+2025-08-04 18:26:59,918 | INFO     | __main__             | train_models   :1213 | ✅ PPO_GBPUSD completed!
+2025-08-04 18:26:59,918 | INFO     | __main__             | train_models   :1214 |    Reward: 3.60 ± 0.00
+2025-08-04 18:26:59,919 | INFO     | __main__             | train_models   :1162 | 🎯 Training SAC_XAUUSD...
+2025-08-04 18:27:00,200 | INFO     | enhanced_tradingenvironment | __init__       :54  | Enhanced Trading Environment initialized - 14168 data points
+2025-08-04 18:27:00,281 | INFO     | enhanced_tradingenvironment | __init__       :54  | Enhanced Trading Environment initialized - 3543 data points
+2025-08-04 18:27:00,318 | INFO     | __main__             | train_models   :1180 | 🚀 Training SAC_XAUUSD for 50,000 steps...
+2025-08-04 21:07:57,973 | INFO     | __main__             | train_models   :1213 | ✅ SAC_XAUUSD completed!
+2025-08-04 21:07:57,973 | INFO     | __main__             | train_models   :1214 |    Reward: -929.16 ± 0.00
+2025-08-04 21:07:57,974 | INFO     | __main__             | train_models   :1162 | 🎯 Training PPO_XAUUSD...
+2025-08-04 21:07:58,001 | INFO     | enhanced_tradingenvironment | __init__       :54  | Enhanced Trading Environment initialized - 14168 data points
+2025-08-04 21:07:58,015 | INFO     | enhanced_tradingenvironment | __init__       :54  | Enhanced Trading Environment initialized - 3543 data points
+2025-08-04 21:07:58,150 | INFO     | __main__             | train_models   :1180 | 🚀 Training PPO_XAUUSD for 40,000 steps...
+2025-08-04 21:17:15,113 | INFO     | __main__             | train_models   :1213 | ✅ PPO_XAUUSD completed!
+2025-08-04 21:17:15,113 | INFO     | __main__             | train_models   :1214 |    Reward: 3.25 ± 0.00
+2025-08-04 21:17:15,114 | INFO     | __main__             | train_models   :1220 | 🎯 Model training completed! Successful: 6
+2025-08-04 21:17:15,146 | INFO     | __main__             | generate_summary:1317 | ============================================================
+2025-08-04 21:17:15,146 | INFO     | __main__             | generate_summary:1318 | 🎯 ENHANCED TRAINING SUMMARY
+2025-08-04 21:17:15,148 | INFO     | __main__             | generate_summary:1319 | ============================================================
+2025-08-04 21:17:15,148 | INFO     | __main__             | generate_summary:1320 | 📊 Symbols: EURUSD, GBPUSD, XAUUSD
+2025-08-04 21:17:15,149 | INFO     | __main__             | generate_summary:1321 | ⏱️  Total Time: 318.2 minutes
+2025-08-04 21:17:15,149 | INFO     | __main__             | generate_summary:1322 | 🤖 Models Trained: 6
+2025-08-04 21:17:15,150 | INFO     | __main__             | generate_summary:1325 | 📈 PERFORMANCE:
+2025-08-04 21:17:15,151 | INFO     | __main__             | generate_summary:1327 |    SAC_EURUSD: -558.91 reward
+2025-08-04 21:17:15,151 | INFO     | __main__             | generate_summary:1327 |    PPO_EURUSD: 3.62 reward
+2025-08-04 21:17:15,152 | INFO     | __main__             | generate_summary:1327 |    SAC_GBPUSD: -433.53 reward
+2025-08-04 21:17:15,152 | INFO     | __main__             | generate_summary:1327 |    PPO_GBPUSD: 3.60 reward
+2025-08-04 21:17:15,153 | INFO     | __main__             | generate_summary:1327 |    SAC_XAUUSD: -929.16 reward
+2025-08-04 21:17:15,154 | INFO     | __main__             | generate_summary:1327 |    PPO_XAUUSD: 3.25 reward
+2025-08-04 21:17:15,154 | INFO     | __main__             | generate_summary:1329 | ============================================================
+2025-08-04 21:17:15,155 | INFO     | __main__             | run_complete_training:1350 | 🎉 ENHANCED TRAINING COMPLETED SUCCESSFULLY!
+2025-08-04 21:17:15,180 | INFO     | enhanced_datahandler | disconnect     :178 | Disconnected from MT5
+2025-08-04 23:46:29,563 | INFO     | __main__             | main           :1366 | 🚀 Starting Complete Enterprise RL Training System
+2025-08-04 23:46:56,376 | INFO     | __main__             | check_comprehensive_requirements:281 | 📦 PACKAGE AVAILABILITY CHECK:
+2025-08-04 23:46:56,376 | INFO     | __main__             | check_comprehensive_requirements:283 |    stable_baselines3 ✅
+2025-08-04 23:46:56,376 | INFO     | __main__             | check_comprehensive_requirements:283 |    torch           ✅ 2.7.1+cpu
+2025-08-04 23:46:56,376 | INFO     | __main__             | check_comprehensive_requirements:283 |    sklearn         ✅ 1.3.0
+2025-08-04 23:46:56,376 | INFO     | __main__             | check_comprehensive_requirements:283 |    pandas          ✅ 2.0.3
+2025-08-04 23:46:56,376 | INFO     | __main__             | check_comprehensive_requirements:283 |    numpy           ✅ 1.26.4
+2025-08-04 23:46:56,392 | INFO     | __main__             | check_comprehensive_requirements:283 |    matplotlib      ✅ 3.10.3
+2025-08-04 23:46:56,392 | INFO     | __main__             | check_comprehensive_requirements:283 |    seaborn         ✅ 0.13.2
+2025-08-04 23:46:56,392 | INFO     | __main__             | check_comprehensive_requirements:283 |    MetaTrader5     ✅
+2025-08-04 23:46:56,392 | INFO     | __main__             | check_comprehensive_requirements:283 |    yfinance        ✅
+2025-08-04 23:46:56,392 | INFO     | __main__             | check_comprehensive_requirements:283 |    optuna          ✅
+2025-08-04 23:46:56,392 | INFO     | __main__             | check_comprehensive_requirements:283 |    xgboost         ⚠️ Optional
+2025-08-04 23:46:56,397 | INFO     | __main__             | check_comprehensive_requirements:283 |    lightgbm        ⚠️ Optional
+2025-08-04 23:46:56,397 | INFO     | __main__             | check_comprehensive_requirements:283 |    networkx        ✅
+2025-08-04 23:46:56,399 | INFO     | __main__             | check_comprehensive_requirements:283 |    scipy           ✅
+2025-08-04 23:46:56,399 | INFO     | __main__             | check_comprehensive_requirements:283 |    statsmodels     ⚠️ Optional
+2025-08-04 23:46:56,399 | INFO     | __main__             | check_comprehensive_requirements:290 | ✅ All critical requirements satisfied
+2025-08-04 23:46:56,399 | INFO     | __main__             | load_user_config_advanced:92  | ✅ Found config file at: configs/config.py
+2025-08-04 23:46:56,403 | INFO     | __main__             | load_user_config_advanced:108 | ✅ Config loaded using importlib.util
+2025-08-04 23:46:56,403 | INFO     | __main__             | validate_and_enhance_config:183 | 📋 ENHANCED CONFIG LOADED:
+2025-08-04 23:46:56,403 | INFO     | __main__             | validate_and_enhance_config:184 |    MT5 Login: 5038800515
+2025-08-04 23:46:56,403 | INFO     | __main__             | validate_and_enhance_config:185 |    MT5 Server: MetaQuotes-Demo
+2025-08-04 23:46:56,403 | INFO     | __main__             | validate_and_enhance_config:186 |    Symbols: ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD', 'USDCHF', 'XAUUSD', 'XAGUSD']
+2025-08-04 23:46:56,403 | INFO     | __main__             | validate_and_enhance_config:187 |    Primary Timeframe: H1
+2025-08-04 23:46:56,403 | INFO     | __main__             | validate_and_enhance_config:188 |    Risk %: 0.02
+2025-08-04 23:46:56,414 | WARNING  | __main__             | check_and_import_advanced_libraries:304 | ⚠️ Advanced ML libraries not available (optuna, xgboost, lightgbm, networkx)
+2025-08-04 23:46:56,414 | INFO     | __main__             | create_comprehensive_modules:312 | 🏗️ Creating comprehensive modules with advanced features...
+2025-08-04 23:46:56,414 | INFO     | __main__             | create_comprehensive_modules:1015 | ✅ Created enhanced_datahandler.py
+2025-08-04 23:46:56,427 | INFO     | __main__             | create_comprehensive_modules:1015 | ✅ Created enhanced_marketintelligence.py
+2025-08-04 23:46:56,427 | INFO     | __main__             | create_comprehensive_modules:1015 | ✅ Created enhanced_tradingenvironment.py
+2025-08-04 23:46:56,427 | INFO     | __main__             | create_comprehensive_modules:1017 | 🎯 All enhanced modules created successfully!
+2025-08-04 23:46:56,560 | INFO     | __main__             | __init__       :1043 | ✅ Enhanced Training System initialized
+2025-08-04 23:46:56,560 | INFO     | __main__             | __init__       :1044 |    Symbols: ['EURUSD', 'GBPUSD', 'XAUUSD']
+2025-08-04 23:46:56,560 | INFO     | __main__             | __init__       :1045 |    Models: ['SAC', 'PPO']
+2025-08-04 23:46:56,560 | INFO     | __main__             | run_complete_training:1337 | 🚀 Starting Enhanced Training Pipeline...
+2025-08-04 23:46:56,560 | INFO     | __main__             | initialize_components:1080 | 🔧 Initializing enhanced components...
+2025-08-04 23:46:56,616 | INFO     | enhanced_datahandler | __init__       :71  | Enhanced DataHandler initialized
+2025-08-04 23:46:56,616 | INFO     | enhanced_datahandler | __init__       :72  |    Available sources: MT5, YFINANCE
+2025-08-04 23:48:08,802 | ERROR    | enhanced_datahandler | connect        :83  | MT5 initialization failed: (-10005, 'IPC timeout')
+2025-08-04 23:48:08,802 | ERROR    | __main__             | initialize_components:1088 | ❌ Failed to connect data handler
+2025-08-05 12:29:40,449 | INFO     | __main__             | main           :1366 | 🚀 Starting Complete Enterprise RL Training System
+2025-08-05 12:30:41,156 | INFO     | __main__             | check_comprehensive_requirements:281 | 📦 PACKAGE AVAILABILITY CHECK:
+2025-08-05 12:30:41,158 | INFO     | __main__             | check_comprehensive_requirements:283 |    stable_baselines3 ✅
+2025-08-05 12:30:41,159 | INFO     | __main__             | check_comprehensive_requirements:283 |    torch           ✅ 2.7.1+cpu
+2025-08-05 12:30:41,160 | INFO     | __main__             | check_comprehensive_requirements:283 |    sklearn         ✅ 1.3.0
+2025-08-05 12:30:41,160 | INFO     | __main__             | check_comprehensive_requirements:283 |    pandas          ✅ 2.0.3
+2025-08-05 12:30:41,160 | INFO     | __main__             | check_comprehensive_requirements:283 |    numpy           ✅ 1.26.4
+2025-08-05 12:30:41,160 | INFO     | __main__             | check_comprehensive_requirements:283 |    matplotlib      ✅ 3.10.3
+2025-08-05 12:30:41,166 | INFO     | __main__             | check_comprehensive_requirements:283 |    seaborn         ✅ 0.13.2
+2025-08-05 12:30:41,167 | INFO     | __main__             | check_comprehensive_requirements:283 |    MetaTrader5     ✅
+2025-08-05 12:30:41,171 | INFO     | __main__             | check_comprehensive_requirements:283 |    yfinance        ✅
+2025-08-05 12:30:41,171 | INFO     | __main__             | check_comprehensive_requirements:283 |    optuna          ✅
+2025-08-05 12:30:41,174 | INFO     | __main__             | check_comprehensive_requirements:283 |    xgboost         ⚠️ Optional
+2025-08-05 12:30:41,175 | INFO     | __main__             | check_comprehensive_requirements:283 |    lightgbm        ⚠️ Optional
+2025-08-05 12:30:41,176 | INFO     | __main__             | check_comprehensive_requirements:283 |    networkx        ✅
+2025-08-05 12:30:41,176 | INFO     | __main__             | check_comprehensive_requirements:283 |    scipy           ✅
+2025-08-05 12:30:41,177 | INFO     | __main__             | check_comprehensive_requirements:283 |    statsmodels     ⚠️ Optional
+2025-08-05 12:30:41,177 | INFO     | __main__             | check_comprehensive_requirements:290 | ✅ All critical requirements satisfied
+2025-08-05 12:30:41,177 | INFO     | __main__             | load_user_config_advanced:92  | ✅ Found config file at: configs/config.py
+2025-08-05 12:30:41,190 | INFO     | __main__             | load_user_config_advanced:108 | ✅ Config loaded using importlib.util
+2025-08-05 12:30:41,191 | INFO     | __main__             | validate_and_enhance_config:183 | 📋 ENHANCED CONFIG LOADED:
+2025-08-05 12:30:41,191 | INFO     | __main__             | validate_and_enhance_config:184 |    MT5 Login: 5038800515
+2025-08-05 12:30:41,195 | INFO     | __main__             | validate_and_enhance_config:185 |    MT5 Server: MetaQuotes-Demo
+2025-08-05 12:30:41,199 | INFO     | __main__             | validate_and_enhance_config:186 |    Symbols: ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD', 'USDCHF', 'XAUUSD', 'XAGUSD']
+2025-08-05 12:30:41,199 | INFO     | __main__             | validate_and_enhance_config:187 |    Primary Timeframe: H1
+2025-08-05 12:30:41,199 | INFO     | __main__             | validate_and_enhance_config:188 |    Risk %: 0.02
+2025-08-05 12:30:41,208 | WARNING  | __main__             | check_and_import_advanced_libraries:304 | ⚠️ Advanced ML libraries not available (optuna, xgboost, lightgbm, networkx)
+2025-08-05 12:30:41,208 | INFO     | __main__             | create_comprehensive_modules:312 | 🏗️ Creating comprehensive modules with advanced features...
+2025-08-05 12:30:41,214 | INFO     | __main__             | create_comprehensive_modules:1015 | ✅ Created enhanced_datahandler.py
+2025-08-05 12:30:41,242 | INFO     | __main__             | create_comprehensive_modules:1015 | ✅ Created enhanced_marketintelligence.py
+2025-08-05 12:30:41,266 | INFO     | __main__             | create_comprehensive_modules:1015 | ✅ Created enhanced_tradingenvironment.py
+2025-08-05 12:30:41,274 | INFO     | __main__             | create_comprehensive_modules:1017 | 🎯 All enhanced modules created successfully!
+2025-08-05 12:30:41,754 | INFO     | __main__             | __init__       :1043 | ✅ Enhanced Training System initialized
+2025-08-05 12:30:41,755 | INFO     | __main__             | __init__       :1044 |    Symbols: ['EURUSD', 'GBPUSD', 'XAUUSD']
+2025-08-05 12:30:41,757 | INFO     | __main__             | __init__       :1045 |    Models: ['SAC', 'PPO']
+2025-08-05 12:30:41,759 | INFO     | __main__             | run_complete_training:1337 | 🚀 Starting Enhanced Training Pipeline...
+2025-08-05 12:30:41,759 | INFO     | __main__             | initialize_components:1080 | 🔧 Initializing enhanced components...
+2025-08-05 12:30:41,904 | INFO     | enhanced_datahandler | __init__       :71  | Enhanced DataHandler initialized
+2025-08-05 12:30:41,912 | INFO     | enhanced_datahandler | __init__       :72  |    Available sources: MT5, YFINANCE
+2025-08-05 12:31:27,528 | INFO     | enhanced_datahandler | connect        :94  | ✅ Connected to MT5 - Account: 5038800515
+2025-08-05 12:31:27,550 | INFO     | __main__             | initialize_components:1090 | ✅ Enhanced DataHandler connected
+2025-08-05 12:31:27,556 | INFO     | enhanced_marketintelligence | __init__       :17  | Enhanced Market Intelligence initialized
+2025-08-05 12:31:27,619 | INFO     | __main__             | initialize_components:1094 | ✅ Enhanced Market Intelligence initialized
+2025-08-05 12:31:27,622 | INFO     | __main__             | prepare_data   :1105 | 📊 Preparing enhanced training data...
+2025-08-05 12:31:27,639 | INFO     | __main__             | prepare_data   :1108 | 🔄 Processing EURUSD...
+2025-08-05 12:31:28,102 | INFO     | enhanced_datahandler | get_historical_data:131 | ✅ Retrieved 18667 bars for EURUSD
+2025-08-05 12:31:28,751 | INFO     | enhanced_marketintelligence | analyze_comprehensive:42  | ✅ Analysis complete: 7 -> 51 features (+44)
+2025-08-05 12:31:28,763 | INFO     | __main__             | prepare_data   :1133 | ✅ EURUSD: Train=14933, Val=3734
+2025-08-05 12:31:28,765 | INFO     | __main__             | prepare_data   :1108 | 🔄 Processing GBPUSD...
+2025-08-05 12:31:28,893 | INFO     | enhanced_datahandler | get_historical_data:131 | ✅ Retrieved 18668 bars for GBPUSD
+2025-08-05 12:31:29,349 | INFO     | enhanced_marketintelligence | analyze_comprehensive:42  | ✅ Analysis complete: 7 -> 51 features (+44)
+2025-08-05 12:31:29,373 | INFO     | __main__             | prepare_data   :1133 | ✅ GBPUSD: Train=14934, Val=3734
+2025-08-05 12:31:29,382 | INFO     | __main__             | prepare_data   :1108 | 🔄 Processing XAUUSD...
+2025-08-05 12:31:29,498 | INFO     | enhanced_datahandler | get_historical_data:131 | ✅ Retrieved 17711 bars for XAUUSD
+2025-08-05 12:31:29,865 | INFO     | enhanced_marketintelligence | analyze_comprehensive:42  | ✅ Analysis complete: 7 -> 51 features (+44)
+2025-08-05 12:31:29,871 | INFO     | __main__             | prepare_data   :1133 | ✅ XAUUSD: Train=14168, Val=3543
+2025-08-05 12:31:29,874 | INFO     | __main__             | prepare_data   :1139 | 🎯 Data preparation complete for 3 symbols
+2025-08-05 12:31:29,974 | INFO     | __main__             | train_models   :1155 | 🤖 Starting enhanced model training...
+2025-08-05 12:31:29,979 | INFO     | __main__             | train_models   :1162 | 🎯 Training SAC_EURUSD...
+2025-08-05 12:31:30,040 | INFO     | enhanced_tradingenvironment | __init__       :54  | Enhanced Trading Environment initialized - 14933 data points
+2025-08-05 12:31:30,053 | INFO     | enhanced_tradingenvironment | __init__       :54  | Enhanced Trading Environment initialized - 3734 data points
+2025-08-05 12:31:47,262 | INFO     | __main__             | train_models   :1180 | 🚀 Training SAC_EURUSD for 50,000 steps...
+2025-08-05 12:45:46,013 | INFO     | enhanced_datahandler | disconnect     :178 | Disconnected from MT5
+2025-08-05 12:45:46,241 | INFO     | __main__             | main           :1412 | ⏹️ Training interrupted by user
+2025-08-05 17:51:40,242 | ERROR    | root                 | <module>       :45  | Missing enhanced module: cannot import name 'EnhancedRLModelManager' from 'enhanced_train_rl_model' (C:\Users\hamidiabbas\.vscode\ForexBot\enhanced_train_rl_model.py)
+2025-08-05 18:05:05,922 | ERROR    | root                 | <module>       :45  | Missing enhanced module: cannot import name 'EnhancedRLModelManager' from 'enhanced_train_rl_model' (C:\Users\hamidiabbas\.vscode\ForexBot\enhanced_train_rl_model.py)
+2025-08-05 18:05:59,912 | ERROR    | root                 | <module>       :45  | Missing enhanced module: cannot import name 'EnhancedRLModelManager' from 'enhanced_train_rl_model' (C:\Users\hamidiabbas\.vscode\ForexBot\enhanced_train_rl_model.py)
+2025-08-05 18:27:14,648 | ERROR    | root                 | <module>       :45  | Missing enhanced module: cannot import name 'EnhancedRLModelManager' from 'enhanced_train_rl_model' (C:\Users\hamidiabbas\.vscode\ForexBot\enhanced_train_rl_model.py)
+2025-08-05 18:37:24,819 | ERROR    | root                 | <module>       :45  | Missing enhanced module: cannot import name 'EnhancedRLModelManager' from 'enhanced_train_rl_model' (C:\Users\hamidiabbas\.vscode\ForexBot\enhanced_train_rl_model.py)
+2025-08-05 18:45:48,285 | INFO     | __main__             | main           :837 | 🚀 Enhanced RL Training System with EnhancedRLModelManager
+2025-08-05 18:47:03,108 | INFO     | __main__             | check_comprehensive_requirements:702 | 📦 PACKAGE AVAILABILITY CHECK:
+2025-08-05 18:47:03,115 | INFO     | __main__             | check_comprehensive_requirements:704 |    stable_baselines3 ✅
+2025-08-05 18:47:03,117 | INFO     | __main__             | check_comprehensive_requirements:704 |    torch           ✅ 2.7.1+cpu
+2025-08-05 18:47:03,120 | INFO     | __main__             | check_comprehensive_requirements:704 |    sklearn         ✅ 1.3.0
+2025-08-05 18:47:03,124 | INFO     | __main__             | check_comprehensive_requirements:704 |    pandas          ✅ 2.0.3
+2025-08-05 18:47:03,126 | INFO     | __main__             | check_comprehensive_requirements:704 |    numpy           ✅ 1.26.4
+2025-08-05 18:47:03,128 | INFO     | __main__             | check_comprehensive_requirements:704 |    matplotlib      ✅ 3.10.3
+2025-08-05 18:47:03,131 | INFO     | __main__             | check_comprehensive_requirements:704 |    seaborn         ✅ 0.13.2
+2025-08-05 18:47:03,133 | INFO     | __main__             | check_comprehensive_requirements:704 |    MetaTrader5     ✅
+2025-08-05 18:47:03,135 | INFO     | __main__             | check_comprehensive_requirements:704 |    yfinance        ✅
+2025-08-05 18:47:03,136 | INFO     | __main__             | check_comprehensive_requirements:704 |    optuna          ✅
+2025-08-05 18:47:03,136 | INFO     | __main__             | check_comprehensive_requirements:704 |    xgboost         ⚠️ Optional
+2025-08-05 18:47:03,142 | INFO     | __main__             | check_comprehensive_requirements:704 |    lightgbm        ⚠️ Optional
+2025-08-05 18:47:03,143 | INFO     | __main__             | check_comprehensive_requirements:704 |    networkx        ✅
+2025-08-05 18:47:03,145 | INFO     | __main__             | check_comprehensive_requirements:704 |    scipy           ✅
+2025-08-05 18:47:03,147 | INFO     | __main__             | check_comprehensive_requirements:704 |    statsmodels     ⚠️ Optional
+2025-08-05 18:47:03,149 | INFO     | __main__             | check_comprehensive_requirements:711 | ✅ All critical requirements satisfied
+2025-08-05 18:47:03,153 | INFO     | __main__             | load_user_config_advanced:513 | ✅ Found config file at: configs/config.py
+2025-08-05 18:47:03,445 | WARNING  | __main__             | load_user_config_advanced:532 | importlib method failed: 'user_config'
+2025-08-05 18:47:03,449 | INFO     | __main__             | load_user_config_advanced:550 | ✅ Config loaded using exec fallback
+2025-08-05 18:47:03,451 | INFO     | __main__             | validate_and_enhance_config:604 | 📋 ENHANCED CONFIG LOADED:
+2025-08-05 18:47:03,451 | INFO     | __main__             | validate_and_enhance_config:605 |    MT5 Login: 5038800515
+2025-08-05 18:47:03,454 | INFO     | __main__             | validate_and_enhance_config:606 |    MT5 Server: MetaQuotes-Demo
+2025-08-05 18:47:03,455 | INFO     | __main__             | validate_and_enhance_config:607 |    Symbols: ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD', 'USDCHF', 'XAUUSD', 'XAGUSD']
+2025-08-05 18:47:03,456 | INFO     | __main__             | validate_and_enhance_config:608 |    Primary Timeframe: H1
+2025-08-05 18:47:03,456 | INFO     | __main__             | validate_and_enhance_config:609 |    Risk %: 0.02
+2025-08-05 18:47:03,457 | INFO     | __main__             | create_essential_modules:813 | Creating essential modules...
+2025-08-05 18:47:03,458 | INFO     | __main__             | main           :853 | 🧪 Testing EnhancedRLModelManager...
+2025-08-05 18:47:03,460 | INFO     | __main__             | __init__       :114 | Enhanced RL Model Manager initialized
+2025-08-05 18:47:30,485 | INFO     | __main__             | load_model     :139 | ✅ Loaded SAC model from ./models/SAC_EURUSD_enhanced.zip
+2025-08-05 18:47:30,489 | INFO     | __main__             | main           :857 | ✅ EnhancedRLModelManager loaded successfully
+2025-08-05 18:47:30,511 | ERROR    | __main__             | _generate_ml_signal:240 | Error in ML signal generation: Error: Unexpected observation shape (32,) for Box environment, please use (50,) or (n_env, 50) for the observation shape.
+2025-08-05 18:47:30,526 | INFO     | __main__             | main           :871 | ℹ️ No signal generated (normal behavior)
+2025-08-05 18:47:30,528 | INFO     | __main__             | main           :875 | 📊 Performance metrics: {'success_rate': 0.0, 'total_signals': 1, 'successful_signals': 0, 'model_type': 'SAC', 'model_path': './models/SAC_EURUSD_enhanced.zip', 'is_loaded': True, 'confidence_threshold': 0.6}
+2025-08-05 18:47:30,530 | INFO     | __main__             | shutdown       :481 | Enhanced RL Model Manager shutdown - Final Performance: {'success_rate': 0.0, 'total_signals': 1, 'successful_signals': 0, 'model_type': 'SAC', 'model_path': './models/SAC_EURUSD_enhanced.zip', 'is_loaded': True, 'confidence_threshold': 0.6}
+2025-08-05 18:47:30,530 | INFO     | __main__             | shutdown       :487 | Enhanced RL Model Manager shutdown completed
+2025-08-05 18:47:30,530 | INFO     | __main__             | main           :883 | 🎉 ALL TESTS PASSED!
+2025-08-05 18:50:09,662 | INFO     | __main__             | main           :1366 | 🚀 Starting Complete Enterprise RL Training System
+2025-08-05 18:50:44,131 | INFO     | __main__             | check_comprehensive_requirements:281 | 📦 PACKAGE AVAILABILITY CHECK:
+2025-08-05 18:50:44,149 | INFO     | __main__             | check_comprehensive_requirements:283 |    stable_baselines3 ✅
+2025-08-05 18:50:44,161 | INFO     | __main__             | check_comprehensive_requirements:283 |    torch           ✅ 2.7.1+cpu
+2025-08-05 18:50:44,168 | INFO     | __main__             | check_comprehensive_requirements:283 |    sklearn         ✅ 1.3.0
+2025-08-05 18:50:44,174 | INFO     | __main__             | check_comprehensive_requirements:283 |    pandas          ✅ 2.0.3
+2025-08-05 18:50:44,211 | INFO     | __main__             | check_comprehensive_requirements:283 |    numpy           ✅ 1.26.4
+2025-08-05 18:50:44,259 | INFO     | __main__             | check_comprehensive_requirements:283 |    matplotlib      ✅ 3.10.3
+2025-08-05 18:50:44,262 | INFO     | __main__             | check_comprehensive_requirements:283 |    seaborn         ✅ 0.13.2
+2025-08-05 18:50:44,262 | INFO     | __main__             | check_comprehensive_requirements:283 |    MetaTrader5     ✅
+2025-08-05 18:50:44,262 | INFO     | __main__             | check_comprehensive_requirements:283 |    yfinance        ✅
+2025-08-05 18:50:44,262 | INFO     | __main__             | check_comprehensive_requirements:283 |    optuna          ✅
+2025-08-05 18:50:44,266 | INFO     | __main__             | check_comprehensive_requirements:283 |    xgboost         ⚠️ Optional
+2025-08-05 18:50:44,267 | INFO     | __main__             | check_comprehensive_requirements:283 |    lightgbm        ⚠️ Optional
+2025-08-05 18:50:44,267 | INFO     | __main__             | check_comprehensive_requirements:283 |    networkx        ✅
+2025-08-05 18:50:44,268 | INFO     | __main__             | check_comprehensive_requirements:283 |    scipy           ✅
+2025-08-05 18:50:44,268 | INFO     | __main__             | check_comprehensive_requirements:283 |    statsmodels     ⚠️ Optional
+2025-08-05 18:50:44,269 | INFO     | __main__             | check_comprehensive_requirements:290 | ✅ All critical requirements satisfied
+2025-08-05 18:50:44,272 | INFO     | __main__             | load_user_config_advanced:92  | ✅ Found config file at: configs/config.py
+2025-08-05 18:50:44,290 | WARNING  | __main__             | load_user_config_advanced:111 | importlib method failed: 'user_config'
+2025-08-05 18:50:44,306 | INFO     | __main__             | load_user_config_advanced:129 | ✅ Config loaded using exec fallback
+2025-08-05 18:50:44,311 | INFO     | __main__             | validate_and_enhance_config:183 | 📋 ENHANCED CONFIG LOADED:
+2025-08-05 18:50:44,312 | INFO     | __main__             | validate_and_enhance_config:184 |    MT5 Login: 5038800515
+2025-08-05 18:50:44,313 | INFO     | __main__             | validate_and_enhance_config:185 |    MT5 Server: MetaQuotes-Demo
+2025-08-05 18:50:44,314 | INFO     | __main__             | validate_and_enhance_config:186 |    Symbols: ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD', 'USDCHF', 'XAUUSD', 'XAGUSD']
+2025-08-05 18:50:44,314 | INFO     | __main__             | validate_and_enhance_config:187 |    Primary Timeframe: H1
+2025-08-05 18:50:44,314 | INFO     | __main__             | validate_and_enhance_config:188 |    Risk %: 0.02
+2025-08-05 18:50:44,314 | WARNING  | __main__             | check_and_import_advanced_libraries:304 | ⚠️ Advanced ML libraries not available (optuna, xgboost, lightgbm, networkx)
+2025-08-05 18:50:44,314 | INFO     | __main__             | create_comprehensive_modules:312 | 🏗️ Creating comprehensive modules with advanced features...
+2025-08-05 18:50:44,338 | INFO     | __main__             | create_comprehensive_modules:1015 | ✅ Created enhanced_datahandler.py
+2025-08-05 18:50:44,363 | INFO     | __main__             | create_comprehensive_modules:1015 | ✅ Created enhanced_marketintelligence.py
+2025-08-05 18:50:44,380 | INFO     | __main__             | create_comprehensive_modules:1015 | ✅ Created enhanced_tradingenvironment.py
+2025-08-05 18:50:44,382 | INFO     | __main__             | create_comprehensive_modules:1017 | 🎯 All enhanced modules created successfully!
+2025-08-05 18:50:45,740 | INFO     | __main__             | __init__       :1043 | ✅ Enhanced Training System initialized
+2025-08-05 18:50:45,810 | INFO     | __main__             | __init__       :1044 |    Symbols: ['EURUSD', 'GBPUSD', 'XAUUSD']
+2025-08-05 18:50:45,839 | INFO     | __main__             | __init__       :1045 |    Models: ['SAC', 'PPO']
+2025-08-05 18:50:45,867 | INFO     | __main__             | run_complete_training:1337 | 🚀 Starting Enhanced Training Pipeline...
+2025-08-05 18:50:45,868 | INFO     | __main__             | initialize_components:1080 | 🔧 Initializing enhanced components...
+2025-08-05 18:50:46,381 | INFO     | enhanced_datahandler | __init__       :71  | Enhanced DataHandler initialized
+2025-08-05 18:50:46,381 | INFO     | enhanced_datahandler | __init__       :72  |    Available sources: MT5, YFINANCE
+2025-08-05 18:51:02,413 | INFO     | enhanced_datahandler | connect        :94  | ✅ Connected to MT5 - Account: 5038800515
+2025-08-05 18:51:02,414 | INFO     | __main__             | initialize_components:1090 | ✅ Enhanced DataHandler connected
+2025-08-05 18:51:02,414 | INFO     | enhanced_marketintelligence | __init__       :17  | Enhanced Market Intelligence initialized
+2025-08-05 18:51:02,447 | INFO     | __main__             | initialize_components:1094 | ✅ Enhanced Market Intelligence initialized
+2025-08-05 18:51:02,447 | INFO     | __main__             | prepare_data   :1105 | 📊 Preparing enhanced training data...
+2025-08-05 18:51:02,448 | INFO     | __main__             | prepare_data   :1108 | 🔄 Processing EURUSD...
+2025-08-05 18:51:02,941 | INFO     | enhanced_datahandler | get_historical_data:131 | ✅ Retrieved 18667 bars for EURUSD
+2025-08-05 18:51:03,482 | INFO     | enhanced_marketintelligence | analyze_comprehensive:42  | ✅ Analysis complete: 7 -> 51 features (+44)
+2025-08-05 18:51:03,492 | INFO     | __main__             | prepare_data   :1133 | ✅ EURUSD: Train=14933, Val=3734
+2025-08-05 18:51:03,492 | INFO     | __main__             | prepare_data   :1108 | 🔄 Processing GBPUSD...
+2025-08-05 18:51:03,633 | INFO     | enhanced_datahandler | get_historical_data:131 | ✅ Retrieved 18668 bars for GBPUSD
+2025-08-05 18:51:03,951 | INFO     | enhanced_marketintelligence | analyze_comprehensive:42  | ✅ Analysis complete: 7 -> 51 features (+44)
+2025-08-05 18:51:03,960 | INFO     | __main__             | prepare_data   :1133 | ✅ GBPUSD: Train=14934, Val=3734
+2025-08-05 18:51:03,962 | INFO     | __main__             | prepare_data   :1108 | 🔄 Processing XAUUSD...
+2025-08-05 18:51:04,108 | INFO     | enhanced_datahandler | get_historical_data:131 | ✅ Retrieved 17711 bars for XAUUSD
+2025-08-05 18:51:04,390 | INFO     | enhanced_marketintelligence | analyze_comprehensive:42  | ✅ Analysis complete: 7 -> 51 features (+44)
+2025-08-05 18:51:04,397 | INFO     | __main__             | prepare_data   :1133 | ✅ XAUUSD: Train=14168, Val=3543
+2025-08-05 18:51:04,397 | INFO     | __main__             | prepare_data   :1139 | 🎯 Data preparation complete for 3 symbols
+2025-08-05 18:51:04,524 | INFO     | __main__             | train_models   :1155 | 🤖 Starting enhanced model training...
+2025-08-05 18:51:04,524 | INFO     | __main__             | train_models   :1162 | 🎯 Training SAC_EURUSD...
+2025-08-05 18:51:04,575 | INFO     | enhanced_tradingenvironment | __init__       :54  | Enhanced Trading Environment initialized - 14933 data points
+2025-08-05 18:51:04,593 | INFO     | enhanced_tradingenvironment | __init__       :54  | Enhanced Trading Environment initialized - 3734 data points
+2025-08-05 18:51:18,477 | INFO     | __main__             | train_models   :1180 | 🚀 Training SAC_EURUSD for 50,000 steps...
+2025-08-05 19:11:07,434 | INFO     | enhanced_datahandler | disconnect     :178 | Disconnected from MT5
+2025-08-05 19:11:07,483 | INFO     | __main__             | main           :1412 | ⏹️ Training interrupted by user
+2025-08-05 19:11:50,158 | INFO     | __main__             | main           :1377 | 🚀 Starting Complete Enterprise RL Training System
+2025-08-05 19:12:05,195 | INFO     | __main__             | check_comprehensive_requirements:292 | 📦 PACKAGE AVAILABILITY CHECK:
+2025-08-05 19:12:05,196 | INFO     | __main__             | check_comprehensive_requirements:294 |    stable_baselines3 ✅
+2025-08-05 19:12:05,196 | INFO     | __main__             | check_comprehensive_requirements:294 |    torch           ✅ 2.7.1+cpu
+2025-08-05 19:12:05,196 | INFO     | __main__             | check_comprehensive_requirements:294 |    sklearn         ✅ 1.3.0
+2025-08-05 19:12:05,197 | INFO     | __main__             | check_comprehensive_requirements:294 |    pandas          ✅ 2.0.3
+2025-08-05 19:12:05,197 | INFO     | __main__             | check_comprehensive_requirements:294 |    numpy           ✅ 1.26.4
+2025-08-05 19:12:05,198 | INFO     | __main__             | check_comprehensive_requirements:294 |    matplotlib      ✅ 3.10.3
+2025-08-05 19:12:05,198 | INFO     | __main__             | check_comprehensive_requirements:294 |    seaborn         ✅ 0.13.2
+2025-08-05 19:12:05,199 | INFO     | __main__             | check_comprehensive_requirements:294 |    MetaTrader5     ✅
+2025-08-05 19:12:05,199 | INFO     | __main__             | check_comprehensive_requirements:294 |    yfinance        ✅
+2025-08-05 19:12:05,200 | INFO     | __main__             | check_comprehensive_requirements:294 |    optuna          ✅
+2025-08-05 19:12:05,200 | INFO     | __main__             | check_comprehensive_requirements:294 |    xgboost         ⚠️ Optional
+2025-08-05 19:12:05,200 | INFO     | __main__             | check_comprehensive_requirements:294 |    lightgbm        ⚠️ Optional
+2025-08-05 19:12:05,201 | INFO     | __main__             | check_comprehensive_requirements:294 |    networkx        ✅
+2025-08-05 19:12:05,201 | INFO     | __main__             | check_comprehensive_requirements:294 |    scipy           ✅
+2025-08-05 19:12:05,202 | INFO     | __main__             | check_comprehensive_requirements:294 |    statsmodels     ⚠️ Optional
+2025-08-05 19:12:05,202 | INFO     | __main__             | check_comprehensive_requirements:301 | ✅ All critical requirements satisfied
+2025-08-05 19:12:05,203 | INFO     | __main__             | load_user_config_advanced:103 | ✅ Found config file at: configs/config.py
+2025-08-05 19:12:05,208 | WARNING  | __main__             | load_user_config_advanced:122 | importlib method failed: 'user_config'
+2025-08-05 19:12:05,217 | INFO     | __main__             | load_user_config_advanced:140 | ✅ Config loaded using exec fallback
+2025-08-05 19:12:05,218 | INFO     | __main__             | validate_and_enhance_config:194 | 📋 ENHANCED CONFIG LOADED:
+2025-08-05 19:12:05,218 | INFO     | __main__             | validate_and_enhance_config:195 |    MT5 Login: 5038800515
+2025-08-05 19:12:05,219 | INFO     | __main__             | validate_and_enhance_config:196 |    MT5 Server: MetaQuotes-Demo
+2025-08-05 19:12:05,219 | INFO     | __main__             | validate_and_enhance_config:197 |    Symbols: ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD', 'USDCHF', 'XAUUSD', 'XAGUSD']
+2025-08-05 19:12:05,220 | INFO     | __main__             | validate_and_enhance_config:198 |    Primary Timeframe: H1
+2025-08-05 19:12:05,220 | INFO     | __main__             | validate_and_enhance_config:199 |    Risk %: 0.02
+2025-08-05 19:12:05,221 | WARNING  | __main__             | check_and_import_advanced_libraries:315 | ⚠️ Advanced ML libraries not available (optuna, xgboost, lightgbm, networkx)
+2025-08-05 19:12:05,222 | INFO     | __main__             | create_comprehensive_modules:323 | 🏗️ Creating comprehensive modules with advanced features...
+2025-08-05 19:12:05,225 | INFO     | __main__             | create_comprehensive_modules:1026 | ✅ Created enhanced_datahandler.py
+2025-08-05 19:12:05,228 | INFO     | __main__             | create_comprehensive_modules:1026 | ✅ Created enhanced_marketintelligence.py
+2025-08-05 19:12:05,231 | INFO     | __main__             | create_comprehensive_modules:1026 | ✅ Created enhanced_tradingenvironment.py
+2025-08-05 19:12:05,231 | INFO     | __main__             | create_comprehensive_modules:1028 | 🎯 All enhanced modules created successfully!
+2025-08-05 19:12:05,266 | INFO     | __main__             | __init__       :1054 | ✅ Enhanced Training System initialized
+2025-08-05 19:12:05,267 | INFO     | __main__             | __init__       :1055 |    Symbols: ['EURUSD', 'GBPUSD', 'XAUUSD']
+2025-08-05 19:12:05,268 | INFO     | __main__             | __init__       :1056 |    Models: ['SAC', 'PPO']
+2025-08-05 19:12:05,268 | INFO     | __main__             | run_complete_training:1348 | 🚀 Starting Enhanced Training Pipeline...
+2025-08-05 19:12:05,268 | INFO     | __main__             | initialize_components:1091 | 🔧 Initializing enhanced components...
+2025-08-05 19:12:05,304 | INFO     | enhanced_datahandler | __init__       :71  | Enhanced DataHandler initialized
+2025-08-05 19:12:05,307 | INFO     | enhanced_datahandler | __init__       :72  |    Available sources: MT5, YFINANCE
+2025-08-05 19:12:05,319 | INFO     | enhanced_datahandler | connect        :94  | ✅ Connected to MT5 - Account: 5038800515
+2025-08-05 19:12:05,320 | INFO     | __main__             | initialize_components:1101 | ✅ Enhanced DataHandler connected
+2025-08-05 19:12:05,320 | INFO     | enhanced_marketintelligence | __init__       :17  | Enhanced Market Intelligence initialized
+2025-08-05 19:12:05,320 | INFO     | __main__             | initialize_components:1105 | ✅ Enhanced Market Intelligence initialized
+2025-08-05 19:12:05,321 | INFO     | __main__             | prepare_data   :1116 | 📊 Preparing enhanced training data...
+2025-08-05 19:12:05,321 | INFO     | __main__             | prepare_data   :1119 | 🔄 Processing EURUSD...
+2025-08-05 19:12:05,631 | INFO     | enhanced_datahandler | get_historical_data:131 | ✅ Retrieved 18667 bars for EURUSD
+2025-08-05 19:12:05,817 | INFO     | enhanced_marketintelligence | analyze_comprehensive:42  | ✅ Analysis complete: 7 -> 51 features (+44)
+2025-08-05 19:12:05,821 | INFO     | __main__             | prepare_data   :1144 | ✅ EURUSD: Train=14933, Val=3734
+2025-08-05 19:12:05,823 | INFO     | __main__             | prepare_data   :1119 | 🔄 Processing GBPUSD...
+2025-08-05 19:12:05,901 | INFO     | enhanced_datahandler | get_historical_data:131 | ✅ Retrieved 18668 bars for GBPUSD
+2025-08-05 19:12:06,062 | INFO     | enhanced_marketintelligence | analyze_comprehensive:42  | ✅ Analysis complete: 7 -> 51 features (+44)
+2025-08-05 19:12:06,067 | INFO     | __main__             | prepare_data   :1144 | ✅ GBPUSD: Train=14934, Val=3734
+2025-08-05 19:12:06,068 | INFO     | __main__             | prepare_data   :1119 | 🔄 Processing XAUUSD...
+2025-08-05 19:12:06,161 | INFO     | enhanced_datahandler | get_historical_data:131 | ✅ Retrieved 17711 bars for XAUUSD
+2025-08-05 19:12:06,314 | INFO     | enhanced_marketintelligence | analyze_comprehensive:42  | ✅ Analysis complete: 7 -> 51 features (+44)
+2025-08-05 19:12:06,319 | INFO     | __main__             | prepare_data   :1144 | ✅ XAUUSD: Train=14168, Val=3543
+2025-08-05 19:12:06,319 | INFO     | __main__             | prepare_data   :1150 | 🎯 Data preparation complete for 3 symbols
+2025-08-05 19:12:06,375 | INFO     | __main__             | train_models   :1166 | 🤖 Starting enhanced model training...
+2025-08-05 19:12:06,376 | INFO     | __main__             | train_models   :1173 | 🎯 Training SAC_EURUSD...
+2025-08-05 19:12:06,406 | INFO     | enhanced_tradingenvironment | __init__       :54  | Enhanced Trading Environment initialized - 14933 data points
+2025-08-05 19:12:06,412 | INFO     | enhanced_tradingenvironment | __init__       :54  | Enhanced Trading Environment initialized - 3734 data points
+2025-08-05 19:12:08,093 | INFO     | enhanced_datahandler | disconnect     :178 | Disconnected from MT5
+2025-08-05 19:12:08,093 | INFO     | __main__             | main           :1423 | ⏹️ Training interrupted by user
+2025-08-05 19:12:32,451 | ERROR    | root                 | <module>       :45  | Missing enhanced module: cannot import name 'FeatureManager' from 'enhanced_feature_engineering' (C:\Users\hamidiabbas\.vscode\ForexBot\enhanced_feature_engineering.py)
+2025-08-05 19:17:57,699 | ERROR    | root                 | <module>       :45  | Missing enhanced module: cannot import name 'FeatureManager' from 'enhanced_feature_engineering' (C:\Users\hamidiabbas\.vscode\ForexBot\enhanced_feature_engineering.py)
+2025-08-05 19:23:19,978 | ERROR    | root                 | <module>       :45  | Missing enhanced module: cannot import name 'FeatureManager' from 'enhanced_feature_engineering' (C:\Users\hamidiabbas\.vscode\ForexBot\enhanced_feature_engineering.py)
+2025-08-05 19:36:33,771 | ERROR    | root                 | <module>       :45  | Missing enhanced module: cannot import name 'KellyPositionManager' from 'dynamic_kelly_position_sizing' (C:\Users\hamidiabbas\.vscode\ForexBot\dynamic_kelly_position_sizing.py)
+2025-08-05 19:39:09,544 | ERROR    | root                 | <module>       :45  | Missing enhanced module: cannot import name 'KellyPositionManager' from 'dynamic_kelly_position_sizing' (C:\Users\hamidiabbas\.vscode\ForexBot\dynamic_kelly_position_sizing.py)
+2025-08-05 19:57:35,379 | ERROR    | root                 | <module>       :46  | Missing enhanced module: No module named 'aiohttp'
+2025-08-05 20:43:26,730 | ERROR    | root                 | <module>       :46  | Missing enhanced module: cannot import name 'SentimentManager' from 'enhanced_sentiment_integration' (C:\Users\hamidiabbas\.vscode\ForexBot\enhanced_sentiment_integration.py)
+2025-08-05 20:53:42,554 | ERROR    | root                 | <module>       :46  | Missing enhanced module: No module named 'strategymanager'
+2025-08-05 21:02:18,410 | ERROR    | root                 | <module>       :46  | Missing enhanced module: No module named 'riskmanager'
+2025-08-05 21:28:37,808 | ERROR    | root                 | <module>       :46  | Missing enhanced module: No module named 'executionmanager'
+2025-08-05 21:40:24,669 | ERROR    | root                 | <module>       :46  | Missing enhanced module: No module named 'executionmanager'
+2025-08-05 21:41:15,385 | ERROR    | root                 | <module>       :46  | Missing enhanced module: No module named 'executionmanager'
+2025-08-05 21:44:24,189 | ERROR    | root                 | <module>       :46  | Missing enhanced module: No module named 'notificationmanager'
+2025-08-05 21:47:15,455 | ERROR    | root                 | <module>       :46  | Missing enhanced module: No module named 'notificationmanager'
+2025-08-05 21:51:06,863 | ERROR    | root                 | <module>       :46  | Missing enhanced module: No module named 'notificationmanager'
+2025-08-05 21:51:58,223 | ERROR    | root                 | <module>       :46  | Missing enhanced module: No module named 'notificationmanager'

@@ -1,0 +1,371 @@
+2025-08-03 18:29:59,370 | ERROR    | __main__             | load_user_config_advanced:153 | All config loading methods failed: cannot import name 'config' from 'config' (unknown location)
+2025-08-03 19:55:32,784 | ERROR    | __main__             | load_user_config_advanced:153 | All config loading methods failed: cannot import name 'config' from 'config' (unknown location)
+2025-08-03 20:14:42,497 | ERROR    | __main__             | _validate_and_enhance_config:176 | ❌ Config missing required attributes: ['MT5_LOGIN', 'MT5_SERVER', 'SYMBOLS_TO_TRADE']
+2025-08-03 21:38:11,773 | ERROR    | __main__             | _validate_and_enhance_config:176 | ❌ Config missing required attributes: ['MT5_LOGIN', 'MT5_SERVER', 'SYMBOLS_TO_TRADE']
+2025-08-03 21:49:06,454 | ERROR    | __main__             | create_comprehensive_modules:1266 | Error creating comprehensive modules: name 'self' is not defined
+2025-08-03 21:57:43,217 | ERROR    | __main__             | create_comprehensive_modules:1266 | Error creating comprehensive modules: name 'self' is not defined
+2025-08-03 22:10:59,297 | ERROR    | enhanced_datahandler | connect        :83  | MT5 initialization failed: (-6, 'Terminal: Authorization failed')
+2025-08-03 22:10:59,298 | ERROR    | __main__             | initialize_components:1088 | ❌ Failed to connect data handler
+2025-08-03 22:16:04,970 | ERROR    | enhanced_datahandler | connect        :83  | MT5 initialization failed: (-6, 'Terminal: Authorization failed')
+2025-08-03 22:16:04,974 | ERROR    | __main__             | initialize_components:1088 | ❌ Failed to connect data handler
+2025-08-04 23:48:08,802 | ERROR    | enhanced_datahandler | connect        :83  | MT5 initialization failed: (-10005, 'IPC timeout')
+2025-08-04 23:48:08,802 | ERROR    | __main__             | initialize_components:1088 | ❌ Failed to connect data handler
+2025-08-05 17:51:40,242 | ERROR    | root                 | <module>       :45  | Missing enhanced module: cannot import name 'EnhancedRLModelManager' from 'enhanced_train_rl_model' (C:\Users\hamidiabbas\.vscode\ForexBot\enhanced_train_rl_model.py)
+2025-08-05 18:05:05,922 | ERROR    | root                 | <module>       :45  | Missing enhanced module: cannot import name 'EnhancedRLModelManager' from 'enhanced_train_rl_model' (C:\Users\hamidiabbas\.vscode\ForexBot\enhanced_train_rl_model.py)
+2025-08-05 18:05:59,912 | ERROR    | root                 | <module>       :45  | Missing enhanced module: cannot import name 'EnhancedRLModelManager' from 'enhanced_train_rl_model' (C:\Users\hamidiabbas\.vscode\ForexBot\enhanced_train_rl_model.py)
+2025-08-05 18:27:14,648 | ERROR    | root                 | <module>       :45  | Missing enhanced module: cannot import name 'EnhancedRLModelManager' from 'enhanced_train_rl_model' (C:\Users\hamidiabbas\.vscode\ForexBot\enhanced_train_rl_model.py)
+2025-08-05 18:37:24,819 | ERROR    | root                 | <module>       :45  | Missing enhanced module: cannot import name 'EnhancedRLModelManager' from 'enhanced_train_rl_model' (C:\Users\hamidiabbas\.vscode\ForexBot\enhanced_train_rl_model.py)
+2025-08-05 18:47:30,511 | ERROR    | __main__             | _generate_ml_signal:240 | Error in ML signal generation: Error: Unexpected observation shape (32,) for Box environment, please use (50,) or (n_env, 50) for the observation shape.
+2025-08-05 19:12:32,451 | ERROR    | root                 | <module>       :45  | Missing enhanced module: cannot import name 'FeatureManager' from 'enhanced_feature_engineering' (C:\Users\hamidiabbas\.vscode\ForexBot\enhanced_feature_engineering.py)
+2025-08-05 19:17:57,699 | ERROR    | root                 | <module>       :45  | Missing enhanced module: cannot import name 'FeatureManager' from 'enhanced_feature_engineering' (C:\Users\hamidiabbas\.vscode\ForexBot\enhanced_feature_engineering.py)
+2025-08-05 19:23:19,978 | ERROR    | root                 | <module>       :45  | Missing enhanced module: cannot import name 'FeatureManager' from 'enhanced_feature_engineering' (C:\Users\hamidiabbas\.vscode\ForexBot\enhanced_feature_engineering.py)
+2025-08-05 19:36:33,771 | ERROR    | root                 | <module>       :45  | Missing enhanced module: cannot import name 'KellyPositionManager' from 'dynamic_kelly_position_sizing' (C:\Users\hamidiabbas\.vscode\ForexBot\dynamic_kelly_position_sizing.py)
+2025-08-05 19:39:09,544 | ERROR    | root                 | <module>       :45  | Missing enhanced module: cannot import name 'KellyPositionManager' from 'dynamic_kelly_position_sizing' (C:\Users\hamidiabbas\.vscode\ForexBot\dynamic_kelly_position_sizing.py)
+2025-08-05 19:57:35,379 | ERROR    | root                 | <module>       :46  | Missing enhanced module: No module named 'aiohttp'
+2025-08-05 20:43:26,730 | ERROR    | root                 | <module>       :46  | Missing enhanced module: cannot import name 'SentimentManager' from 'enhanced_sentiment_integration' (C:\Users\hamidiabbas\.vscode\ForexBot\enhanced_sentiment_integration.py)
+2025-08-05 20:53:42,554 | ERROR    | root                 | <module>       :46  | Missing enhanced module: No module named 'strategymanager'
+2025-08-05 21:02:18,410 | ERROR    | root                 | <module>       :46  | Missing enhanced module: No module named 'riskmanager'
+2025-08-05 21:28:37,808 | ERROR    | root                 | <module>       :46  | Missing enhanced module: No module named 'executionmanager'
+2025-08-05 21:40:24,669 | ERROR    | root                 | <module>       :46  | Missing enhanced module: No module named 'executionmanager'
+2025-08-05 21:41:15,385 | ERROR    | root                 | <module>       :46  | Missing enhanced module: No module named 'executionmanager'
+2025-08-05 21:44:24,189 | ERROR    | root                 | <module>       :46  | Missing enhanced module: No module named 'notificationmanager'
+2025-08-05 21:47:15,455 | ERROR    | root                 | <module>       :46  | Missing enhanced module: No module named 'notificationmanager'
+2025-08-05 21:51:06,863 | ERROR    | root                 | <module>       :46  | Missing enhanced module: No module named 'notificationmanager'
+2025-08-05 21:51:58,223 | ERROR    | root                 | <module>       :46  | Missing enhanced module: No module named 'notificationmanager'
+2025-08-05 21:52:41,085 | ERROR    | __main__             | __init__       :153 | Failed to initialize enhanced components: EnhancedMarketIntelligence.__init__() takes 3 positional arguments but 4 were given
+2025-08-05 21:52:41,099 | ERROR    | root                 | main           :713 | Critical error in enhanced main: EnhancedMarketIntelligence.__init__() takes 3 positional arguments but 4 were given
+2025-08-05 21:52:41,125 | ERROR    | root                 | main           :714 | Traceback (most recent call last):
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 707, in main
+    bot = EnhancedTradingBot()
+          ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 150, in __init__
+    self._initialize_enhanced_components()
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 178, in _initialize_enhanced_components
+    self.marketintelligence = EnhancedMarketIntelligence(
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: EnhancedMarketIntelligence.__init__() takes 3 positional arguments but 4 were given
+
+2025-08-05 22:07:56,303 | ERROR    | __main__             | __init__       :154 | Failed to initialize enhanced components: EnhancedMarketIntelligence.__init__() takes 3 positional arguments but 4 were given
+2025-08-05 22:07:56,306 | ERROR    | root                 | main           :714 | Critical error in enhanced main: EnhancedMarketIntelligence.__init__() takes 3 positional arguments but 4 were given
+2025-08-05 22:07:56,307 | ERROR    | root                 | main           :715 | Traceback (most recent call last):
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 708, in main
+    bot = EnhancedTradingBot()
+          ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 151, in __init__
+    self._initialize_enhanced_components()
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 179, in _initialize_enhanced_components
+    self.marketintelligence = EnhancedMarketIntelligence(
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: EnhancedMarketIntelligence.__init__() takes 3 positional arguments but 4 were given
+
+2025-08-05 22:15:40,296 | ERROR    | __main__             | __init__       :154 | Failed to initialize enhanced components: EnhancedMarketIntelligence.__init__() missing 1 required positional argument: 'user_config'
+2025-08-05 22:15:40,297 | ERROR    | root                 | main           :714 | Critical error in enhanced main: EnhancedMarketIntelligence.__init__() missing 1 required positional argument: 'user_config'
+2025-08-05 22:15:40,298 | ERROR    | root                 | main           :715 | Traceback (most recent call last):
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 708, in main
+    bot = EnhancedTradingBot()
+          ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 151, in __init__
+    self._initialize_enhanced_components()
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 179, in _initialize_enhanced_components
+    self.marketintelligence = EnhancedMarketIntelligence(config)(
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: EnhancedMarketIntelligence.__init__() missing 1 required positional argument: 'user_config'
+
+2025-08-05 22:20:03,830 | ERROR    | __main__             | __init__       :154 | Failed to initialize enhanced components: name 'none' is not defined
+2025-08-05 22:20:03,830 | ERROR    | root                 | main           :714 | Critical error in enhanced main: name 'none' is not defined
+2025-08-05 22:20:03,831 | ERROR    | root                 | main           :715 | Traceback (most recent call last):
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 708, in main
+    bot = EnhancedTradingBot()
+          ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 151, in __init__
+    self._initialize_enhanced_components()
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 179, in _initialize_enhanced_components
+    self.marketintelligence = EnhancedMarketIntelligence(config,user_config=none)(
+                                                                            ^^^^
+NameError: name 'none' is not defined
+
+2025-08-05 22:21:13,940 | ERROR    | __main__             | __init__       :154 | Failed to initialize enhanced components: 'EnhancedMarketIntelligence' object is not callable
+2025-08-05 22:21:13,941 | ERROR    | root                 | main           :714 | Critical error in enhanced main: 'EnhancedMarketIntelligence' object is not callable
+2025-08-05 22:21:13,941 | ERROR    | root                 | main           :715 | Traceback (most recent call last):
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 708, in main
+    bot = EnhancedTradingBot()
+          ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 151, in __init__
+    self._initialize_enhanced_components()
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 179, in _initialize_enhanced_components
+    self.marketintelligence = EnhancedMarketIntelligence(config, config)(
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: 'EnhancedMarketIntelligence' object is not callable
+
+2025-08-05 22:22:30,462 | ERROR    | __main__             | __init__       :154 | Failed to initialize enhanced components: 'EnhancedMarketIntelligence' object is not callable
+2025-08-05 22:22:30,463 | ERROR    | root                 | main           :714 | Critical error in enhanced main: 'EnhancedMarketIntelligence' object is not callable
+2025-08-05 22:22:30,465 | ERROR    | root                 | main           :715 | Traceback (most recent call last):
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 708, in main
+    bot = EnhancedTradingBot()
+          ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 151, in __init__
+    self._initialize_enhanced_components()
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 179, in _initialize_enhanced_components
+    self.marketintelligence = EnhancedMarketIntelligence(config, None)(
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: 'EnhancedMarketIntelligence' object is not callable
+
+2025-08-05 22:25:18,627 | ERROR    | __main__             | __init__       :154 | Failed to initialize enhanced components: 'EnhancedMarketIntelligence' object is not callable
+2025-08-05 22:25:18,628 | ERROR    | root                 | main           :714 | Critical error in enhanced main: 'EnhancedMarketIntelligence' object is not callable
+2025-08-05 22:25:18,630 | ERROR    | root                 | main           :715 | Traceback (most recent call last):
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 708, in main
+    bot = EnhancedTradingBot()
+          ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 151, in __init__
+    self._initialize_enhanced_components()
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 179, in _initialize_enhanced_components
+    self.marketintelligence = EnhancedMarketIntelligence(config,  user_config=None)(
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: 'EnhancedMarketIntelligence' object is not callable
+
+2025-08-05 22:30:34,881 | ERROR    | __main__             | __init__       :154 | Failed to initialize enhanced components: module 'config' has no attribute 'get'
+2025-08-05 22:30:34,887 | ERROR    | root                 | main           :714 | Critical error in enhanced main: module 'config' has no attribute 'get'
+2025-08-05 22:30:34,898 | ERROR    | root                 | main           :715 | Traceback (most recent call last):
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 708, in main
+    bot = EnhancedTradingBot()
+          ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 151, in __init__
+    self._initialize_enhanced_components()
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 187, in _initialize_enhanced_components
+    self.kelly_manager = KellyPositionManager(self.config)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\dynamic_kelly_position_sizing.py", line 95, in __init__
+    self.professional_sizer = ProfessionalKellyPositionSizer(config)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\dynamic_kelly_position_sizing.py", line 289, in __init__
+    self.kelly_lookback_trades = self.config.get('kelly_lookback_trades', 100)
+                                 ^^^^^^^^^^^^^^^
+AttributeError: module 'config' has no attribute 'get'
+
+2025-08-05 22:37:06,747 | ERROR    | __main__             | __init__       :154 | Failed to initialize enhanced components: module 'config' has no attribute 'config'
+2025-08-05 22:37:06,749 | ERROR    | root                 | main           :714 | Critical error in enhanced main: module 'config' has no attribute 'config'
+2025-08-05 22:37:06,751 | ERROR    | root                 | main           :715 | Traceback (most recent call last):
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 708, in main
+    bot = EnhancedTradingBot()
+          ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 151, in __init__
+    self._initialize_enhanced_components()
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 187, in _initialize_enhanced_components
+    self.kelly_manager = KellyPositionManager(self.config)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\dynamic_kelly_position_sizing.py", line 95, in __init__
+    self.professional_sizer = ProfessionalKellyPositionSizer(config)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\dynamic_kelly_position_sizing.py", line 289, in __init__
+    self.kelly_lookback_trades = self.config.config.get('kelly_lookback_trades', 100)
+                                 ^^^^^^^^^^^^^^^^^^
+AttributeError: module 'config' has no attribute 'config'
+
+2025-08-05 22:38:03,292 | ERROR    | __main__             | __init__       :154 | Failed to initialize enhanced components: module 'config' has no attribute 'get'
+2025-08-05 22:38:03,293 | ERROR    | root                 | main           :714 | Critical error in enhanced main: module 'config' has no attribute 'get'
+2025-08-05 22:38:03,295 | ERROR    | root                 | main           :715 | Traceback (most recent call last):
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 708, in main
+    bot = EnhancedTradingBot()
+          ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 151, in __init__
+    self._initialize_enhanced_components()
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 187, in _initialize_enhanced_components
+    self.kelly_manager = KellyPositionManager(self.config)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\dynamic_kelly_position_sizing.py", line 95, in __init__
+    self.professional_sizer = ProfessionalKellyPositionSizer(config)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\dynamic_kelly_position_sizing.py", line 290, in __init__
+    self.kelly_safety_factor = self.config.get('kelly_safety_factor', 0.25)  # Use 25% of Kelly
+                               ^^^^^^^^^^^^^^^
+AttributeError: module 'config' has no attribute 'get'
+
+2025-08-05 22:40:38,561 | ERROR    | __main__             | __init__       :154 | Failed to initialize enhanced components: module 'config' has no attribute 'config'
+2025-08-05 22:40:38,567 | ERROR    | root                 | main           :714 | Critical error in enhanced main: module 'config' has no attribute 'config'
+2025-08-05 22:40:38,596 | ERROR    | root                 | main           :715 | Traceback (most recent call last):
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 708, in main
+    bot = EnhancedTradingBot()
+          ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 151, in __init__
+    self._initialize_enhanced_components()
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 187, in _initialize_enhanced_components
+    self.kelly_manager = KellyPositionManager(self.config)
+                                              ^^^^^^^^^^^^^
+AttributeError: module 'config' has no attribute 'config'
+
+2025-08-05 22:41:54,108 | ERROR    | __main__             | __init__       :154 | Failed to initialize enhanced components: module 'config' has no attribute 'get'
+2025-08-05 22:41:54,108 | ERROR    | root                 | main           :714 | Critical error in enhanced main: module 'config' has no attribute 'get'
+2025-08-05 22:41:54,111 | ERROR    | root                 | main           :715 | Traceback (most recent call last):
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 708, in main
+    bot = EnhancedTradingBot()
+          ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 151, in __init__
+    self._initialize_enhanced_components()
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 187, in _initialize_enhanced_components
+    self.kelly_manager = KellyPositionManager(self.config)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\dynamic_kelly_position_sizing.py", line 95, in __init__
+    self.professional_sizer = ProfessionalKellyPositionSizer(config)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\dynamic_kelly_position_sizing.py", line 290, in __init__
+    self.kelly_safety_factor = self.config.get('kelly_safety_factor', 0.25)  # Use 25% of Kelly
+                               ^^^^^^^^^^^^^^^
+AttributeError: module 'config' has no attribute 'get'
+
+2025-08-05 22:53:01,789 | ERROR    | __main__             | __init__       :154 | Failed to initialize enhanced components: module 'config' has no attribute 'get'
+2025-08-05 22:53:01,798 | ERROR    | root                 | main           :714 | Critical error in enhanced main: module 'config' has no attribute 'get'
+2025-08-05 22:53:01,803 | ERROR    | root                 | main           :715 | Traceback (most recent call last):
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 708, in main
+    bot = EnhancedTradingBot()
+          ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 151, in __init__
+    self._initialize_enhanced_components()
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 196, in _initialize_enhanced_components
+    self.riskmanager = RiskManager(self.config, self.kelly_manager)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\riskmanager.py", line 110, in __init__
+    self.max_risk_per_trade = config.get('risk_management.max_risk_per_trade', 0.01)
+                              ^^^^^^^^^^
+AttributeError: module 'config' has no attribute 'get'
+
+2025-08-05 23:05:32,483 | ERROR    | __main__             | __init__       :154 | Failed to initialize enhanced components: attribute name must be string, not 'float'
+2025-08-05 23:05:32,491 | ERROR    | root                 | main           :714 | Critical error in enhanced main: attribute name must be string, not 'float'
+2025-08-05 23:05:32,498 | ERROR    | root                 | main           :715 | Traceback (most recent call last):
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 708, in main
+    bot = EnhancedTradingBot()
+          ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 151, in __init__
+    self._initialize_enhanced_components()
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 196, in _initialize_enhanced_components
+    self.riskmanager = RiskManager(self.config, self.kelly_manager)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\riskmanager.py", line 113, in __init__
+    self.max_monthly_risk = getattr('risk_management.max_monthly_risk', 0.30)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: attribute name must be string, not 'float'
+
+2025-08-05 23:20:04,912 | ERROR    | __main__             | __init__       :154 | Failed to initialize enhanced components: module 'config' has no attribute 'get'
+2025-08-05 23:20:04,916 | ERROR    | root                 | main           :714 | Critical error in enhanced main: module 'config' has no attribute 'get'
+2025-08-05 23:20:04,918 | ERROR    | root                 | main           :715 | Traceback (most recent call last):
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 708, in main
+    bot = EnhancedTradingBot()
+          ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 151, in __init__
+    self._initialize_enhanced_components()
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 196, in _initialize_enhanced_components
+    self.riskmanager = RiskManager(self.config, self.kelly_manager)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\riskmanager.py", line 167, in __init__
+    self.max_consecutive_losses = config.get('emergency.max_consecutive_losses', 5)
+                                  ^^^^^^^^^^
+AttributeError: module 'config' has no attribute 'get'
+
+2025-08-05 23:26:39,285 | ERROR    | __main__             | __init__       :154 | Failed to initialize enhanced components: object of type 'KellyPositionManager' has no len()
+2025-08-05 23:26:39,292 | ERROR    | root                 | main           :714 | Critical error in enhanced main: object of type 'KellyPositionManager' has no len()
+2025-08-05 23:26:39,296 | ERROR    | root                 | main           :715 | Traceback (most recent call last):
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 708, in main
+    bot = EnhancedTradingBot()
+          ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 151, in __init__
+    self._initialize_enhanced_components()
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 196, in _initialize_enhanced_components
+    self.riskmanager = RiskManager(self.config, self.kelly_manager)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\riskmanager.py", line 185, in __init__
+    logger.info(f"Correlation Pairs: {len(self.correlation_matrix)}")
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: object of type 'KellyPositionManager' has no len()
+
+2025-08-05 23:33:33,878 | ERROR    | __main__             | __init__       :154 | Failed to initialize enhanced components: module 'config' has no attribute 'get'
+2025-08-05 23:33:33,885 | ERROR    | root                 | main           :714 | Critical error in enhanced main: module 'config' has no attribute 'get'
+2025-08-05 23:33:33,906 | ERROR    | root                 | main           :715 | Traceback (most recent call last):
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 708, in main
+    bot = EnhancedTradingBot()
+          ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 151, in __init__
+    self._initialize_enhanced_components()
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 197, in _initialize_enhanced_components
+    self.executionmanager = ExecutionManager(self.config, self.datahandler)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\executionmanager.py", line 64, in __init__
+    self.max_connection_attempts = config.get('mt5.max_connection_attempts', 3)
+                                   ^^^^^^^^^^
+AttributeError: module 'config' has no attribute 'get'
+
+2025-08-05 23:41:32,803 | ERROR    | __main__             | __init__       :154 | Failed to initialize enhanced components: module 'config' has no attribute 'get'
+2025-08-05 23:41:32,831 | ERROR    | root                 | main           :714 | Critical error in enhanced main: module 'config' has no attribute 'get'
+2025-08-05 23:41:32,834 | ERROR    | root                 | main           :715 | Traceback (most recent call last):
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 708, in main
+    bot = EnhancedTradingBot()
+          ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 151, in __init__
+    self._initialize_enhanced_components()
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 197, in _initialize_enhanced_components
+    self.executionmanager = ExecutionManager(self.config, self.datahandler)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\executionmanager.py", line 69, in __init__
+    self.magic_number = config.get('mt5.magic_number', 123456789)
+                        ^^^^^^^^^^
+AttributeError: module 'config' has no attribute 'get'
+
+2025-08-05 23:47:11,868 | ERROR    | executionmanager     | _connect_mt5   :178 | Enhanced MT5 connection error: module 'config' has no attribute 'get'
+2025-08-05 23:47:11,873 | ERROR    | __main__             | __init__       :154 | Failed to initialize enhanced components: module 'config' has no attribute 'get'
+2025-08-05 23:47:11,874 | ERROR    | root                 | main           :714 | Critical error in enhanced main: module 'config' has no attribute 'get'
+2025-08-05 23:47:11,885 | ERROR    | root                 | main           :715 | Traceback (most recent call last):
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 708, in main
+    bot = EnhancedTradingBot()
+          ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 151, in __init__
+    self._initialize_enhanced_components()
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 198, in _initialize_enhanced_components
+    self.notificationmanager = NotificationManager(self.config)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\notificationmanager.py", line 40, in __init__
+    self.email_enabled = config.get('notifications.email_enabled', False)
+                         ^^^^^^^^^^
+AttributeError: module 'config' has no attribute 'get'
+
+2025-08-05 23:50:36,904 | ERROR    | executionmanager     | _connect_mt5   :178 | Enhanced MT5 connection error: module 'config' has no attribute 'get'
+2025-08-05 23:50:36,936 | ERROR    | __main__             | _initialize_rl_system:240 | RL system initialization failed: EnhancedRLModelManager.__init__() got an unexpected keyword argument 'feature_manager'
+2025-08-05 23:50:36,938 | ERROR    | root                 | main           :714 | Critical error in enhanced main: 'EnhancedDataHandler' object has no attribute 'test_connection'
+2025-08-05 23:50:36,939 | ERROR    | root                 | main           :715 | Traceback (most recent call last):
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 708, in main
+    bot = EnhancedTradingBot()
+          ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 161, in __init__
+    self._run_system_diagnostics()
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 248, in _run_system_diagnostics
+    'mt5_connection': self.datahandler.test_connection(),
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'EnhancedDataHandler' object has no attribute 'test_connection'
+
+2025-08-06 00:05:13,613 | ERROR    | __main__             | __init__       :152 | Failed to initialize enhanced components: EnhancedMarketIntelligence.__init__() missing 1 required positional argument: 'user_config'
+2025-08-06 00:05:13,617 | ERROR    | root                 | main           :755 | Critical error in enhanced main: EnhancedMarketIntelligence.__init__() missing 1 required positional argument: 'user_config'
+2025-08-06 00:05:13,620 | ERROR    | root                 | main           :756 | Traceback (most recent call last):
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 749, in main
+    bot = EnhancedTradingBot()
+          ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 149, in __init__
+    self._initialize_enhanced_components()
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 177, in _initialize_enhanced_components
+    self.marketintelligence = EnhancedMarketIntelligence(self.config)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: EnhancedMarketIntelligence.__init__() missing 1 required positional argument: 'user_config'
+
+2025-08-06 00:10:14,356 | ERROR    | __main__             | __init__       :152 | Failed to initialize enhanced components: StrategyManager.__init__() missing 1 required positional argument: 'market_intelligence'
+2025-08-06 00:10:14,371 | ERROR    | root                 | main           :755 | Critical error in enhanced main: StrategyManager.__init__() missing 1 required positional argument: 'market_intelligence'
+2025-08-06 00:10:14,372 | ERROR    | root                 | main           :756 | Traceback (most recent call last):
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 749, in main
+    bot = EnhancedTradingBot()
+          ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 149, in __init__
+    self._initialize_enhanced_components()
+  File "C:\Users\hamidiabbas\.vscode\ForexBot\main.py", line 189, in _initialize_enhanced_components
+    self.strategymanager = StrategyManager(self.config)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: StrategyManager.__init__() missing 1 required positional argument: 'market_intelligence'
+
+2025-08-06 00:15:11,979 | ERROR    | executionmanager     | _connect_mt5   :178 | Enhanced MT5 connection error: module 'config' has no attribute 'get'
+2025-08-06 00:15:12,012 | ERROR    | __main__             | _initialize_rl_system:231 | RL system initialization failed: 'EnhancedRLModelManager' object has no attribute 'load_best_model'
+2025-08-06 00:15:16,700 | ERROR    | enhanced_datahandler | connect        :88  | MT5 login failed: (-6, 'Terminal: Authorization failed')
+2025-08-06 00:15:16,701 | ERROR    | __main__             | run_enhanced   :533 | Failed to connect to enhanced data handler

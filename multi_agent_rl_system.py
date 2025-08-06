@@ -990,11 +990,11 @@ class CoordinatorAgent:
         self.signal_queue = queue.Queue()
         self.performance_tracker = {}
         self.coordination_weights = {}
-        self.consensus_threshold = config.get('consensus_threshold', 0.6)
-        self.max_portfolio_risk = config.get('max_portfolio_risk', 0.1)
+        self.consensus_threshold = getattr(config,'consensus_threshold', 0.6)
+        self.max_portfolio_risk = getattr(config,'max_portfolio_risk', 0.1)
         
         # Coordination strategies
-        self.coordination_strategy = config.get('coordination_strategy', 'weighted_voting')
+        self.coordination_strategy = getattr(config,'coordination_strategy', 'weighted_voting')
         self.risk_manager = PortfolioRiskManager(config)
         
         # Performance tracking
@@ -1503,9 +1503,9 @@ class PortfolioRiskManager:
     
     def __init__(self, config: dict):
         self.config = config
-        self.max_portfolio_risk = config.get('max_portfolio_risk', 0.1)
-        self.max_single_position_risk = config.get('max_single_position_risk', 0.02)
-        self.max_correlation_risk = config.get('max_correlation_risk', 0.8)
+        self.max_portfolio_risk = getattr(config,'max_portfolio_risk', 0.1)
+        self.max_single_position_risk = getattr(config,'max_single_position_risk', 0.02)
+        self.max_correlation_risk = getattr(config,'max_correlation_risk', 0.8)
         self.position_history = deque(maxlen=1000)
         
     def validate_signal(self, signal: TradingSignal, active_positions: Dict) -> bool:
@@ -1651,7 +1651,7 @@ class MultiAgentTradingSystem:
             self.config = json.load(f)
         
         # Initialize coordinator
-        self.coordinator = CoordinatorAgent(self.config.get('coordinator', {}))
+        self.coordinator = CoordinatorAgent(getattr(self.config,'coordinator', {}))
         
         # Initialize agents
         self.agents = []
@@ -1668,7 +1668,7 @@ class MultiAgentTradingSystem:
         
         from tradingenvironment import TradingEnvironment
         
-        agent_configs = self.config.get('agents', [])
+        agent_configs = getattr(self.config,'agents', [])
         
         for agent_config in agent_configs:
             try:

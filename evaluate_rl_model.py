@@ -22,8 +22,8 @@ from datetime import datetime
 import pytz
 from stable_baselines3 import PPO
 
-import configs.config as config
-from core.data_handler import DataHandler
+import config as config
+from data_handler import DataHandler
 from core.market_intelligence import MarketIntelligence
 from trading_environment import TradingEnvironment
 from utils.performance_analyzer import PerformanceAnalyzer

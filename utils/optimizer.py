@@ -19,7 +19,7 @@
 import itertools
 import pandas as pd
 from types import SimpleNamespace
-import configs.config as config
+import config as config
 from backtester import Backtester
 
 def run_optimization():

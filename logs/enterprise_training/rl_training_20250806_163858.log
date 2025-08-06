@@ -1,0 +1,65 @@
+2025-08-06 16:38:58,523 - __main__ - INFO - 🚀 Starting Complete Enterprise RL Training System
+2025-08-06 16:39:33,885 - __main__ - INFO - 📦 PACKAGE AVAILABILITY CHECK:
+2025-08-06 16:39:33,886 - __main__ - INFO -    stable_baselines3 ✅
+2025-08-06 16:39:33,886 - __main__ - INFO -    torch           ✅ 2.7.1+cpu
+2025-08-06 16:39:33,887 - __main__ - INFO -    sklearn         ✅ 1.3.0
+2025-08-06 16:39:33,887 - __main__ - INFO -    pandas          ✅ 2.0.3
+2025-08-06 16:39:33,888 - __main__ - INFO -    numpy           ✅ 1.26.4
+2025-08-06 16:39:33,888 - __main__ - INFO -    matplotlib      ✅ 3.10.3
+2025-08-06 16:39:33,891 - __main__ - INFO -    seaborn         ✅ 0.13.2
+2025-08-06 16:39:33,891 - __main__ - INFO -    MetaTrader5     ✅
+2025-08-06 16:39:33,892 - __main__ - INFO -    yfinance        ✅
+2025-08-06 16:39:33,892 - __main__ - INFO -    optuna          ✅
+2025-08-06 16:39:33,893 - __main__ - INFO -    xgboost         ⚠️ Optional
+2025-08-06 16:39:33,894 - __main__ - INFO -    lightgbm        ⚠️ Optional
+2025-08-06 16:39:33,894 - __main__ - INFO -    networkx        ✅
+2025-08-06 16:39:33,895 - __main__ - INFO -    scipy           ✅
+2025-08-06 16:39:33,895 - __main__ - INFO -    statsmodels     ⚠️ Optional
+2025-08-06 16:39:33,895 - __main__ - INFO - ✅ All critical requirements satisfied
+2025-08-06 16:39:33,896 - __main__ - INFO - ✅ Found config file at: config.py
+2025-08-06 16:39:33,901 - __main__ - WARNING - importlib method failed: 'user_config'
+2025-08-06 16:39:33,910 - __main__ - INFO - ✅ Config loaded using exec fallback
+2025-08-06 16:39:33,911 - __main__ - INFO - 📋 ENHANCED CONFIG LOADED:
+2025-08-06 16:39:33,911 - __main__ - INFO -    MT5 Login: 5038880271
+2025-08-06 16:39:33,912 - __main__ - INFO -    MT5 Server: MetaQuotes-Demo
+2025-08-06 16:39:33,912 - __main__ - INFO -    Symbols: ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD', 'USDCHF', 'XAUUSD', 'XAGUSD']
+2025-08-06 16:39:33,913 - __main__ - INFO -    Primary Timeframe: H1
+2025-08-06 16:39:33,913 - __main__ - INFO -    Risk %: 0.02
+2025-08-06 16:39:33,914 - __main__ - WARNING - ⚠️ Advanced ML libraries not available (optuna, xgboost, lightgbm, networkx)
+2025-08-06 16:39:33,915 - __main__ - INFO - 🏗️ Creating comprehensive modules with advanced features...
+2025-08-06 16:39:33,920 - __main__ - INFO - ✅ Created enhanced_datahandler.py
+2025-08-06 16:39:33,923 - __main__ - INFO - ✅ Created enhanced_marketintelligence.py
+2025-08-06 16:39:33,976 - __main__ - INFO - ✅ Created enhanced_tradingenvironment.py
+2025-08-06 16:39:34,024 - __main__ - INFO - 🎯 All enhanced modules created successfully!
+2025-08-06 16:39:34,104 - __main__ - INFO - ✅ Enhanced Training System initialized
+2025-08-06 16:39:34,105 - __main__ - INFO -    Symbols: ['EURUSD', 'GBPUSD', 'XAUUSD']
+2025-08-06 16:39:34,105 - __main__ - INFO -    Models: ['SAC', 'PPO']
+2025-08-06 16:39:34,106 - __main__ - INFO - 🚀 Starting Enhanced Training Pipeline...
+2025-08-06 16:39:34,106 - __main__ - INFO - 🔧 Initializing enhanced components...
+2025-08-06 16:39:34,130 - enhanced_datahandler - INFO - Enhanced DataHandler initialized
+2025-08-06 16:39:34,131 - enhanced_datahandler - INFO -    Available sources: MT5, YFINANCE
+2025-08-06 16:39:34,154 - enhanced_datahandler - INFO - ✅ Connected to MT5 - Account: 5038880271
+2025-08-06 16:39:34,155 - __main__ - INFO - ✅ Enhanced DataHandler connected
+2025-08-06 16:39:34,157 - enhanced_marketintelligence - INFO - Enhanced Market Intelligence initialized
+2025-08-06 16:39:34,158 - __main__ - INFO - ✅ Enhanced Market Intelligence initialized
+2025-08-06 16:39:34,159 - __main__ - INFO - 📊 Preparing enhanced training data...
+2025-08-06 16:39:34,159 - __main__ - INFO - 🔄 Processing EURUSD...
+2025-08-06 16:39:34,575 - enhanced_datahandler - INFO - ✅ Retrieved 18667 bars for EURUSD
+2025-08-06 16:39:34,825 - enhanced_marketintelligence - INFO - ✅ Analysis complete: 7 -> 51 features (+44)
+2025-08-06 16:39:34,828 - __main__ - INFO - ✅ EURUSD: Train=14933, Val=3734
+2025-08-06 16:39:34,829 - __main__ - INFO - 🔄 Processing GBPUSD...
+2025-08-06 16:39:34,845 - enhanced_datahandler - INFO - ✅ Retrieved 18668 bars for GBPUSD
+2025-08-06 16:39:34,994 - enhanced_marketintelligence - INFO - ✅ Analysis complete: 7 -> 51 features (+44)
+2025-08-06 16:39:35,001 - __main__ - INFO - ✅ GBPUSD: Train=14934, Val=3734
+2025-08-06 16:39:35,001 - __main__ - INFO - 🔄 Processing XAUUSD...
+2025-08-06 16:39:35,013 - enhanced_datahandler - INFO - ✅ Retrieved 17711 bars for XAUUSD
+2025-08-06 16:39:35,129 - enhanced_marketintelligence - INFO - ✅ Analysis complete: 7 -> 51 features (+44)
+2025-08-06 16:39:35,136 - __main__ - INFO - ✅ XAUUSD: Train=14168, Val=3543
+2025-08-06 16:39:35,136 - __main__ - INFO - 🎯 Data preparation complete for 3 symbols
+2025-08-06 16:39:35,421 - __main__ - INFO - 🤖 Starting enhanced model training...
+2025-08-06 16:39:35,422 - __main__ - INFO - 🎯 Training SAC_EURUSD...
+2025-08-06 16:39:35,459 - enhanced_tradingenvironment - INFO - Enhanced Trading Environment initialized - 14933 data points
+2025-08-06 16:39:35,467 - enhanced_tradingenvironment - INFO - Enhanced Trading Environment initialized - 3734 data points
+2025-08-06 16:39:46,387 - __main__ - INFO - 🚀 Training SAC_EURUSD for 50,000 steps...
+2025-08-06 16:46:35,884 - enhanced_datahandler - INFO - Disconnected from MT5
+2025-08-06 16:46:35,885 - __main__ - INFO - ⏹️ Training interrupted by user

@@ -33,8 +33,8 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 import pytz
 
-import configs.config as config
-from core.data_handler import DataHandler
+import config as config
+from data_handler import DataHandler
 from core.market_intelligence import MarketIntelligence
 
 # --- 1. CONFIGURATION ---

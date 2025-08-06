@@ -31,15 +31,15 @@ class AlternativeDataManager:
         self.config = config
         
         # API configurations
-        self.news_api_key = config.get('news_api_key', '')
-        self.twitter_bearer_token = config.get('twitter_bearer_token', '')
-        self.economic_calendar_api = config.get('economic_calendar_api', '')
+        self.news_api_key = getattr(config,'news_api_key', '')
+        self.twitter_bearer_token = getattr(config,'twitter_bearer_token', '')
+        self.economic_calendar_api = getattr(config,'economic_calendar_api', '')
         
         # Sentiment analyzers
         self.vader_analyzer = SentimentIntensityAnalyzer()
         
         # Data storage
-        self.db_path = Path(config.get('data_path', './data')) / 'alternative_data.db'
+        self.db_path = Path(getattr(config,'data_path', './data')) / 'alternative_data.db'
         self.init_database()
         
         # Cache settings

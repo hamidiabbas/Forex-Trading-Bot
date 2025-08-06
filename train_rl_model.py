@@ -128,9 +128,9 @@ class EnhancedRLTrainingManager:
             logger.info("Advanced Feature Engineering system initialized")
             
             # Sentiment Analysis & Alternative Data
-            if self.config.get('use_sentiment', True):
+            if getattr(self.config,'use_sentiment', True):
                 alt_data_config = {
-                    'news_api_key': self.config.get('news_api_key', ''),
+                    'news_api_key': getattr(self.config,'news_api_key', ''),
                     'data_path': './data/alternative'
                 }
                 self.sentiment_manager = AlternativeDataManager(alt_data_config)
@@ -141,7 +141,7 @@ class EnhancedRLTrainingManager:
             logger.info("Professional Ensemble Manager initialized")
             
             # Kelly Position Sizer
-            if self.config.get('use_kelly_sizing', True):
+            if getattr(self.config,'use_kelly_sizing', True):
                 kelly_config = {
                     'kelly_lookback_trades': 100,
                     'kelly_safety_factor': 0.25,
@@ -152,7 +152,7 @@ class EnhancedRLTrainingManager:
                 logger.info("Kelly Position Sizing system initialized")
             
             # Multi-Agent RL System
-            if self.config.get('use_multi_agent', True):
+            if getattr(self.config,'use_multi_agent', True):
                 self._initialize_multi_agent_system()
                 logger.info("Multi-Agent RL system initialized")
             
@@ -440,7 +440,7 @@ class EnhancedRLTrainingManager:
         
         # Run optimization
         study = optuna.create_study(direction='maximize')
-        study.optimize(objective, n_trials=self.config.get('hyperopt_trials', 50))
+        study.optimize(objective, n_trials=getattr(self.config,'hyperopt_trials', 50))
         
         best_params = study.best_params
         best_value = study.best_value
