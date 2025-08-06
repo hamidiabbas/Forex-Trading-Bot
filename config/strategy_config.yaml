@@ -1,0 +1,38 @@
+# configs/strategy_config.yaml
+strategies:
+  rl_strategies:
+    sac_primary:
+      enabled: true
+      model_path: "models/sac_eurusd_final.zip"
+      confidence_threshold: 0.65
+      weight: 0.4
+    
+    a2c_backup:
+      enabled: true
+      model_path: "models/a2c_eurusd_best.zip"
+      confidence_threshold: 0.6
+      weight: 0.3
+
+  classical_strategies:
+    trend_following:
+      enabled: true
+      ema_fast: 12
+      ema_slow: 26
+      weight: 0.15
+    
+    mean_reversion:
+      enabled: true
+      bb_period: 20
+      rsi_threshold: 75
+      weight: 0.15
+
+fusion:
+  method: "hybrid_consensus"
+  min_consensus: 0.6
+  regime_adaptive: true
+  performance_learning: true
+
+risk_management:
+  max_position_size: 0.02
+  stop_loss_atr_multiplier: 2.0
+  take_profit_atr_multiplier: 3.0

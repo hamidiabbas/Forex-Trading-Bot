@@ -33,9 +33,15 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 import pytz
 
+<<<<<<< HEAD
 import config as config
 from data_handler import DataHandler
 from core.market_intelligence import MarketIntelligence
+=======
+import config.configmanager as configmanager
+from core.data_handler import DataHandler
+from core.marketintelligence import MarketIntelligence
+>>>>>>> bed1ce25508448d83ab04287b1b5ea2b8271dd7a
 
 # --- 1. CONFIGURATION ---
 SYMBOL = 'EURUSD'
@@ -50,8 +56,8 @@ FLAT_THRESHOLD_ATR_FACTOR = 0.5
 def create_training_data():
     """ Fetches data and engineers features with a three-class target. """
     print("--- Stage 1: Creating Training Data ---")
-    data_handler = DataHandler(config)
-    market_intel = MarketIntelligence(data_handler, config)
+    data_handler = DataHandler(configmanager)
+    market_intel = MarketIntelligence(data_handler, configmanager)
     data_handler.connect()
     timezone = pytz.timezone("Etc/UTC")
     start_date_dt = datetime.strptime(START_DATE, '%Y-%m-%d').replace(tzinfo=timezone)

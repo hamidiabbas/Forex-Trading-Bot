@@ -1,7 +1,11 @@
 # check_symbol_info.py (Corrected)
 
 import MetaTrader5 as mt5
+<<<<<<< HEAD
 import config as config  # Your existing config file
+=======
+import config.configmanager as configmanager  # Your existing config file
+>>>>>>> bed1ce25508448d83ab04287b1b5ea2b8271dd7a
 
 def inspect_symbol(symbol):
     """
@@ -9,10 +13,10 @@ def inspect_symbol(symbol):
     using a more robust inspection method.
     """
     # Use credentials from your config file
-    if not mt5.initialize(path=config.MT5_TERMINAL_PATH,
-                          login=config.MT5_ACCOUNT_NUMBER,
-                          password=config.MT5_PASSWORD,
-                          server=config.MT5_SERVER_NAME):
+    if not mt5.initialize(path=configmanager.MT5_TERMINAL_PATH,
+                          login=configmanager.MT5_ACCOUNT_NUMBER,
+                          password=configmanager.MT5_PASSWORD,
+                          server=configmanager.MT5_SERVER_NAME):
         print(f"MT5 initialization failed. Error: {mt5.last_error()}")
         return
 

@@ -18,9 +18,9 @@ class EnhancedTradingEnvironment(gym.Env):
         self.config = config or {}
         
         # Environment parameters
-        self.initial_balance = getattr(self.config,'initial_balance', 100000.0)
-        self.transaction_cost = getattr(self.config,'transaction_cost', 0.0001)
-        self.max_drawdown_limit = getattr(self.config,'max_drawdown_limit', 0.3)
+        self.initial_balance = self.config.get('initial_balance', 10000.0)
+        self.transaction_cost = self.config.get('transaction_cost', 0.0001)
+        self.max_drawdown_limit = self.config.get('max_drawdown_limit', 0.3)
         
         # State variables
         self.current_step = 0
@@ -45,7 +45,7 @@ class EnhancedTradingEnvironment(gym.Env):
             dtype=np.float32
         )
         
-        n_features = min(100, len(self.data.columns) * 2)  # Dynamic feature count
+        n_features = min(50, len(self.data.columns) * 2)  # Dynamic feature count
         self.observation_space = spaces.Box(
             low=-np.inf, high=np.inf, shape=(n_features,), dtype=np.float32
         )
@@ -251,7 +251,7 @@ class EnhancedTradingEnvironment(gym.Env):
         for indicator in indicators:
             value = current_data.get(indicator, 0)
             if 'RSI' in indicator:
-                market_features.append((value - 100) / 100)
+                market_features.append((value - 50) / 50)
             elif 'MACD' in indicator or 'ATR' in indicator:
                 market_features.append(np.tanh(value * 1000) if value != 0 else 0)
             else:
@@ -267,7 +267,7 @@ class EnhancedTradingEnvironment(gym.Env):
         # Portfolio features
         portfolio_features = [
             float(self.position),
-            self.position_size / 100000 if self.position_size != 0 else 0.0,
+            self.position_size / 10000 if self.position_size != 0 else 0.0,
             (self.balance - self.initial_balance) / self.initial_balance,
             (self.equity - self.initial_balance) / self.initial_balance,
             self.unrealized_pnl / self.initial_balance,
